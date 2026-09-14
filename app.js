@@ -1,4 +1,11 @@
 /* =========================
+   SUPABASE
+========================= */
+
+const SUPABASE_URL = "https://sdkgiedglmhmchiietru.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_ofwe1YigppMHJjcWu_VjUA_XF7wNzEm";
+
+/* =========================
    AUTHORIZED AGENTS
 ========================= */
 
@@ -848,25 +855,72 @@ function backToRsvp() {
    SUBMIT RESPONSE
 ========================= */
 
-function submitMissionResponse() {
+let submittingMissionResponse = false;
 
-  const agent =
-    document.getElementById("agentCode")
-      .value
-      .trim();
+async function submitMissionResponse() {
+  if (submittingMissionResponse) return;
 
-  document.getElementById("successAgent")
-    .textContent = agent;
+  const agent = document.getElementById("agentCode").value.trim();
+  const submitButton = document.querySelector(
+    '#reviewPage button[onclick="submitMissionResponse()"]'
+  );
 
-  document.getElementById("reviewPage")
-    .classList.add("hidden");
+  submittingMissionResponse = true;
 
-  document.getElementById("successPage")
-    .classList.remove("hidden");
+  if (submitButton) {
+    submitButton.disabled = true;
+    submitButton.dataset.originalText = submitButton.textContent;
+    submitButton.textContent = "TRANSMITTING...";
+  }
 
-  window.scrollTo({
-    top: 0,
-    behavior: "instant"
-  });
+  const payload = {
+    name: agent,
+    travel: missionResponse.transport,
+    people: missionResponse.transport === "自己開車"
+      ? Number(missionResponse.seats)
+      : null,
+    stay_pref: missionResponse.lodging,
+    roommate: missionResponse.lodging === "希望睡雙人床"
+      ? missionResponse.roommate
+      : null,
+    note: missionResponse.notes || null
+  };
 
+  try {
+    const response = await fetch(
+      SUPABASE_URL + "/rest/v1/christmas_2026_rsvp",
+      {
+        method: "POST",
+        headers: {
+          "apikey": SUPABASE_PUBLISHABLE_KEY,
+          "Content-Type": "application/json",
+          "Prefer": "return=minimal"
+        },
+        body: JSON.stringify(payload)
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("Supabase " + response.status + ": " + await response.text());
+    }
+
+    document.getElementById("successAgent").textContent = agent;
+    document.getElementById("reviewPage").classList.add("hidden");
+    document.getElementById("successPage").classList.remove("hidden");
+
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }
+  catch (error) {
+    console.error("RSVP submission failed:", error);
+    alert("資料傳送失敗，請確認網路連線後再試一次。");
+  }
+  finally {
+    submittingMissionResponse = false;
+
+    if (submitButton) {
+      submitButton.disabled = false;
+      submitButton.textContent =
+        submitButton.dataset.originalText || "確認提交";
+    }
+  }
 }
