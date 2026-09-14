@@ -662,7 +662,7 @@ document.addEventListener("click", function(event) {
     const roommateBox =
       document.getElementById("roommateBox");
 
-    if (value === "希望睡雙人床") {
+    if (value === "雙人床") {
       roommateBox.classList.remove("hidden");
     }
     else {
@@ -747,7 +747,7 @@ function reviewMissionResponse() {
   }
 
   if (
-    missionResponse.lodging === "希望睡雙人床" &&
+    missionResponse.lodging === "雙人床" &&
     !missionResponse.roommate
   ) {
     showRsvpError("請選擇希望共用雙人床的行動成員。");
@@ -788,7 +788,7 @@ function reviewMissionResponse() {
   const roommateRow =
     document.getElementById("reviewRoommateRow");
 
-  if (missionResponse.lodging === "希望睡雙人床") {
+  if (missionResponse.lodging === "雙人床") {
     roommateRow.classList.remove("hidden");
     document.getElementById("reviewRoommate")
       .textContent = missionResponse.roommate;
@@ -880,7 +880,7 @@ async function submitMissionResponse() {
       ? Number(missionResponse.seats)
       : null,
     stay_pref: missionResponse.lodging,
-    roommate: missionResponse.lodging === "希望睡雙人床"
+    roommate: missionResponse.lodging === "雙人床"
       ? missionResponse.roommate
       : null,
     note: missionResponse.notes || null
