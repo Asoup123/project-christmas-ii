@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>PROJECT : CHRISTMAS II</title>
 
   <style>
@@ -21,7 +20,6 @@
       --gold: #c9a86a;
       --white: #fffdf8;
       --ink: #22251f;
-      --muted: #6c665c;
     }
 
     body {
@@ -47,6 +45,10 @@
       background-size: 40px 40px;
     }
 
+    /* =========================
+       SNOW
+    ========================= */
+
     .snow {
       position: fixed;
       inset: 0;
@@ -67,6 +69,10 @@
         transform: translateY(110vh) rotate(360deg);
       }
     }
+
+    /* =========================
+       PAGE
+    ========================= */
 
     .page {
       min-height: 100vh;
@@ -96,6 +102,21 @@
       inset: 10px;
       border: 1px solid rgba(40,40,35,.2);
       pointer-events: none;
+    }
+
+    .christmas-mark {
+      position: absolute;
+      left: -12px;
+      top: -18px;
+      width: 55px;
+      height: 55px;
+      background: var(--red);
+      border-radius: 50%;
+      border: 5px solid #101412;
+      display: grid;
+      place-items: center;
+      font-size: 23px;
+      box-shadow: 0 5px 15px rgba(0,0,0,.3);
     }
 
     .top-secret {
@@ -161,6 +182,10 @@
       color: var(--green);
     }
 
+    /* =========================
+       VERIFICATION
+    ========================= */
+
     .verification {
       margin-top: 32px;
       padding: 24px 20px;
@@ -168,30 +193,6 @@
       border-left: 4px solid var(--green);
       position: relative;
       overflow: hidden;
-    }
-
-    .verification::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(
-        90deg,
-        transparent,
-        rgba(23,60,50,.08),
-        transparent
-      );
-      transform: translateX(-100%);
-      pointer-events: none;
-    }
-
-    .verification.scanning::after {
-      animation: scanPanel 1.4s linear infinite;
-    }
-
-    @keyframes scanPanel {
-      to {
-        transform: translateX(100%);
-      }
     }
 
     .verification-title {
@@ -225,7 +226,6 @@
       font-weight: bold;
       outline: none;
       color: #222;
-      border-radius: 0;
     }
 
     input:focus {
@@ -234,8 +234,7 @@
     }
 
     input:disabled {
-      opacity: .7;
-      cursor: not-allowed;
+      opacity: .55;
     }
 
     button {
@@ -256,71 +255,180 @@
     }
 
     button:disabled {
-      opacity: .6;
+      opacity: .5;
       cursor: wait;
       transform: none;
     }
 
-    .scanner {
+    /* =========================
+       COMPUTER TERMINAL
+    ========================= */
+
+    .terminal {
       display: none;
-      margin-top: 18px;
-      border: 1px solid rgba(23,60,50,.35);
-      background: #101b17;
-      color: #b8e7d5;
-      padding: 16px;
-      font-family: monospace;
       position: relative;
+      margin-top: 20px;
+      padding: 17px;
+      min-height: 190px;
+      background: #08130f;
+      border: 1px solid rgba(88,220,165,.35);
+      box-shadow:
+        inset 0 0 30px rgba(0,0,0,.5),
+        0 8px 25px rgba(0,0,0,.12);
       overflow: hidden;
     }
 
-    .scanner.active {
+    .terminal.active {
       display: block;
     }
 
-    .scanner::before {
+    /* 掃描線 */
+
+    .terminal::before {
       content: "";
       position: absolute;
       left: 0;
       right: 0;
       height: 2px;
-      top: 0;
-      background: rgba(93,255,193,.75);
-      box-shadow: 0 0 12px rgba(93,255,193,.8);
-      animation: scannerLine 1.1s linear infinite;
+      top: -2px;
+      background: rgba(96,255,192,.8);
+      box-shadow: 0 0 15px rgba(96,255,192,.9);
+      animation: scan 1.8s linear infinite;
+      z-index: 3;
     }
 
-    @keyframes scannerLine {
-      0% { top: 0; }
-      100% { top: calc(100% - 2px); }
+    @keyframes scan {
+      0% {
+        top: 0;
+        opacity: .3;
+      }
+
+      50% {
+        opacity: 1;
+      }
+
+      100% {
+        top: 100%;
+        opacity: .3;
+      }
     }
 
-    .scanner-status {
-      font-size: 11px;
+    /* CRT 電腦橫線 */
+
+    .terminal::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        repeating-linear-gradient(
+          0deg,
+          rgba(255,255,255,.018),
+          rgba(255,255,255,.018) 1px,
+          transparent 1px,
+          transparent 3px
+        );
+    }
+
+    .terminal-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 15px;
+      font-family: monospace;
+      font-size: 9px;
       letter-spacing: 1px;
-      min-height: 40px;
-      line-height: 1.6;
+      color: #5f9d84;
     }
 
-    .scanner-code {
-      margin-top: 12px;
-      font-size: 22px;
-      letter-spacing: 5px;
-      color: #effff8;
+    .terminal-output {
+      min-height: 85px;
+      font-family: "Courier New", monospace;
+      font-size: 11px;
+      line-height: 1.75;
+      color: #80e9bd;
+      text-shadow: 0 0 5px rgba(128,233,189,.3);
+    }
+
+    .terminal-output .zh {
+      color: #bad8cc;
+    }
+
+    .cursor {
+      display: inline-block;
+      width: 7px;
+      height: 12px;
+      margin-left: 3px;
+      vertical-align: -2px;
+      background: #80e9bd;
+      animation: blink .7s steps(1) infinite;
+    }
+
+    @keyframes blink {
+      50% {
+        opacity: 0;
+      }
+    }
+
+    .agent-read {
+      display: none;
+      margin: 12px 0;
+      padding: 9px 11px;
+      border-left: 2px solid #5de3ae;
+      background: rgba(93,227,174,.06);
+    }
+
+    .agent-read.show {
+      display: block;
+    }
+
+    .agent-label {
+      font-family: monospace;
+      color: #5f9d84;
+      font-size: 9px;
+      letter-spacing: 2px;
+    }
+
+    .agent-value {
+      margin-top: 5px;
+      min-height: 25px;
+      font-family: monospace;
+      color: #e5fff4;
+      font-size: 20px;
+      font-weight: bold;
+      letter-spacing: 6px;
+    }
+
+    /* =========================
+       PROGRESS
+    ========================= */
+
+    .progress-info {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 15px;
+      font-family: monospace;
+      font-size: 9px;
+      color: #5f9d84;
     }
 
     .progress {
-      height: 5px;
-      background: rgba(255,255,255,.12);
-      margin-top: 16px;
+      height: 4px;
+      margin-top: 6px;
+      background: rgba(255,255,255,.09);
       overflow: hidden;
     }
 
     .progress-bar {
-      width: 0%;
+      width: 0;
       height: 100%;
-      background: #6fe0b4;
-      transition: width .45s ease;
+      background: #62d9aa;
+      box-shadow: 0 0 8px rgba(98,217,170,.6);
+      transition: width .8s ease;
     }
+
+    /* =========================
+       RESULT
+    ========================= */
 
     .message {
       display: none;
@@ -328,42 +436,47 @@
       padding: 14px;
       font-family: monospace;
       font-size: 12px;
-      line-height: 1.7;
+      line-height: 1.8;
+    }
+
+    .message strong {
+      font-size: 15px;
+      letter-spacing: 1px;
     }
 
     .message.error {
       display: block;
-      color: #8f1d24;
+      color: var(--red);
       border: 1px solid rgba(143,29,36,.35);
       background: rgba(143,29,36,.07);
-      animation: errorFlash .35s ease 2;
+      animation: errorShake .3s ease;
     }
 
-    @keyframes errorFlash {
-      0%, 100% { opacity: 1; }
-      50% { opacity: .45; }
+    @keyframes errorShake {
+      0%,100% { transform: translateX(0); }
+      25% { transform: translateX(-4px); }
+      75% { transform: translateX(4px); }
     }
 
     .message.success {
       display: block;
-      color: #173c32;
+      color: var(--green);
       border: 1px solid rgba(23,60,50,.35);
       background: rgba(23,60,50,.08);
     }
 
-    .message strong {
-      font-size: 14px;
-      letter-spacing: 1px;
-    }
-
     .hint {
       display: block;
-      margin-top: 9px;
+      margin-top: 10px;
       color: #6e655b;
       font-family: "Microsoft JhengHei", sans-serif;
       font-size: 12px;
-      line-height: 1.7;
+      line-height: 1.8;
     }
+
+    /* =========================
+       FOOTER
+    ========================= */
 
     .bottom {
       display: flex;
@@ -392,41 +505,35 @@
       transform: rotate(-12deg);
     }
 
-    .christmas-mark {
-      position: absolute;
-      left: -12px;
-      top: -18px;
-      width: 55px;
-      height: 55px;
-      background: var(--red);
-      border-radius: 50%;
-      border: 5px solid #101412;
-      display: grid;
-      place-items: center;
-      font-size: 23px;
-      box-shadow: 0 5px 15px rgba(0,0,0,.3);
-    }
+    /* =========================
+       SCREEN FLASH
+    ========================= */
 
     .screen-flash {
       position: fixed;
       inset: 0;
       pointer-events: none;
-      background: rgba(102,255,188,.08);
+      background: rgba(89,255,186,.09);
       opacity: 0;
-      z-index: 10;
+      z-index: 20;
     }
 
     .screen-flash.show {
-      animation: greenFlash .5s ease;
+      animation: flash .55s ease;
     }
 
-    @keyframes greenFlash {
+    @keyframes flash {
       0% { opacity: 0; }
-      50% { opacity: 1; }
+      40% { opacity: 1; }
       100% { opacity: 0; }
     }
 
+    /* =========================
+       MOBILE
+    ========================= */
+
     @media (max-width: 520px) {
+
       .file {
         padding: 40px 22px 28px;
       }
@@ -442,282 +549,613 @@
       .top-secret {
         right: 15px;
       }
+
+      .terminal {
+        min-height: 210px;
+      }
     }
+
   </style>
 </head>
 
 <body>
 
-  <div class="snow" id="snow"></div>
-  <div class="screen-flash" id="screenFlash"></div>
+<div class="snow" id="snow"></div>
+<div class="screen-flash" id="screenFlash"></div>
 
-  <main class="page">
+<main class="page">
 
-    <section class="file">
+  <section class="file">
 
-      <div class="christmas-mark">✦</div>
+    <div class="christmas-mark">✦</div>
 
-      <div class="top-secret">
-        CLASSIFIED
+    <div class="top-secret">
+      CLASSIFIED
+    </div>
+
+    <div class="file-number">
+      FILE NO. XMAS-II / 2026 / 1225
+    </div>
+
+    <div class="eyebrow">
+      RESTRICTED ACCESS
+    </div>
+
+    <h1>
+      PROJECT :
+      <span>CHRISTMAS II</span>
+    </h1>
+
+    <div class="line"></div>
+
+    <div class="classified">
+
+      本文件包含
+      <strong>PROJECT : CHRISTMAS II</strong>
+      機密行動資訊。<br>
+
+      僅限本次受邀成員閱覽。<br><br>
+
+      未經授權者，請立即關閉本頁。
+
+    </div>
+
+    <div class="verification">
+
+      <div class="verification-title">
+        IDENTITY VERIFICATION
       </div>
 
-      <div class="file-number">
-        FILE NO. XMAS-II / 2026 / 1225
+      <p>
+        請輸入你的行動代號以確認身分。
+      </p>
+
+      <div class="input-wrap">
+
+        <input
+          id="agentCode"
+          type="text"
+          placeholder="輸入行動代號"
+          autocomplete="off"
+        >
+
+        <button
+          id="verifyButton"
+          onclick="verifyAgent()"
+        >
+          驗證身分
+        </button>
+
       </div>
 
-      <div class="eyebrow">
-        RESTRICTED ACCESS
-      </div>
+      <!-- 電腦終端機 -->
 
-      <h1>
-        PROJECT :
-        <span>CHRISTMAS II</span>
-      </h1>
+      <div class="terminal" id="terminal">
 
-      <div class="line"></div>
+        <div class="terminal-header">
 
-      <div class="classified">
-        本文件包含 <strong>PROJECT : CHRISTMAS II</strong>
-        機密行動資訊。<br>
-        僅限本次受邀成員閱覽。<br><br>
+          <span>
+            XMAS-II SECURITY TERMINAL
+          </span>
 
-        未經授權者，請立即關閉本頁。
-      </div>
+          <span>
+            ONLINE
+          </span>
 
-      <div class="verification" id="verificationBox">
-
-        <div class="verification-title">
-          IDENTITY VERIFICATION
         </div>
 
-        <p>
-          請輸入你的行動代號以確認身分。
-        </p>
+        <div
+          class="terminal-output"
+          id="terminalOutput"
+        ></div>
 
-        <div class="input-wrap">
-          <input
-            type="text"
-            id="agentCode"
-            placeholder="輸入行動代號"
-            autocomplete="off"
-          >
+        <div
+          class="agent-read"
+          id="agentRead"
+        >
 
-          <button id="verifyButton" onclick="verifyAgent()">
-            驗證身分
-          </button>
-        </div>
-
-        <div class="scanner" id="scanner">
-          <div class="scanner-status" id="scannerStatus">
-            SYSTEM READY...
+          <div class="agent-label">
+            AGENT CODE DETECTED
           </div>
 
-          <div class="scanner-code" id="scannerCode">
-            ---
-          </div>
+          <div
+            class="agent-value"
+            id="agentValue"
+          ></div>
 
-          <div class="progress">
-            <div class="progress-bar" id="progressBar"></div>
-          </div>
         </div>
 
-        <div id="message" class="message"></div>
+        <div class="progress-info">
+
+          <span>
+            SECURITY CHECK
+          </span>
+
+          <span id="percentage">
+            0%
+          </span>
+
+        </div>
+
+        <div class="progress">
+
+          <div
+            class="progress-bar"
+            id="progressBar"
+          ></div>
+
+        </div>
 
       </div>
 
-      <div class="bottom">
+      <div
+        class="message"
+        id="message"
+      ></div>
 
-        <div>
-          DATE OF OPERATION<br>
-          25 DEC 2026<br><br>
-          SECURITY LEVEL : II
-        </div>
+    </div>
 
-        <div class="seal">
-          PROJECT<br>
-          CHRISTMAS<br>
-          II
-        </div>
+    <div class="bottom">
 
+      <div>
+        DATE OF OPERATION<br>
+        25 DEC 2026<br><br>
+
+        SECURITY LEVEL : II
       </div>
 
-    </section>
+      <div class="seal">
+        PROJECT<br>
+        CHRISTMAS<br>
+        II
+      </div>
 
-  </main>
+    </div>
 
-  <script>
-    const allowedAgents = [
-      "ㄊㄔㄒ",
-      "ㄈㄒㄒ",
-      "ㄓㄧㄧ",
-      "ㄌㄨㄩ",
-      "ㄌㄕㄨ",
-      "ㄏㄩㄉ",
-      "ㄧㄑㄏ",
-      "ㄘㄅㄎ",
-      "ㄍㄒㄩ",
-      "ㄏㄆㄐ",
-      "ㄨㄔㄩ",
-      "ㄔㄧㄊ",
-      "ㄌㄓㄩ"
-    ];
+  </section>
 
-    let verifying = false;
+</main>
 
-    function wait(ms) {
-      return new Promise(resolve => setTimeout(resolve, ms));
+<script>
+
+  /* =========================
+     正式授權名單：13 人
+  ========================= */
+
+  const allowedAgents = [
+    "ㄊㄔㄒ",
+    "ㄈㄒㄒ",
+    "ㄓㄧㄧ",
+    "ㄌㄨㄩ",
+    "ㄌㄕㄨ",
+    "ㄏㄩㄉ",
+    "ㄧㄑㄏ",
+    "ㄘㄅㄎ",
+    "ㄍㄒㄩ",
+    "ㄏㄆㄐ",
+    "ㄨㄔㄩ",
+    "ㄔㄧㄊ",
+    "ㄌㄓㄩ"
+  ];
+
+  let verifying = false;
+
+  function wait(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+
+  /* =========================
+     打字機
+  ========================= */
+
+  async function typeText(
+    element,
+    text,
+    speed = 35
+  ) {
+
+    for (const character of text) {
+
+      element.innerHTML += character;
+
+      await wait(speed);
+
     }
 
-    async function verifyAgent() {
+  }
 
-      if (verifying) return;
 
-      const input = document.getElementById("agentCode");
-      const button = document.getElementById("verifyButton");
-      const message = document.getElementById("message");
-      const scanner = document.getElementById("scanner");
-      const scannerStatus = document.getElementById("scannerStatus");
-      const scannerCode = document.getElementById("scannerCode");
-      const progressBar = document.getElementById("progressBar");
-      const verificationBox = document.getElementById("verificationBox");
-      const screenFlash = document.getElementById("screenFlash");
+  /* =========================
+     終端機新增一行
+  ========================= */
 
-      const code = input.value.trim();
+  async function terminalLine(
+    english,
+    chinese
+  ) {
 
-      message.className = "message";
-      message.innerHTML = "";
+    const output =
+      document.getElementById("terminalOutput");
 
-      if (!code) {
-        message.innerHTML =
-          "<strong>INPUT REQUIRED</strong><br>" +
-          "請先輸入行動代號。";
-        message.classList.add("error");
-        return;
-      }
+    output.innerHTML = "";
 
-      verifying = true;
+    const englishLine =
+      document.createElement("div");
 
-      input.disabled = true;
-      button.disabled = true;
+    output.appendChild(englishLine);
 
-      scanner.classList.add("active");
-      verificationBox.classList.add("scanning");
+    await typeText(
+      englishLine,
+      "> " + english,
+      30
+    );
 
-      scannerCode.textContent = code;
-      progressBar.style.width = "12%";
+    const cursor =
+      document.createElement("span");
 
-      scannerStatus.innerHTML =
-        "SCANNING IDENTITY...<br>" +
-        "正在讀取行動代號";
+    cursor.className = "cursor";
 
-      await wait(550);
+    englishLine.appendChild(cursor);
 
-      progressBar.style.width = "38%";
-      scannerStatus.innerHTML =
-        "ACCESSING DATABASE...<br>" +
-        "正在連線 PROJECT : CHRISTMAS II 受邀名單";
+    await wait(250);
 
-      await wait(650);
+    cursor.remove();
 
-      progressBar.style.width = "67%";
-      scannerStatus.innerHTML =
-        "VERIFYING AGENT CODE...<br>" +
-        "正在比對受邀成員資料";
+    const chineseLine =
+      document.createElement("div");
 
-      await wait(650);
+    chineseLine.className = "zh";
 
-      progressBar.style.width = "89%";
-      scannerStatus.innerHTML =
-        "SECURITY CHECK...<br>" +
-        "正在確認行動授權";
+    output.appendChild(chineseLine);
 
-      await wait(500);
+    await typeText(
+      chineseLine,
+      "  " + chinese,
+      55
+    );
 
-      progressBar.style.width = "100%";
+  }
 
-      const isAllowed = allowedAgents.includes(code);
 
-      if (isAllowed) {
+  /* =========================
+     進度
+  ========================= */
 
-        scannerStatus.innerHTML =
-          "IDENTITY MATCH FOUND<br>" +
-          "身份比對完成";
+  function setProgress(value) {
 
-        await wait(500);
+    document.getElementById(
+      "progressBar"
+    ).style.width = value + "%";
 
-        scanner.classList.remove("active");
-        verificationBox.classList.remove("scanning");
+    document.getElementById(
+      "percentage"
+    ).textContent = value + "%";
 
-        message.innerHTML =
-          "<strong>ACCESS GRANTED</strong><br>" +
-          "AGENT " + code + " VERIFIED<br>" +
-          "身分確認完成。<br>" +
-          "<span class='hint'>正在解密本次行動資料……</span>";
+  }
 
-        message.classList.add("success");
 
-        screenFlash.classList.remove("show");
-        void screenFlash.offsetWidth;
-        screenFlash.classList.add("show");
+  /* =========================
+     身分驗證
+  ========================= */
 
-        /*
-          下一版會在這裡加入：
-          驗證成功後自動進入
-          「山裡醒來・北埔」任務情報頁。
-        */
+  async function verifyAgent() {
 
-      } else {
+    if (verifying) return;
 
-        scannerStatus.innerHTML =
-          "NO MATCH FOUND<br>" +
-          "授權資料比對失敗";
+    const input =
+      document.getElementById("agentCode");
 
-        await wait(450);
+    const button =
+      document.getElementById("verifyButton");
 
-        scanner.classList.remove("active");
-        verificationBox.classList.remove("scanning");
+    const terminal =
+      document.getElementById("terminal");
 
-        message.innerHTML =
-          "<strong>ACCESS DENIED</strong><br>" +
-          "查無此行動代號。<br>" +
-          "<span class='hint'>" +
-          "提示：你的行動代號已記載於先前發送的 " +
-          "<strong>PROJECT : CHRISTMAS II 邀請函</strong> 中，" +
-          "請確認邀請函後重新輸入。" +
-          "</span>";
+    const output =
+      document.getElementById("terminalOutput");
 
-        message.classList.add("error");
-      }
+    const agentRead =
+      document.getElementById("agentRead");
 
-      input.disabled = false;
-      button.disabled = false;
-      verifying = false;
+    const agentValue =
+      document.getElementById("agentValue");
+
+    const message =
+      document.getElementById("message");
+
+    const flash =
+      document.getElementById("screenFlash");
+
+    const code =
+      input.value.trim();
+
+
+    /* 沒輸入 */
+
+    if (!code) {
+
+      message.className =
+        "message error";
+
+      message.innerHTML =
+        "<strong>INPUT REQUIRED</strong><br>" +
+        "請先輸入行動代號。";
+
+      return;
+
     }
 
-    document.getElementById("agentCode")
-      .addEventListener("keydown", function(event) {
+
+    verifying = true;
+
+    input.disabled = true;
+    button.disabled = true;
+
+    message.className = "message";
+    message.innerHTML = "";
+
+    terminal.classList.add("active");
+
+    output.innerHTML = "";
+
+    agentRead.classList.remove("show");
+
+    agentValue.innerHTML = "";
+
+    setProgress(0);
+
+
+    /* =========================
+       STEP 01
+    ========================= */
+
+    await terminalLine(
+      "INITIALIZING SECURITY TERMINAL...",
+      "正在啟動身分驗證系統..."
+    );
+
+    setProgress(8);
+
+    await wait(400);
+
+
+    /* =========================
+       STEP 02
+    ========================= */
+
+    await terminalLine(
+      "SCANNING IDENTITY...",
+      "正在讀取行動代號..."
+    );
+
+    setProgress(20);
+
+    await wait(350);
+
+
+    /* =========================
+       代號辨識
+    ========================= */
+
+    agentRead.classList.add("show");
+
+    for (const character of code) {
+
+      agentValue.innerHTML += character;
+
+      await wait(420);
+
+    }
+
+    await wait(550);
+
+    setProgress(34);
+
+
+    /* =========================
+       STEP 03
+    ========================= */
+
+    await terminalLine(
+      "ACCESSING CLASSIFIED DATABASE...",
+      "正在存取 PROJECT : CHRISTMAS II 受邀名單..."
+    );
+
+    setProgress(51);
+
+    await wait(500);
+
+
+    /* =========================
+       STEP 04
+    ========================= */
+
+    await terminalLine(
+      "MATCHING AUTHORIZED PERSONNEL...",
+      "正在比對授權成員資料..."
+    );
+
+    setProgress(68);
+
+    await wait(650);
+
+
+    /* =========================
+       STEP 05
+    ========================= */
+
+    await terminalLine(
+      "VERIFYING SECURITY CLEARANCE...",
+      "正在確認本次行動存取權限..."
+    );
+
+    setProgress(84);
+
+    await wait(750);
+
+
+    /* =========================
+       STEP 06
+    ========================= */
+
+    await terminalLine(
+      "RUNNING FINAL IDENTITY CHECK...",
+      "正在執行最終身分確認..."
+    );
+
+    setProgress(96);
+
+    await wait(900);
+
+
+    /* =========================
+       判斷
+    ========================= */
+
+    const isAllowed =
+      allowedAgents.includes(code);
+
+    setProgress(100);
+
+    await wait(650);
+
+
+    /* =========================
+       SUCCESS
+    ========================= */
+
+    if (isAllowed) {
+
+      await terminalLine(
+        "IDENTITY MATCH FOUND.",
+        "身分比對成功。"
+      );
+
+      await wait(800);
+
+      terminal.classList.remove("active");
+
+      message.className =
+        "message success";
+
+      message.innerHTML =
+        "<strong>ACCESS GRANTED</strong><br>" +
+        "AGENT " +
+        code +
+        " VERIFIED<br>" +
+        "身分確認完成。" +
+        "<span class='hint'>" +
+        "正在解密 PROJECT : CHRISTMAS II 行動資料……" +
+        "</span>";
+
+      flash.classList.remove("show");
+
+      void flash.offsetWidth;
+
+      flash.classList.add("show");
+
+
+      /*
+        下一步：
+        這裡會接到
+        MISSION LOCATION
+        山裡醒來・北埔
+      */
+
+    }
+
+
+    /* =========================
+       FAILED
+    ========================= */
+
+    else {
+
+      await terminalLine(
+        "IDENTITY MATCH FAILED.",
+        "授權名單中查無此代號。"
+      );
+
+      await wait(850);
+
+      terminal.classList.remove("active");
+
+      message.className =
+        "message error";
+
+      message.innerHTML =
+        "<strong>ACCESS DENIED</strong><br>" +
+        "查無此行動代號。" +
+
+        "<span class='hint'>" +
+        "提示：你的行動代號已記載於先前發送的 " +
+        "<strong>PROJECT : CHRISTMAS II 邀請函</strong> 中。<br>" +
+        "請確認邀請函上的代號後重新驗證。" +
+        "</span>";
+
+    }
+
+
+    input.disabled = false;
+    button.disabled = false;
+
+    verifying = false;
+
+  }
+
+
+  /* =========================
+     ENTER 驗證
+  ========================= */
+
+  document
+    .getElementById("agentCode")
+    .addEventListener(
+      "keydown",
+      function(event) {
+
         if (event.key === "Enter") {
+
           verifyAgent();
+
         }
-      });
 
-    const snow = document.getElementById("snow");
+      }
+    );
 
-    for (let i = 0; i < 28; i++) {
 
-      const flake = document.createElement("span");
+  /* =========================
+     SNOW
+  ========================= */
 
-      flake.textContent = "•";
-      flake.style.left = Math.random() * 100 + "%";
-      flake.style.fontSize = (Math.random() * 14 + 7) + "px";
-      flake.style.animationDuration =
-        (Math.random() * 8 + 8) + "s";
-      flake.style.animationDelay =
-        (Math.random() * -15) + "s";
+  const snow =
+    document.getElementById("snow");
 
-      snow.appendChild(flake);
-    }
-  </script>
+  for (let i = 0; i < 28; i++) {
+
+    const flake =
+      document.createElement("span");
+
+    flake.textContent = "•";
+
+    flake.style.left =
+      Math.random() * 100 + "%";
+
+    flake.style.fontSize =
+      (Math.random() * 14 + 7) + "px";
+
+    flake.style.animationDuration =
+      (Math.random() * 8 + 8) + "s";
+
+    flake.style.animationDelay =
+      (Math.random() * -15) + "s";
+
+    snow.appendChild(flake);
+
+  }
+
+</script>
 
 </body>
 </html>
