@@ -491,9 +491,25 @@ async function decryptMissionFile() {
 
 function startFinalConfirmation() {
 
-  alert(
-    "下一步會進入交通方式、住宿偏好、備註與最終確認。"
-  );
+  document
+    .getElementById("missionPage")
+    .classList.add("hidden");
+
+  document
+    .getElementById("rsvpPage")
+    .classList.remove("hidden");
+
+  document
+    .getElementById("rsvpAgentCode")
+    .textContent =
+      document.getElementById("agentCode").value.trim();
+
+  populateRoommateOptions();
+
+  window.scrollTo({
+    top: 0,
+    behavior: "instant"
+  });
 
 }
 
@@ -512,59 +528,18 @@ function declineMission() {
 
   if (!confirmed) return;
 
-  document.body.innerHTML = `
-    <main class="page">
+  document
+    .getElementById("missionPage")
+    .classList.add("hidden");
 
-      <section class="file">
+  document
+    .getElementById("declinedPage")
+    .classList.remove("hidden");
 
-        <div class="top-secret">
-          FILE CLOSED
-        </div>
-
-        <div class="file-number">
-          PROJECT : CHRISTMAS II / STATUS REPORT
-        </div>
-
-        <div class="eyebrow">
-          MISSION STATUS
-        </div>
-
-        <h1 style="font-size:48px;">
-          MISSION
-          <span>DECLINED</span>
-        </h1>
-
-        <div class="line"></div>
-
-        <div class="classified">
-
-          已收到你的回覆。<br><br>
-
-          本次行動紀錄已標記為
-          <strong>無法參與</strong>。<br><br>
-
-          感謝你完成身分確認與任務回覆。
-
-        </div>
-
-        <div class="bottom">
-
-          <div>
-            STATUS : DECLINED<br>
-            PROJECT : CHRISTMAS II
-          </div>
-
-          <div class="seal">
-            MISSION<br>
-            CLOSED
-          </div>
-
-        </div>
-
-      </section>
-
-    </main>
-  `;
+  window.scrollTo({
+    top: 0,
+    behavior: "instant"
+  });
 
 }
 
@@ -616,5 +591,282 @@ for (let i = 0; i < 28; i++) {
     (Math.random() * -15) + "s";
 
   snow.appendChild(flake);
+
+}
+
+/* =========================
+   RSVP STATE
+========================= */
+
+const missionResponse = {
+  transport: "",
+  seats: "",
+  lodging: "",
+  roommate: "",
+  notes: ""
+};
+
+
+/* =========================
+   RSVP CHOICES
+========================= */
+
+document.addEventListener("click", function(event) {
+
+  const button = event.target.closest(".choice-button");
+
+  if (!button) return;
+
+  const group = button.dataset.group;
+  const value = button.dataset.value;
+
+  document
+    .querySelectorAll(
+      '.choice-button[data-group="' + group + '"]'
+    )
+    .forEach(function(item) {
+      item.classList.remove("selected");
+    });
+
+  button.classList.add("selected");
+
+  if (group === "transport") {
+
+    missionResponse.transport = value;
+
+    const seatsBox =
+      document.getElementById("driverSeatsBox");
+
+    if (value === "自己開車") {
+      seatsBox.classList.remove("hidden");
+    }
+    else {
+      seatsBox.classList.add("hidden");
+      document.getElementById("driverSeats").value = "";
+      missionResponse.seats = "";
+    }
+
+  }
+
+  if (group === "lodging") {
+
+    missionResponse.lodging = value;
+
+    const roommateBox =
+      document.getElementById("roommateBox");
+
+    if (value === "希望睡雙人床") {
+      roommateBox.classList.remove("hidden");
+    }
+    else {
+      roommateBox.classList.add("hidden");
+      document.getElementById("roommateCode").value = "";
+      missionResponse.roommate = "";
+    }
+
+  }
+
+});
+
+
+/* =========================
+   ROOMMATE OPTIONS
+========================= */
+
+function populateRoommateOptions() {
+
+  const select =
+    document.getElementById("roommateCode");
+
+  const currentAgent =
+    document.getElementById("agentCode")
+      .value
+      .trim();
+
+  select.innerHTML =
+    '<option value="">請選擇行動代號</option>';
+
+  allowedAgents.forEach(function(agent) {
+
+    if (agent === currentAgent) return;
+
+    const option =
+      document.createElement("option");
+
+    option.value = agent;
+    option.textContent = agent;
+
+    select.appendChild(option);
+
+  });
+
+}
+
+
+/* =========================
+   REVIEW RESPONSE
+========================= */
+
+function reviewMissionResponse() {
+
+  const message =
+    document.getElementById("rsvpMessage");
+
+  missionResponse.seats =
+    document.getElementById("driverSeats").value;
+
+  missionResponse.roommate =
+    document.getElementById("roommateCode").value;
+
+  missionResponse.notes =
+    document.getElementById("notes").value.trim();
+
+  if (!missionResponse.transport) {
+    showRsvpError("請先選擇交通方式。");
+    return;
+  }
+
+  if (
+    missionResponse.transport === "自己開車" &&
+    missionResponse.seats === ""
+  ) {
+    showRsvpError("請選擇你可以額外載幾位。");
+    return;
+  }
+
+  if (!missionResponse.lodging) {
+    showRsvpError("請先選擇住宿偏好。");
+    return;
+  }
+
+  if (
+    missionResponse.lodging === "希望睡雙人床" &&
+    !missionResponse.roommate
+  ) {
+    showRsvpError("請選擇希望共用雙人床的行動成員。");
+    return;
+  }
+
+  message.classList.add("hidden");
+
+  const agent =
+    document.getElementById("agentCode")
+      .value
+      .trim();
+
+  document.getElementById("reviewAgent")
+    .textContent = agent;
+
+  document.getElementById("reviewTransport")
+    .textContent = missionResponse.transport;
+
+  const seatsRow =
+    document.getElementById("reviewSeatsRow");
+
+  if (missionResponse.transport === "自己開車") {
+    seatsRow.classList.remove("hidden");
+    document.getElementById("reviewSeats")
+      .textContent =
+        missionResponse.seats === "5"
+          ? "5 位以上"
+          : missionResponse.seats + " 位";
+  }
+  else {
+    seatsRow.classList.add("hidden");
+  }
+
+  document.getElementById("reviewLodging")
+    .textContent = missionResponse.lodging;
+
+  const roommateRow =
+    document.getElementById("reviewRoommateRow");
+
+  if (missionResponse.lodging === "希望睡雙人床") {
+    roommateRow.classList.remove("hidden");
+    document.getElementById("reviewRoommate")
+      .textContent = missionResponse.roommate;
+  }
+  else {
+    roommateRow.classList.add("hidden");
+  }
+
+  document.getElementById("reviewNotes")
+    .textContent =
+      missionResponse.notes || "無";
+
+  document.getElementById("rsvpPage")
+    .classList.add("hidden");
+
+  document.getElementById("reviewPage")
+    .classList.remove("hidden");
+
+  window.scrollTo({
+    top: 0,
+    behavior: "instant"
+  });
+
+}
+
+
+function showRsvpError(text) {
+
+  const message =
+    document.getElementById("rsvpMessage");
+
+  message.textContent = text;
+  message.classList.remove("hidden");
+
+  message.scrollIntoView({
+    behavior: "smooth",
+    block: "center"
+  });
+
+}
+
+
+/* =========================
+   BACK TO RSVP
+========================= */
+
+function backToRsvp() {
+
+  document.getElementById("reviewPage")
+    .classList.add("hidden");
+
+  document.getElementById("rsvpPage")
+    .classList.remove("hidden");
+
+  window.scrollTo({
+    top: 0,
+    behavior: "instant"
+  });
+
+}
+
+
+/* =========================
+   SUBMIT RESPONSE
+========================= */
+
+function submitMissionResponse() {
+
+  const agent =
+    document.getElementById("agentCode")
+      .value
+      .trim();
+
+  document.getElementById("successAgent")
+    .textContent = agent;
+
+  document.getElementById("reviewPage")
+    .classList.add("hidden");
+
+  document.getElementById("successPage")
+    .classList.remove("hidden");
+
+  window.scrollTo({
+    top: 0,
+    behavior: "instant"
+  });
 
 }
