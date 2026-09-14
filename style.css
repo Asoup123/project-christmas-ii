@@ -850,6 +850,9 @@ button {
 
 .color-white {
   background: #fffdf8;
+  width: 25px;
+  height: 25px;
+  margin: -1px;
 }
 
 
