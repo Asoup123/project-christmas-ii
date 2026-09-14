@@ -1229,3 +1229,32 @@ button {
     grid-template-columns: 1fr;
   }
 }
+
+
+/* =========================
+   LINE GROUP BUTTON
+========================= */
+
+.line-button {
+  display: block;
+  width: 100%;
+  margin-top: 14px;
+  padding: 15px 18px;
+  background: var(--green);
+  color: var(--white);
+  text-align: center;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  transition: .2s ease;
+}
+
+.line-button:hover {
+  background: #235847;
+  transform: translateY(-1px);
+}
+
+.line-button:active {
+  transform: translateY(0);
+}
