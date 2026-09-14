@@ -663,251 +663,301 @@
 
   let verifying = false;
 
-  function wait(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+function wait(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/* =========================
+   打字機效果
+========================= */
+
+async function typeText(element, text, speed = 30) {
+
+  element.innerHTML = "";
+
+  for (const char of text) {
+    element.innerHTML += char;
+    await wait(speed);
+  }
+}
+
+/* =========================
+   終端機文字
+========================= */
+
+async function terminalLine(english, chinese) {
+
+  const output =
+    document.getElementById("terminalOutput");
+
+  output.innerHTML = "";
+
+  const en =
+    document.createElement("div");
+
+  output.appendChild(en);
+
+  await typeText(
+    en,
+    "> " + english,
+    27
+  );
+
+  const cursor =
+    document.createElement("span");
+
+  cursor.className = "cursor";
+
+  en.appendChild(cursor);
+
+  const zh =
+    document.createElement("div");
+
+  zh.className = "zh";
+
+  output.appendChild(zh);
+
+  await typeText(
+    zh,
+    chinese,
+    38
+  );
+
+  cursor.remove();
+}
+
+/* =========================
+   進度條
+========================= */
+
+function setProgress(value) {
+
+  document
+    .getElementById("progressBar")
+    .style.width = value + "%";
+
+  document
+    .getElementById("percentage")
+    .textContent = value + "%";
+}
+
+/* =========================
+   身分驗證
+========================= */
+
+async function verifyAgent() {
+
+  if (verifying) return;
+
+  const input =
+    document.getElementById("agentCode");
+
+  const button =
+    document.getElementById("verifyButton");
+
+  const terminal =
+    document.getElementById("terminal");
+
+  const output =
+    document.getElementById("terminalOutput");
+
+  const agentRead =
+    document.getElementById("agentRead");
+
+  const agentValue =
+    document.getElementById("agentValue");
+
+  const message =
+    document.getElementById("message");
+
+  const flash =
+    document.getElementById("screenFlash");
+
+  const code =
+    input.value.trim();
+
+  /* 沒輸入 */
+
+  if (!code) {
+
+    message.className =
+      "message error";
+
+    message.innerHTML =
+      "<strong>INPUT REQUIRED</strong><br>" +
+      "請先輸入行動代號。";
+
+    return;
   }
 
-  async function typeText(element, text, speed = 18) {
+  verifying = true;
 
-    element.innerHTML = "";
+  input.disabled = true;
+  button.disabled = true;
 
-    for (const char of text) {
-      element.innerHTML += char;
-      await wait(speed);
-    }
-  }
+  message.className = "message";
+  message.innerHTML = "";
 
-  async function terminalLine(english, chinese) {
+  terminal.classList.add("active");
 
-    const output =
-      document.getElementById("terminalOutput");
+  output.innerHTML = "";
 
-    output.innerHTML = "";
+  agentRead.classList.remove("show");
 
-    const en =
-      document.createElement("div");
+  agentValue.innerHTML = "";
 
-    output.appendChild(en);
+  setProgress(0);
 
-    await typeText(
-      en,
-      "> " + english,
-      15
-    );
 
-    const cursor =
-      document.createElement("span");
+  /* =========================
+     STEP 1
+  ========================= */
 
-    cursor.className = "cursor";
+  await terminalLine(
+    "INITIALIZING SECURITY TERMINAL...",
+    "正在啟動身分驗證系統..."
+  );
 
-    en.appendChild(cursor);
+  setProgress(18);
 
-    const zh =
-      document.createElement("div");
+  await wait(150);
 
-    zh.className = "zh";
 
-    output.appendChild(zh);
+  /* =========================
+     STEP 2
+  ========================= */
 
-    await typeText(
-      zh,
-      chinese,
-      25
-    );
+  await terminalLine(
+    "SCANNING AGENT CODE...",
+    "正在讀取行動代號..."
+  );
 
-    cursor.remove();
-  }
+  setProgress(38);
 
-  function setProgress(value) {
+  agentRead.classList.add("show");
 
-    document
-      .getElementById("progressBar")
-      .style.width = value + "%";
+  for (const char of code) {
 
-    document
-      .getElementById("percentage")
-      .textContent = value + "%";
-  }
-
-  async function verifyAgent() {
-
-    if (verifying) return;
-
-    const input =
-      document.getElementById("agentCode");
-
-    const button =
-      document.getElementById("verifyButton");
-
-    const terminal =
-      document.getElementById("terminal");
-
-    const output =
-      document.getElementById("terminalOutput");
-
-    const agentRead =
-      document.getElementById("agentRead");
-
-    const agentValue =
-      document.getElementById("agentValue");
-
-    const message =
-      document.getElementById("message");
-
-    const flash =
-      document.getElementById("screenFlash");
-
-    const code =
-      input.value.trim();
-
-    if (!code) {
-
-      message.className = "message error";
-
-      message.innerHTML =
-        "<strong>INPUT REQUIRED</strong><br>" +
-        "請先輸入行動代號。";
-
-      return;
-    }
-
-    verifying = true;
-
-    input.disabled = true;
-    button.disabled = true;
-
-    message.className = "message";
-    message.innerHTML = "";
-
-    terminal.classList.add("active");
-
-    output.innerHTML = "";
-    agentRead.classList.remove("show");
-    agentValue.innerHTML = "";
-
-    setProgress(0);
-
-    /* STEP 1 */
-
-    await terminalLine(
-      "INITIALIZING...",
-      "正在啟動身分驗證系統..."
-    );
-
-    setProgress(18);
-
-    await wait(180);
-
-    /* STEP 2 */
-
-    await terminalLine(
-      "SCANNING AGENT CODE...",
-      "正在讀取行動代號..."
-    );
-
-    setProgress(36);
-
-    agentRead.classList.add("show");
-
-    for (const char of code) {
-      agentValue.innerHTML += char;
-      await wait(180);
-    }
-
-    await wait(200);
-
-    /* STEP 3 */
-
-    await terminalLine(
-      "MATCHING AUTHORIZED PERSONNEL...",
-      "正在比對 PROJECT : CHRISTMAS II 受邀名單..."
-    );
-
-    setProgress(72);
+    agentValue.innerHTML += char;
 
     await wait(260);
 
-    /* STEP 4 */
+  }
+
+  await wait(180);
+
+
+  /* =========================
+     STEP 3
+  ========================= */
+
+  await terminalLine(
+    "MATCHING AUTHORIZED PERSONNEL...",
+    "正在比對 PROJECT : CHRISTMAS II 受邀名單..."
+  );
+
+  setProgress(72);
+
+  await wait(250);
+
+
+  /* =========================
+     STEP 4
+  ========================= */
+
+  await terminalLine(
+    "VERIFYING SECURITY CLEARANCE...",
+    "正在確認本次行動權限..."
+  );
+
+  setProgress(94);
+
+  await wait(300);
+
+
+  /* =========================
+     最終判定
+  ========================= */
+
+  const isAllowed =
+    allowedAgents.includes(code);
+
+  setProgress(100);
+
+  await wait(350);
+
+
+  /* =========================
+     SUCCESS
+  ========================= */
+
+  if (isAllowed) {
 
     await terminalLine(
-      "VERIFYING SECURITY CLEARANCE...",
-      "正在確認行動權限..."
+      "IDENTITY MATCH FOUND.",
+      "身分確認完成。"
     );
 
-    setProgress(94);
+    await wait(300);
 
-    await wait(350);
+    terminal.classList.remove("active");
 
-    const isAllowed =
-      allowedAgents.includes(code);
+    message.className =
+      "message success";
 
-    setProgress(100);
+    message.innerHTML =
+      "<strong>ACCESS GRANTED</strong><br>" +
+      "AGENT " +
+      code +
+      " VERIFIED<br>" +
+      "身分確認完成。" +
+      "<span class='hint'>" +
+      "正在解密 PROJECT : CHRISTMAS II 行動資料……" +
+      "</span>";
 
-    await wait(420);
+    flash.classList.remove("show");
 
-    /* SUCCESS */
+    void flash.offsetWidth;
 
-    if (isAllowed) {
+    flash.classList.add("show");
 
-      await terminalLine(
-        "IDENTITY MATCH FOUND.",
-        "身分確認完成。"
-      );
-
-      await wait(350);
-
-      terminal.classList.remove("active");
-
-      message.className =
-        "message success";
-
-      message.innerHTML =
-        "<strong>ACCESS GRANTED</strong><br>" +
-        "AGENT " + code + " VERIFIED<br>" +
-        "身分確認完成。" +
-        "<span class='hint'>" +
-        "正在解密 PROJECT : CHRISTMAS II 行動資料……" +
-        "</span>";
-
-      flash.classList.remove("show");
-
-      void flash.offsetWidth;
-
-      flash.classList.add("show");
-
-    }
-
-    /* FAILED */
-
-    else {
-
-      await terminalLine(
-        "NO MATCH FOUND.",
-        "授權名單中查無此代號。"
-      );
-
-      await wait(350);
-
-      terminal.classList.remove("active");
-
-      message.className =
-        "message error";
-
-      message.innerHTML =
-        "<strong>ACCESS DENIED</strong><br>" +
-        "查無此行動代號。" +
-        "<span class='hint'>" +
-        "提示：你的行動代號已記載於先前發送的 " +
-        "<strong>PROJECT : CHRISTMAS II 邀請函</strong> 中。<br>" +
-        "請確認邀請函上的代號後重新驗證。" +
-        "</span>";
-    }
-
-    input.disabled = false;
-    button.disabled = false;
-
-    verifying = false;
   }
+
+  /* =========================
+     FAILED
+  ========================= */
+
+  else {
+
+    await terminalLine(
+      "NO MATCH FOUND.",
+      "授權名單中查無此代號。"
+    );
+
+    await wait(300);
+
+    terminal.classList.remove("active");
+
+    message.className =
+      "message error";
+
+    message.innerHTML =
+      "<strong>ACCESS DENIED</strong><br>" +
+      "查無此行動代號。" +
+
+      "<span class='hint'>" +
+      "提示：你的行動代號已記載於先前發送的 " +
+      "<strong>PROJECT : CHRISTMAS II 邀請函</strong> 中。<br>" +
+      "請確認邀請函上的代號後重新驗證。" +
+      "</span>";
+
+  }
+
+  input.disabled = false;
+  button.disabled = false;
+
+  verifying = false;
+}
 
   document
     .getElementById("agentCode")
