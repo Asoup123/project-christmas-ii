@@ -500,6 +500,299 @@
 
 </main>
 
+
+<!-- =========================
+     PAGE 3 / RSVP
+========================= -->
+
+<main class="page hidden" id="rsvpPage">
+<section class="file mission-file" id="rsvpFile">
+
+  <div class="christmas-mark">✦</div>
+  <div class="top-secret">RESPONSE FILE</div>
+
+  <div class="mission-code">
+    MISSION FILE 02 / PARTICIPATION RESPONSE
+  </div>
+
+  <div class="eyebrow">FINAL MISSION CONFIRMATION</div>
+
+  <h1 class="rsvp-title">
+    OPERATION
+    <span>RESPONSE</span>
+  </h1>
+
+  <div class="line"></div>
+
+  <div class="rsvp-agent">
+    VERIFIED AGENT // <strong id="rsvpAgentCode">---</strong>
+  </div>
+
+  <div class="rsvp-step">
+    <div class="step-number">01</div>
+    <div class="step-content">
+      <div class="step-label">TRANSPORTATION</div>
+      <div class="step-title">交通方式</div>
+
+      <div class="choice-grid" id="transportChoices">
+        <button class="choice-button" type="button" data-group="transport" data-value="自己開車">
+          <span class="choice-main">自己開車</span>
+          <span class="choice-sub">DRIVING</span>
+        </button>
+
+        <button class="choice-button" type="button" data-group="transport" data-value="搭朋友的車">
+          <span class="choice-main">搭朋友的車</span>
+          <span class="choice-sub">RIDING WITH FRIEND</span>
+        </button>
+
+        <button class="choice-button" type="button" data-group="transport" data-value="需要安排搭車">
+          <span class="choice-main">需要安排搭車</span>
+          <span class="choice-sub">NEED A RIDE</span>
+        </button>
+      </div>
+
+      <div class="conditional-box hidden" id="driverSeatsBox">
+        <label class="field-label" for="driverSeats">
+          除了自己之外，還可以載幾位？
+        </label>
+        <select id="driverSeats" class="mission-select">
+          <option value="">請選擇</option>
+          <option value="0">0 位</option>
+          <option value="1">1 位</option>
+          <option value="2">2 位</option>
+          <option value="3">3 位</option>
+          <option value="4">4 位</option>
+          <option value="5">5 位以上</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="rsvp-step">
+    <div class="step-number">02</div>
+    <div class="step-content">
+      <div class="step-label">ACCOMMODATION PREFERENCE</div>
+      <div class="step-title">住宿偏好</div>
+
+      <div class="lodging-notice">
+        <strong>NOTICE //</strong><br>
+        雙人床數量有限，住宿偏好僅作為登記，
+        實際房間與床位將由總召依整體人數統一安排。
+      </div>
+
+      <div class="choice-grid" id="lodgingChoices">
+        <button class="choice-button" type="button" data-group="lodging" data-value="希望睡雙人床">
+          <span class="choice-main">希望睡雙人床</span>
+          <span class="choice-sub">DOUBLE BED</span>
+        </button>
+
+        <button class="choice-button" type="button" data-group="lodging" data-value="可以睡沙發床">
+          <span class="choice-main">可以睡沙發床</span>
+          <span class="choice-sub">SOFA BED</span>
+        </button>
+
+        <button class="choice-button" type="button" data-group="lodging" data-value="可以睡二樓通鋪">
+          <span class="choice-main">可以睡二樓通鋪</span>
+          <span class="choice-sub">2F FLOOR BED</span>
+        </button>
+
+        <button class="choice-button" type="button" data-group="lodging" data-value="都可以，由總召安排">
+          <span class="choice-main">都可以，由總召安排</span>
+          <span class="choice-sub">NO PREFERENCE</span>
+        </button>
+      </div>
+
+      <div class="conditional-box hidden" id="roommateBox">
+        <label class="field-label" for="roommateCode">
+          希望與哪位行動成員共用雙人床？
+        </label>
+        <select id="roommateCode" class="mission-select">
+          <option value="">請選擇行動代號</option>
+        </select>
+        <div class="field-hint">
+          此項僅作偏好登記，實際安排仍由總召決定。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="rsvp-step">
+    <div class="step-number">03</div>
+    <div class="step-content">
+      <div class="step-label">ADDITIONAL INTELLIGENCE</div>
+      <div class="step-title">備註</div>
+
+      <label class="field-label" for="notes">
+        有其他需求再填寫，沒有可留白
+      </label>
+
+      <textarea
+        id="notes"
+        class="mission-textarea"
+        placeholder="例如：飲食需求、晚到／早退、住宿需求……"
+      ></textarea>
+    </div>
+  </div>
+
+  <div class="form-message hidden" id="rsvpMessage"></div>
+
+  <div class="action-wrap">
+    <button class="action-button" type="button" onclick="reviewMissionResponse()">
+      檢查並進入最終確認
+    </button>
+    <div class="action-sub">
+      REVIEW MISSION RESPONSE
+    </div>
+  </div>
+
+</section>
+</main>
+
+<!-- =========================
+     REVIEW
+========================= -->
+
+<main class="page hidden" id="reviewPage">
+<section class="file mission-file">
+
+  <div class="christmas-mark">✦</div>
+  <div class="top-secret">FINAL CHECK</div>
+
+  <div class="mission-code">
+    MISSION FILE 03 / RESPONSE REVIEW
+  </div>
+
+  <div class="eyebrow">CONFIRM BEFORE SUBMISSION</div>
+
+  <h1 class="rsvp-title">
+    FINAL
+    <span>CHECK</span>
+  </h1>
+
+  <div class="line"></div>
+
+  <div class="review-grid">
+    <div class="review-row">
+      <span>AGENT</span>
+      <strong id="reviewAgent">---</strong>
+    </div>
+    <div class="review-row">
+      <span>TRANSPORTATION</span>
+      <strong id="reviewTransport">---</strong>
+    </div>
+    <div class="review-row hidden" id="reviewSeatsRow">
+      <span>AVAILABLE SEATS</span>
+      <strong id="reviewSeats">---</strong>
+    </div>
+    <div class="review-row">
+      <span>ACCOMMODATION</span>
+      <strong id="reviewLodging">---</strong>
+    </div>
+    <div class="review-row hidden" id="reviewRoommateRow">
+      <span>ROOMMATE</span>
+      <strong id="reviewRoommate">---</strong>
+    </div>
+    <div class="review-row">
+      <span>NOTES</span>
+      <strong id="reviewNotes">無</strong>
+    </div>
+  </div>
+
+  <div class="review-warning">
+    目前此版本尚未連接資料庫。按下確認後只會完成本次頁面流程，
+    不會把資料儲存到伺服器。
+  </div>
+
+  <div class="review-actions">
+    <button class="secondary-button" type="button" onclick="backToRsvp()">
+      返回修改
+    </button>
+    <button class="action-button" type="button" onclick="submitMissionResponse()">
+      確認以上資料
+    </button>
+  </div>
+
+</section>
+</main>
+
+<!-- =========================
+     DECLINED
+========================= -->
+
+<main class="page hidden" id="declinedPage">
+<section class="file">
+  <div class="christmas-mark">✦</div>
+  <div class="top-secret">FILE CLOSED</div>
+  <div class="file-number">PROJECT : CHRISTMAS II / STATUS REPORT</div>
+  <div class="eyebrow">MISSION STATUS</div>
+
+  <h1>
+    MISSION
+    <span>DECLINED</span>
+  </h1>
+
+  <div class="line"></div>
+
+  <div class="classified">
+    已收到你的回覆。<br><br>
+    本次行動已標記為 <strong>無法參與</strong>。
+  </div>
+
+  <div class="bottom">
+    <div>
+      STATUS : DECLINED<br>
+      PROJECT : CHRISTMAS II
+    </div>
+    <div class="seal">
+      MISSION<br>
+      CLOSED
+    </div>
+  </div>
+</section>
+</main>
+
+<!-- =========================
+     SUCCESS
+========================= -->
+
+<main class="page hidden" id="successPage">
+<section class="file">
+  <div class="christmas-mark">✦</div>
+  <div class="top-secret">APPROVED</div>
+  <div class="file-number">PROJECT : CHRISTMAS II / CLEARANCE REPORT</div>
+  <div class="eyebrow">MISSION CONFIRMED</div>
+
+  <h1>
+    CLEARANCE
+    <span>APPROVED</span>
+  </h1>
+
+  <div class="line"></div>
+
+  <div class="classified">
+    AGENT <strong id="successAgent">---</strong><br><br>
+    你的行動回覆已完成確認。<br>
+    PROJECT : CHRISTMAS II 任務流程完成。
+  </div>
+
+  <div class="success-note">
+    LINE 群組連結尚未設定。提供邀請網址後即可把入口加在這裡。
+  </div>
+
+  <div class="bottom">
+    <div>
+      STATUS : CONFIRMED<br>
+      25 DEC 2026
+    </div>
+    <div class="seal">
+      CLEARANCE<br>
+      APPROVED<br>
+      II
+    </div>
+  </div>
+</section>
+</main>
+
 <script src="app.js"></script>
 
 </body>
