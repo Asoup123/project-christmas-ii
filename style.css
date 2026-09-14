@@ -953,3 +953,279 @@ button {
     padding-top: 28px;
   }
 }
+
+/* =========================
+   RSVP / FINAL CONFIRMATION
+========================= */
+
+#rsvpPage,
+#reviewPage,
+#declinedPage,
+#successPage {
+  align-items: flex-start;
+  padding-top: 45px;
+  padding-bottom: 60px;
+}
+
+.rsvp-title {
+  font-size: clamp(34px, 8vw, 54px);
+}
+
+.rsvp-agent {
+  margin-bottom: 28px;
+  padding: 12px 14px;
+  border-left: 3px solid var(--green);
+  background: rgba(23,60,50,.06);
+  color: #6e675b;
+  font-family: monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+}
+
+.rsvp-agent strong {
+  color: var(--green);
+  font-size: 14px;
+  letter-spacing: 2px;
+}
+
+.rsvp-step {
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  gap: 13px;
+  padding: 23px 0;
+  border-top: 1px solid #c9bea9;
+}
+
+.step-number {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--red);
+  color: var(--red);
+  font-family: monospace;
+  font-size: 10px;
+  font-weight: bold;
+}
+
+.step-label {
+  color: #8a8174;
+  font-family: monospace;
+  font-size: 9px;
+  letter-spacing: 1.5px;
+}
+
+.step-title {
+  margin: 4px 0 13px;
+  color: var(--green);
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.choice-grid {
+  display: grid;
+  gap: 8px;
+}
+
+.choice-button {
+  width: 100%;
+  padding: 13px 14px;
+  text-align: left;
+  border: 1px solid #bdb19d;
+  background: rgba(255,255,255,.22);
+  color: #403c35;
+  transition: .18s ease;
+}
+
+.choice-button:hover {
+  border-color: var(--green);
+  background: rgba(23,60,50,.055);
+}
+
+.choice-button.selected {
+  border-color: var(--green);
+  background: var(--green);
+  color: var(--white);
+  box-shadow: inset 4px 0 0 var(--gold);
+}
+
+.choice-main {
+  display: block;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.choice-sub {
+  display: block;
+  margin-top: 3px;
+  opacity: .65;
+  font-family: monospace;
+  font-size: 8px;
+  letter-spacing: 1px;
+}
+
+.conditional-box {
+  margin-top: 12px;
+  padding: 14px;
+  border-left: 3px solid var(--gold);
+  background: rgba(201,168,106,.09);
+}
+
+.field-label {
+  display: block;
+  margin-bottom: 8px;
+  color: #5f584d;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.mission-select,
+.mission-textarea {
+  width: 100%;
+  border: 1px solid #aaa08f;
+  background: rgba(255,255,255,.5);
+  color: #2b2c27;
+  font-family: inherit;
+  font-size: 13px;
+  outline: none;
+}
+
+.mission-select {
+  height: 45px;
+  padding: 0 11px;
+}
+
+.mission-textarea {
+  min-height: 120px;
+  padding: 12px;
+  resize: vertical;
+  line-height: 1.7;
+}
+
+.mission-select:focus,
+.mission-textarea:focus {
+  border-color: var(--green);
+  box-shadow: 0 0 0 2px rgba(23,60,50,.08);
+}
+
+.field-hint {
+  margin-top: 7px;
+  color: #81786a;
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+.lodging-notice {
+  margin-bottom: 13px;
+  padding: 13px 14px;
+  border: 1px dashed #a79a84;
+  background: rgba(255,255,255,.17);
+  color: #635c50;
+  font-size: 11px;
+  line-height: 1.75;
+}
+
+.lodging-notice strong {
+  color: var(--red);
+  font-family: monospace;
+  letter-spacing: 1px;
+}
+
+.form-message {
+  margin-top: 16px;
+  padding: 12px 14px;
+  border: 1px solid rgba(143,29,36,.35);
+  background: rgba(143,29,36,.07);
+  color: var(--red);
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.review-grid {
+  border-top: 1px solid #c7baa3;
+}
+
+.review-row {
+  display: grid;
+  grid-template-columns: 135px 1fr;
+  gap: 12px;
+  padding: 15px 4px;
+  border-bottom: 1px solid #c7baa3;
+}
+
+.review-row span {
+  color: #82796b;
+  font-family: monospace;
+  font-size: 9px;
+  letter-spacing: 1px;
+}
+
+.review-row strong {
+  color: var(--green);
+  font-size: 13px;
+  line-height: 1.6;
+  word-break: break-word;
+}
+
+.review-warning,
+.success-note {
+  margin-top: 20px;
+  padding: 13px 14px;
+  border: 1px dashed #b2a58e;
+  color: #746c60;
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+.review-actions {
+  display: grid;
+  grid-template-columns: .8fr 1.2fr;
+  gap: 9px;
+  margin-top: 22px;
+}
+
+.review-actions .action-button {
+  min-height: 50px;
+}
+
+.secondary-button {
+  min-height: 50px;
+  padding: 12px;
+  border: 1px solid #9e9483;
+  background: transparent;
+  color: #625c52;
+  font-weight: 800;
+}
+
+.secondary-button:hover {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+@media (max-width: 520px) {
+  #rsvpPage,
+  #reviewPage,
+  #declinedPage,
+  #successPage {
+    padding-top: 28px;
+  }
+
+  .rsvp-step {
+    grid-template-columns: 32px 1fr;
+    gap: 9px;
+  }
+
+  .step-number {
+    width: 28px;
+    height: 28px;
+  }
+
+  .review-row {
+    grid-template-columns: 1fr;
+    gap: 5px;
+  }
+
+  .review-actions {
+    grid-template-columns: 1fr;
+  }
+}
