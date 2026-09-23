@@ -1,410 +1,171 @@
 /* =========================
-   SUPABASE
+   APPWRITE
 ========================= */
+const APPWRITE_ENDPOINT = "https://sgp.cloud.appwrite.io/v1";
+const APPWRITE_PROJECT_ID = "6ab36b1c001036f515ab";
+const DATABASE_ID = "christmas-2026";
+const TABLES = {
+  members: "members",
+  targetFiles: "target_files",
+  assignments: "assignments",
+  settings: "settings",
+  rsvp: "rsvp"
+};
 
-const SUPABASE_URL = "https://sdkgiedglmhmchiietru.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_ofwe1YigppMHJjcWu_VjUA_XF7wNzEm";
+const client = new Appwrite.Client()
+  .setEndpoint(APPWRITE_ENDPOINT)
+  .setProject(APPWRITE_PROJECT_ID);
+const account = new Appwrite.Account(client);
+const tablesDB = new Appwrite.TablesDB(client);
 
-/* =========================
-   AUTHORIZED AGENTS
-========================= */
+let currentUser = null;
+let currentMemberId = "";
+let authMode = "login";
+let redAnswers = {};
 
-const allowedAgents = [
-  "ㄊㄔㄒ",
-  "ㄈㄒㄒ",
-  "ㄓㄧㄧ",
-  "ㄌㄨㄩ",
-  "ㄌㄕㄨ",
-  "ㄏㄩㄉ",
-  "ㄧㄑㄏ",
-  "ㄘㄅㄎ",
-  "ㄍㄒㄩ",
-  "ㄏㄆㄐ",
-  "ㄨㄔㄩ",
-  "ㄔㄧㄊ",
-  "ㄌㄓㄩ"
-];
-
-let verifying = false;
-
-
-/* =========================
-   WAIT
-========================= */
-
-function wait(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+function wait(ms){ return new Promise(resolve => setTimeout(resolve, ms)); }
+function memberEmail(memberId){ return memberId.toLowerCase() + "@christmas.example"; }
+function validMemberId(value){ return /^[A-Za-z0-9_-]{3,20}$/.test(value); }
+function setMessage(id, text, type="error"){
+  const el=document.getElementById(id); if(!el) return;
+  el.className="message " + type; el.innerHTML=text;
+}
+function showOnly(pageId){
+  document.querySelectorAll("main.page").forEach(p=>p.classList.add("hidden"));
+  document.getElementById(pageId)?.classList.remove("hidden");
+  window.scrollTo({top:0,behavior:"instant"});
 }
 
-
-/* =========================
-   TYPEWRITER
-========================= */
-
-async function typeText(
-  element,
-  text,
-  speed = 35
-) {
-
-  for (const character of text) {
-
-    element.innerHTML += character;
-
-    await wait(speed);
-
-  }
-
+function showAuthMode(mode){
+  authMode=mode;
+  document.getElementById("loginTab").classList.toggle("active",mode==="login");
+  document.getElementById("registerTab").classList.toggle("active",mode==="register");
+  document.getElementById("registerOnly").classList.toggle("hidden",mode!=="register");
+  document.getElementById("authTitle").textContent=mode==="register"?"CREATE MEMBER ID":"IDENTITY VERIFICATION";
+  document.getElementById("authDescription").textContent=mode==="register"?"第一次進入請建立 MEMBER ID、密碼並填寫真實姓名。":"輸入你設定的 MEMBER ID 與密碼。";
+  document.getElementById("authButton").textContent=mode==="register"?"建立帳號":"登入系統";
+  document.getElementById("memberPassword").autocomplete=mode==="register"?"new-password":"current-password";
+  document.getElementById("authMessage").className="message";
+  document.getElementById("authMessage").innerHTML="";
 }
 
-
-/* =========================
-   TERMINAL LINE
-========================= */
-
-async function terminalLine(
-  english,
-  chinese
-) {
-
-  const output =
-    document.getElementById("terminalOutput");
-
-  output.innerHTML = "";
-
-  const englishLine =
-    document.createElement("div");
-
-  output.appendChild(englishLine);
-
-  await typeText(
-    englishLine,
-    "> " + english,
-    30
-  );
-
-  const cursor =
-    document.createElement("span");
-
-  cursor.className = "cursor";
-
-  englishLine.appendChild(cursor);
-
-  await wait(250);
-
-  cursor.remove();
-
-  const chineseLine =
-    document.createElement("div");
-
-  chineseLine.className = "zh";
-
-  output.appendChild(chineseLine);
-
-  await typeText(
-    chineseLine,
-    "  " + chinese,
-    55
-  );
-
+async function submitAuth(){
+  const memberId=document.getElementById("memberId").value.trim();
+  const password=document.getElementById("memberPassword").value;
+  const realName=document.getElementById("realName").value.trim();
+  const button=document.getElementById("authButton");
+  if(!validMemberId(memberId)) return setMessage("authMessage","<strong>INVALID MEMBER ID</strong><br>請使用 3–20 位英文、數字、_ 或 -。 ");
+  if(password.length<8) return setMessage("authMessage","<strong>INVALID PASSWORD</strong><br>密碼至少需要 8 個字元。");
+  if(authMode==="register" && !realName) return setMessage("authMessage","請輸入真實姓名。");
+  button.disabled=true; button.textContent="CONNECTING...";
+  try{
+    if(authMode==="register"){
+      currentUser=await account.create({userId:Appwrite.ID.unique(),email:memberEmail(memberId),password,name:memberId});
+      await account.createEmailPasswordSession({email:memberEmail(memberId),password});
+      currentUser=await account.get();
+      await tablesDB.createRow({
+        databaseId:DATABASE_ID,tableId:TABLES.members,rowId:currentUser.$id,
+        data:{username:memberId,real_name:realName,target_file_complete:false},
+        permissions:[
+          Appwrite.Permission.read(Appwrite.Role.user(currentUser.$id)),
+          Appwrite.Permission.update(Appwrite.Role.user(currentUser.$id))
+        ]
+      });
+      currentMemberId=memberId;
+      showOnly("redFilePage");
+    }else{
+      await account.createEmailPasswordSession({email:memberEmail(memberId),password});
+      currentUser=await account.get(); currentMemberId=memberId;
+      await routeAfterLogin();
+    }
+  }catch(error){
+    console.error(error);
+    let msg="登入／註冊失敗，請確認資料後再試一次。";
+    if(error.code===409) msg="這個 MEMBER ID 已經被使用，請改用 LOGIN。";
+    if(error.code===401) msg="MEMBER ID 或密碼不正確。";
+    setMessage("authMessage","<strong>ACCESS DENIED</strong><br>"+msg);
+  }finally{
+    button.disabled=false; button.textContent=authMode==="register"?"建立帳號":"登入系統";
+  }
 }
 
-
-/* =========================
-   VERIFICATION PROGRESS
-========================= */
-
-function setProgress(value) {
-
-  document
-    .getElementById("progressBar")
-    .style.width = value + "%";
-
-  document
-    .getElementById("percentage")
-    .textContent = value + "%";
-
+async function routeAfterLogin(){
+  try{
+    const member=await tablesDB.getRow({databaseId:DATABASE_ID,tableId:TABLES.members,rowId:currentUser.$id});
+    currentMemberId=member.username || currentMemberId;
+    if(member.target_file_complete){ await decryptMissionFile(); }
+    else showOnly("redFilePage");
+  }catch(error){
+    console.error(error); await logoutMember();
+    setMessage("authMessage","會員資料讀取失敗，請聯絡總召。");
+  }
 }
 
-
-/* =========================
-   VERIFY AGENT
-========================= */
-
-async function verifyAgent() {
-
-  if (verifying) return;
-
-  const input =
-    document.getElementById("agentCode");
-
-  const button =
-    document.getElementById("verifyButton");
-
-  const terminal =
-    document.getElementById("terminal");
-
-  const output =
-    document.getElementById("terminalOutput");
-
-  const agentRead =
-    document.getElementById("agentRead");
-
-  const agentValue =
-    document.getElementById("agentValue");
-
-  const message =
-    document.getElementById("message");
-
-  const flash =
-    document.getElementById("screenFlash");
-
-  const code =
-    input.value.trim();
-
-
-  /* EMPTY */
-
-  if (!code) {
-
-    message.className =
-      "message error";
-
-    message.innerHTML =
-      "<strong>INPUT REQUIRED</strong><br>" +
-      "請先輸入行動代號。";
-
-    return;
-
-  }
-
-
-  verifying = true;
-
-  input.disabled = true;
-  button.disabled = true;
-
-  message.className = "message";
-  message.innerHTML = "";
-
-  terminal.classList.add("active");
-
-  output.innerHTML = "";
-
-  agentRead.classList.remove("show");
-
-  agentValue.innerHTML = "";
-
-  setProgress(0);
-
-
-  /* =========================
-     STEP 01
-  ========================= */
-
-  await terminalLine(
-    "INITIALIZING SECURITY TERMINAL...",
-    "正在啟動身分驗證系統..."
-  );
-
-  setProgress(8);
-
-  await wait(400);
-
-
-  /* =========================
-     STEP 02
-  ========================= */
-
-  await terminalLine(
-    "SCANNING IDENTITY...",
-    "正在讀取行動代號..."
-  );
-
-  setProgress(20);
-
-  await wait(350);
-
-
-  /* =========================
-     READ AGENT CODE
-  ========================= */
-
-  agentRead.classList.add("show");
-
-  for (const character of code) {
-
-    agentValue.innerHTML += character;
-
-    await wait(420);
-
-  }
-
-  await wait(550);
-
-  setProgress(34);
-
-
-  /* =========================
-     STEP 03
-  ========================= */
-
-  await terminalLine(
-    "ACCESSING CLASSIFIED DATABASE...",
-    "正在存取 PROJECT : CHRISTMAS II 受邀名單..."
-  );
-
-  setProgress(51);
-
-  await wait(500);
-
-
-  /* =========================
-     STEP 04
-  ========================= */
-
-  await terminalLine(
-    "MATCHING AUTHORIZED PERSONNEL...",
-    "正在比對授權成員資料..."
-  );
-
-  setProgress(68);
-
-  await wait(650);
-
-
-  /* =========================
-     STEP 05
-  ========================= */
-
-  await terminalLine(
-    "VERIFYING SECURITY CLEARANCE...",
-    "正在確認本次行動存取權限..."
-  );
-
-  setProgress(84);
-
-  await wait(750);
-
-
-  /* =========================
-     STEP 06
-  ========================= */
-
-  await terminalLine(
-    "RUNNING FINAL IDENTITY CHECK...",
-    "正在執行最終身分確認..."
-  );
-
-  setProgress(96);
-
-  await wait(900);
-
-
-  /* =========================
-     CHECK
-  ========================= */
-
-  const isAllowed =
-    allowedAgents.includes(code);
-
-  setProgress(100);
-
-  await wait(650);
-
-
-  /* =========================
-     SUCCESS
-  ========================= */
-
-  if (isAllowed) {
-
-    await terminalLine(
-      "IDENTITY MATCH FOUND.",
-      "身分比對成功。"
-    );
-
-    await wait(800);
-
-    terminal.classList.remove("active");
-
-    message.className =
-      "message success";
-
-    message.innerHTML =
-      "<strong>ACCESS GRANTED</strong><br>" +
-      "AGENT " +
-      code +
-      " VERIFIED<br>" +
-      "身分確認完成。" +
-      "<span class='hint'>" +
-      "正在解密 PROJECT : CHRISTMAS II 行動資料……" +
-      "</span>";
-
-    flash.classList.remove("show");
-
-    void flash.offsetWidth;
-
-    flash.classList.add("show");
-
-
-    /*
-      讓 ACCESS GRANTED
-      留在畫面一下
-    */
-
-    await wait(1400);
-
-
-    /* 開始解密第二頁 */
-
-    await decryptMissionFile();
-
-  }
-
-
-  /* =========================
-     FAILED
-  ========================= */
-
-  else {
-
-    await terminalLine(
-      "IDENTITY MATCH FAILED.",
-      "授權名單中查無此代號。"
-    );
-
-    await wait(850);
-
-    terminal.classList.remove("active");
-
-    message.className =
-      "message error";
-
-    message.innerHTML =
-      "<strong>ACCESS DENIED</strong><br>" +
-      "查無此行動代號。" +
-
-      "<span class='hint'>" +
-      "提示：你的行動代號已記載於先前發送的 " +
-      "<strong>PROJECT : CHRISTMAS II 邀請函</strong> 中。<br>" +
-      "請確認邀請函上的代號後重新驗證。" +
-      "</span>";
-
-    input.disabled = false;
-    button.disabled = false;
-
-    verifying = false;
-
-  }
-
+async function logoutMember(){
+  try{ await account.deleteSession({sessionId:"current"}); }catch(e){}
+  currentUser=null; currentMemberId=""; showOnly("loginPage");
 }
 
+async function submitRedFile(event){
+  event.preventDefault();
+  const required=["gender","smoked","has_pet","alcohol_frequency","lifestyle","sweet_preference"];
+  for(const key of required){ if(!redAnswers[key]) return setMessage("redFileMessage","尚有選擇題未完成。","error"); }
+  const button=document.getElementById("redFileSubmit"); button.disabled=true; button.textContent="TRANSMITTING...";
+  const data={
+    user_id:currentUser.$id,
+    wish:document.getElementById("wish").value.trim(),
+    preference:document.getElementById("preference").value.trim(),
+    message:document.getElementById("giftMessage").value.trim(),
+    gender:redAnswers.gender,
+    birthday_range:document.getElementById("birthdayRange").value,
+    height_range:document.getElementById("heightRange").value,
+    smoked:redAnswers.smoked,
+    has_pet:redAnswers.has_pet,
+    alcohol_frequency:redAnswers.alcohol_frequency,
+    lifestyle:redAnswers.lifestyle,
+    sweet_preference:redAnswers.sweet_preference
+  };
+  try{
+    await tablesDB.createRow({
+      databaseId:DATABASE_ID,tableId:TABLES.targetFiles,rowId:currentUser.$id,data,
+      permissions:[
+        Appwrite.Permission.read(Appwrite.Role.user(currentUser.$id)),
+        Appwrite.Permission.update(Appwrite.Role.user(currentUser.$id))
+      ]
+    });
+    await tablesDB.updateRow({databaseId:DATABASE_ID,tableId:TABLES.members,rowId:currentUser.$id,data:{target_file_complete:true}});
+    setMessage("redFileMessage","<strong>RED FILE ACCEPTED</strong><br>情報檔案已完成。","success");
+    await wait(700); await decryptMissionFile();
+  }catch(error){
+    console.error(error);
+    setMessage("redFileMessage","資料傳送失敗。若你已填過 RED FILE，請重新登入。","error");
+  }finally{button.disabled=false;button.textContent="SUBMIT RED FILE";}
+}
+
+document.addEventListener("click",event=>{
+  const button=event.target.closest(".choice-grid button[data-value]");
+  if(!button) return;
+  const grid=button.closest(".choice-grid");
+  grid.querySelectorAll("button").forEach(b=>b.classList.remove("selected"));
+  button.classList.add("selected"); redAnswers[grid.dataset.field]=button.dataset.value;
+});
+
+document.addEventListener("keydown",event=>{
+  if(event.key==="Enter" && !document.getElementById("loginPage").classList.contains("hidden")) submitAuth();
+});
+
+window.addEventListener("DOMContentLoaded",async()=>{
+  try{
+    currentUser=await account.get();
+    const member=await tablesDB.getRow({databaseId:DATABASE_ID,tableId:TABLES.members,rowId:currentUser.$id});
+    currentMemberId=member.username;
+    if(member.target_file_complete) showOnly("missionPage"); else showOnly("redFilePage");
+  }catch(e){ showOnly("loginPage"); }
+});
 
 /* =========================
-   DECRYPT MISSION
+   ORIGINAL MISSION FLOW
 ========================= */
-
 async function decryptMissionFile() {
 
   const overlay =
@@ -461,13 +222,11 @@ async function decryptMissionFile() {
 
   await wait(550);
 
-  document
-    .getElementById("loginPage")
-    .classList.add("hidden");
+  document.querySelectorAll("main.page").forEach(function(page) {
+    page.classList.add("hidden");
+  });
 
-  document
-    .getElementById("missionPage")
-    .classList.remove("hidden");
+  document.getElementById("missionPage").classList.remove("hidden");
 
   const missionFile =
     document.getElementById("missionFile");
@@ -509,7 +268,7 @@ function startFinalConfirmation() {
   document
     .getElementById("rsvpAgentCode")
     .textContent =
-      document.getElementById("agentCode").value.trim();
+      currentMemberId;
 
   populateRoommateOptions();
 
@@ -549,26 +308,6 @@ function declineMission() {
   });
 
 }
-
-
-/* =========================
-   ENTER
-========================= */
-
-document
-  .getElementById("agentCode")
-  .addEventListener(
-    "keydown",
-    function(event) {
-
-      if (event.key === "Enter") {
-
-        verifyAgent();
-
-      }
-
-    }
-  );
 
 
 /* =========================
@@ -681,32 +420,8 @@ document.addEventListener("click", function(event) {
 ========================= */
 
 function populateRoommateOptions() {
-
-  const select =
-    document.getElementById("roommateCode");
-
-  const currentAgent =
-    document.getElementById("agentCode")
-      .value
-      .trim();
-
-  select.innerHTML =
-    '<option value="">請選擇行動代號</option>';
-
-  allowedAgents.forEach(function(agent) {
-
-    if (agent === currentAgent) return;
-
-    const option =
-      document.createElement("option");
-
-    option.value = agent;
-    option.textContent = agent;
-
-    select.appendChild(option);
-
-  });
-
+  const input = document.getElementById("roommateCode");
+  if (input) input.value = "";
 }
 
 
@@ -757,9 +472,7 @@ function reviewMissionResponse() {
   message.classList.add("hidden");
 
   const agent =
-    document.getElementById("agentCode")
-      .value
-      .trim();
+    currentMemberId;
 
   document.getElementById("reviewAgent")
     .textContent = agent;
@@ -860,7 +573,7 @@ let submittingMissionResponse = false;
 async function submitMissionResponse() {
   if (submittingMissionResponse) return;
 
-  const agent = document.getElementById("agentCode").value.trim();
+  const agent = currentMemberId;
   const submitButton = document.querySelector(
     '#reviewPage button[onclick="submitMissionResponse()"]'
   );
@@ -887,22 +600,16 @@ async function submitMissionResponse() {
   };
 
   try {
-    const response = await fetch(
-      SUPABASE_URL + "/rest/v1/christmas_2026_rsvp",
-      {
-        method: "POST",
-        headers: {
-          "apikey": SUPABASE_PUBLISHABLE_KEY,
-          "Content-Type": "application/json",
-          "Prefer": "return=minimal"
-        },
-        body: JSON.stringify(payload)
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error("Supabase " + response.status + ": " + await response.text());
-    }
+    await tablesDB.createRow({
+      databaseId: DATABASE_ID,
+      tableId: TABLES.rsvp,
+      rowId: Appwrite.ID.unique(),
+      data: payload,
+      permissions: [
+        Appwrite.Permission.read(Appwrite.Role.user(currentUser.$id)),
+        Appwrite.Permission.update(Appwrite.Role.user(currentUser.$id))
+      ]
+    });
 
     document.getElementById("successAgent").textContent = agent;
     document.getElementById("reviewPage").classList.add("hidden");
