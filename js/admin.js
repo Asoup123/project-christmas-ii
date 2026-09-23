@@ -1,65 +1,150 @@
+/* =========================================================
+   PROJECT : CHRISTMAS II
+   ADMIN CONTROL CENTER
+========================================================= */
+
+
+/* =========================================================
+   APPWRITE
+========================================================= */
+
 const APPWRITE_ENDPOINT =
   "https://sgp.cloud.appwrite.io/v1";
+
 
 const APPWRITE_PROJECT_ID =
   "6ab36b1c001036f515ab";
 
+
 const DATABASE_ID =
   "christmas-2026";
 
+
 const COLLECTIONS = {
-  members: "members",
-  targetFiles: "target_files",
-  assignments: "assignments",
-  settings: "settings"
+
+  members:
+    "members",
+
+  targetFiles:
+    "target_files",
+
+  assignments:
+    "assignments",
+
+  settings:
+    "settings"
+
 };
 
 
-/* =========================================
-   APPWRITE
-========================================= */
+/* =========================================================
+   舊 RSVP / SUPABASE
+========================================================= */
+
+const RSVP_SUPABASE_URL =
+  "https://sdkgiedglmhmchiietru.supabase.co";
+
+
+const RSVP_SUPABASE_KEY =
+  "sb_publishable_ofwe1YigppMHJjcWu_VjUA_XF7wNzEm";
+
+
+const RSVP_TABLE =
+  "christmas_2026_rsvp";
+
+
+/* =========================================================
+   APPWRITE 初始化
+========================================================= */
 
 const client =
   new Appwrite.Client()
-    .setEndpoint(APPWRITE_ENDPOINT)
-    .setProject(APPWRITE_PROJECT_ID);
+    .setEndpoint(
+      APPWRITE_ENDPOINT
+    )
+    .setProject(
+      APPWRITE_PROJECT_ID
+    );
+
 
 const account =
-  new Appwrite.Account(client);
+  new Appwrite.Account(
+    client
+  );
+
 
 const databases =
-  new Appwrite.Databases(client);
+  new Appwrite.Databases(
+    client
+  );
 
 
-/* =========================================
-   STATE
-========================================= */
+/* =========================================================
+   狀態
+========================================================= */
 
-let adminUser = null;
-
-let members = [];
-
-let targetFiles = [];
+let adminUser =
+  null;
 
 
-/* =========================================
-   HELPERS
-========================================= */
+let members =
+  [];
+
+
+let targetFiles =
+  [];
+
+
+let rsvpRows =
+  [];
+
+
+/* =========================================================
+   DOM
+========================================================= */
 
 const $ =
-  id => document.getElementById(id);
+  id =>
+    document.getElementById(
+      id
+    );
 
+
+/* =========================================================
+   HTML 安全處理
+========================================================= */
 
 function escapeHTML(value) {
 
-  return String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+  return String(
+    value ?? ""
+  )
+    .replaceAll(
+      "&",
+      "&amp;"
+    )
+    .replaceAll(
+      "<",
+      "&lt;"
+    )
+    .replaceAll(
+      ">",
+      "&gt;"
+    )
+    .replaceAll(
+      '"',
+      "&quot;"
+    )
+    .replaceAll(
+      "'",
+      "&#039;"
+    );
 }
 
+
+/* =========================================================
+   檔案編號
+========================================================= */
 
 function fileNumber(value) {
 
@@ -68,32 +153,59 @@ function fileNumber(value) {
     value === undefined ||
     value === ""
   ) {
+
     return "--";
   }
 
-  return String(value)
-    .padStart(2, "0");
+
+  return String(
+    value
+  ).padStart(
+    2,
+    "0"
+  );
 }
 
+
+/* =========================================================
+   日期
+========================================================= */
 
 function formatTime(value) {
 
   if (!value) {
+
     return "—";
   }
+
 
   try {
 
     return new Intl.DateTimeFormat(
       "zh-TW",
       {
-        timeZone: "Asia/Taipei",
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false
+
+        timeZone:
+          "Asia/Taipei",
+
+        year:
+          "numeric",
+
+        month:
+          "2-digit",
+
+        day:
+          "2-digit",
+
+        hour:
+          "2-digit",
+
+        minute:
+          "2-digit",
+
+        hour12:
+          false
+
       }
     ).format(
       new Date(value)
@@ -106,19 +218,29 @@ function formatTime(value) {
 }
 
 
+/* =========================================================
+   訊息
+========================================================= */
+
 function showMessage(
   id,
   text,
   success = false
 ) {
 
-  const element = $(id);
+  const element =
+    $(id);
+
 
   if (!element) {
+
     return;
   }
 
-  element.textContent = text;
+
+  element.textContent =
+    text;
+
 
   element.style.color =
     success
@@ -127,33 +249,51 @@ function showMessage(
 }
 
 
-/* =========================================
-   LOGIN VIEW
-========================================= */
+/* =========================================================
+   登入畫面
+========================================================= */
 
 function showAdminLogin() {
 
   $("commandCenter")
-    .classList.add("hidden");
+    .classList
+    .add(
+      "hidden"
+    );
+
 
   $("adminLogin")
-    .classList.remove("hidden");
+    .classList
+    .remove(
+      "hidden"
+    );
 }
 
+
+/* =========================================================
+   管理中心
+========================================================= */
 
 function showCommandCenter() {
 
   $("adminLogin")
-    .classList.add("hidden");
+    .classList
+    .add(
+      "hidden"
+    );
+
 
   $("commandCenter")
-    .classList.remove("hidden");
+    .classList
+    .remove(
+      "hidden"
+    );
 }
 
 
-/* =========================================
-   ADMIN LOGIN
-========================================= */
+/* =========================================================
+   管理員登入
+========================================================= */
 
 async function adminLogin() {
 
@@ -162,12 +302,16 @@ async function adminLogin() {
       .value
       .trim();
 
+
   const password =
     $("adminPassword")
       .value;
 
 
-  if (!email || !password) {
+  if (
+    !email ||
+    !password
+  ) {
 
     showMessage(
       "loginMessage",
@@ -182,10 +326,12 @@ async function adminLogin() {
     $("adminLoginButton");
 
 
-  button.disabled = true;
+  button.disabled =
+    true;
+
 
   button.textContent =
-    "VERIFYING...";
+    "登入中...";
 
 
   showMessage(
@@ -196,23 +342,26 @@ async function adminLogin() {
 
   try {
 
+
     /*
-      清除可能存在的前台登入 Session
+      清除目前可能存在的前台 Session
     */
 
     try {
 
-      await account.deleteSession(
-        "current"
-      );
+      await account
+        .deleteSession(
+          "current"
+        );
 
     } catch (error) {
-      // 沒有 session 時忽略
+
+      // 沒有 Session 時不用處理
     }
 
 
     /*
-      Appwrite Email / Password 登入
+      登入
     */
 
     await account
@@ -222,11 +371,20 @@ async function adminLogin() {
       );
 
 
+    /*
+      取得登入使用者
+    */
+
     adminUser =
       await account.get();
 
 
+    /*
+      顯示後台
+    */
+
     showCommandCenter();
+
 
     openAdminPage(
       "dashboard"
@@ -234,208 +392,288 @@ async function adminLogin() {
 
 
     /*
-      如果不是 christmas-admin，
-      後面的資料庫權限會直接拒絕。
+      讀取 Appwrite
     */
 
     await loadDatabase();
 
 
+    /*
+      同時讀取舊 RSVP
+    */
+
+    await loadRsvp();
+
+
   } catch (error) {
 
+
     console.error(
-      "ADMIN LOGIN ERROR:",
+      "管理員登入錯誤：",
       error
     );
 
 
     showMessage(
       "loginMessage",
-      "ACCESS DENIED // 登入失敗，請確認 Email 與密碼。"
+      "登入失敗，請確認 Email 與密碼。"
     );
 
 
     try {
 
-      await account.deleteSession(
-        "current"
-      );
+      await account
+        .deleteSession(
+          "current"
+        );
 
     } catch (sessionError) {
+
       // ignore
     }
 
 
-    adminUser = null;
+    adminUser =
+      null;
+
 
     showAdminLogin();
 
 
   } finally {
 
-    button.disabled = false;
+
+    button.disabled =
+      false;
+
 
     button.textContent =
-      "VERIFY ADMINISTRATOR";
+      "登入管理中心";
+
   }
 }
 
 
-/* =========================================
-   LOGOUT
-========================================= */
+/* =========================================================
+   登出
+========================================================= */
 
 async function adminLogout() {
 
   try {
 
-    await account.deleteSession(
-      "current"
-    );
+    await account
+      .deleteSession(
+        "current"
+      );
 
   } catch (error) {
 
-    console.log(error);
+    console.log(
+      error
+    );
   }
 
 
-  adminUser = null;
-
-  members = [];
-
-  targetFiles = [];
+  adminUser =
+    null;
 
 
-  $("adminEmail").value = "";
+  members =
+    [];
 
-  $("adminPassword").value = "";
+
+  targetFiles =
+    [];
+
+
+  rsvpRows =
+    [];
+
+
+  $("adminEmail")
+    .value =
+    "";
+
+
+  $("adminPassword")
+    .value =
+    "";
 
 
   showAdminLogin();
 }
 
 
-/* =========================================
-   NAVIGATION
-========================================= */
+/* =========================================================
+   後台頁面切換
+========================================================= */
 
 function openAdminPage(page) {
+
 
   document
     .querySelectorAll(
       ".admin-page"
     )
-    .forEach(element => {
+    .forEach(
+      element => {
 
-      element
-        .classList
-        .add("hidden");
+        element
+          .classList
+          .add(
+            "hidden"
+          );
 
-    });
+      }
+    );
 
 
   document
     .querySelectorAll(
       "[data-admin-page]"
     )
-    .forEach(button => {
+    .forEach(
+      button => {
 
-      button.classList.toggle(
-        "active",
-        button.dataset.adminPage === page
-      );
+        button
+          .classList
+          .toggle(
+            "active",
+            button.dataset.adminPage === page
+          );
 
-    });
+      }
+    );
 
 
   const target =
-    $(`${page}Page`);
+    $(
+      `${page}Page`
+    );
 
 
   if (target) {
 
     target
       .classList
-      .remove("hidden");
+      .remove(
+        "hidden"
+      );
   }
 
 
-  if (page === "members") {
+  if (
+    page === "members"
+  ) {
 
     renderMembers();
   }
 
 
-  if (page === "intelligence") {
+  if (
+    page === "rsvp"
+  ) {
+
+    renderRsvp();
+  }
+
+
+  if (
+    page === "intelligence"
+  ) {
 
     renderSubjects();
   }
 }
 
 
-/* =========================================
-   LOAD DATABASE
-========================================= */
+/* =========================================================
+   APPWRITE 資料
+========================================================= */
 
 async function loadDatabase() {
 
-  if ($("databaseStatus")) {
+
+  if (
+    $("databaseStatus")
+  ) {
 
     $("databaseStatus")
       .textContent =
-      "CONNECTING...";
+      "連線中...";
   }
 
 
   try {
 
-    /*
-      MEMBERS
-    */
+
+    /* ===============================
+       MEMBERS
+    =============================== */
 
     const memberResponse =
-      await databases.listDocuments(
-        DATABASE_ID,
-        COLLECTIONS.members,
-        [
-          Appwrite.Query.limit(100)
-        ]
-      );
+      await databases
+        .listDocuments(
 
+          DATABASE_ID,
 
-    members =
-      [...memberResponse.documents]
-        .sort(
-          (a, b) =>
-            new Date(a.$createdAt) -
-            new Date(b.$createdAt)
+          COLLECTIONS.members,
+
+          [
+            Appwrite.Query.limit(
+              100
+            )
+          ]
+
         );
 
 
-    /*
-      TARGET FILES
-    */
+    members =
+      [
+        ...memberResponse.documents
+      ]
+        .sort(
+          (a, b) =>
+
+            new Date(
+              a.$createdAt
+            ) -
+
+            new Date(
+              b.$createdAt
+            )
+        );
+
+
+    /* ===============================
+       TARGET FILES
+    =============================== */
 
     const targetResponse =
-      await databases.listDocuments(
-        DATABASE_ID,
-        COLLECTIONS.targetFiles,
-        [
-          Appwrite.Query.limit(100)
-        ]
-      );
+      await databases
+        .listDocuments(
+
+          DATABASE_ID,
+
+          COLLECTIONS.targetFiles,
+
+          [
+            Appwrite.Query.limit(
+              100
+            )
+          ]
+
+        );
 
 
     targetFiles =
       targetResponse.documents;
 
 
-    if ($("databaseStatus")) {
-
-      $("databaseStatus")
-        .textContent =
-        "DATABASE ONLINE";
-    }
+    $("databaseStatus")
+      .textContent =
+      "資料庫連線正常";
 
 
     renderDashboard();
@@ -447,50 +685,49 @@ async function loadDatabase() {
 
   } catch (error) {
 
+
     console.error(
-      "DATABASE ERROR:",
+      "Appwrite 資料庫錯誤：",
       error
     );
 
 
-    if ($("databaseStatus")) {
-
-      $("databaseStatus")
-        .textContent =
-        "PERMISSION DENIED / DATABASE ERROR";
-    }
+    $("databaseStatus")
+      .textContent =
+      "資料庫讀取失敗";
 
 
-    if ($("dashboardSummary")) {
+    $("dashboardSummary")
+      .innerHTML = `
 
-      $("dashboardSummary")
-        .innerHTML = `
+        <strong
+          style="color:#8f1d24"
+        >
+          無法讀取管理資料
+        </strong>
 
-          <strong style="color:#8f1d24">
-            ADMIN DATABASE ACCESS DENIED
-          </strong>
+        <br><br>
 
-          <br><br>
+        請確認 Asoup0529
+        已加入 Christmas Admin Team，
 
-          無法讀取 members 或 target_files。
+        <br>
 
-          <br>
+        並確認 Members 與 Target Files
+        已設定管理員讀取權限。
 
-          請確認 Asoup0529 已加入
-          Christmas Admin Team，
-          並確認資料表權限已儲存。
+      `;
 
-        `;
-    }
   }
 }
 
 
-/* =========================================
-   DASHBOARD
-========================================= */
+/* =========================================================
+   總覽
+========================================================= */
 
 function renderDashboard() {
+
 
   const total =
     members.length;
@@ -499,91 +736,106 @@ function renderDashboard() {
   const complete =
     members.filter(
       member =>
-        member.target_file_complete === true
+
+        member
+          .target_file_complete === true
+
     ).length;
 
 
   const numbered =
     members.filter(
       member =>
+
         member.file_no !== null &&
+
         member.file_no !== undefined &&
+
         member.file_no !== ""
+
     ).length;
 
 
-  if ($("registeredCount")) {
-
-    $("registeredCount")
-      .textContent =
-      total;
-  }
+  $("registeredCount")
+    .textContent =
+    total;
 
 
-  if ($("completeCount")) {
-
-    $("completeCount")
-      .textContent =
-      `${complete} / ${total}`;
-  }
+  $("completeCount")
+    .textContent =
+    `${complete} / ${total}`;
 
 
-  if ($("numberedCount")) {
-
-    $("numberedCount")
-      .textContent =
-      `${numbered} / ${total}`;
-  }
+  $("numberedCount")
+    .textContent =
+    `${numbered} / ${total}`;
 
 
   const pending =
     total - complete;
 
 
-  if ($("dashboardSummary")) {
+  $("dashboardSummary")
+    .innerHTML = `
 
-    $("dashboardSummary")
-      .innerHTML = `
+      已註冊成員：
+      <strong>
+        ${total}
+      </strong>
 
-        REGISTERED PERSONNEL:
-        <strong>${total}</strong>
+      <br>
 
-        <br>
+      已完成情報檔案：
+      <strong>
+        ${complete}
+      </strong>
 
-        COMPLETED INTELLIGENCE FILES:
-        <strong>${complete}</strong>
+      <br>
 
-        <br>
+      尚未完成情報檔案：
+      <strong>
+        ${pending}
+      </strong>
 
-        PENDING INTELLIGENCE FILES:
-        <strong>${pending}</strong>
+      <br>
 
-        <br>
+      已建立檔案編號：
+      <strong>
+        ${numbered}
+      </strong>
 
-        FILE NUMBERS ASSIGNED:
-        <strong>${numbered}</strong>
+      <br>
 
-      `;
-  }
+      RSVP 已回覆：
+      <strong>
+        ${rsvpRows.length}
+      </strong>
+
+    `;
 }
 
 
-/* =========================================
-   MEMBERS TABLE
-========================================= */
+/* =========================================================
+   成員管理
+========================================================= */
 
 function renderMembers() {
+
 
   const body =
     $("membersTableBody");
 
 
   if (!body) {
+
     return;
   }
 
 
-  if (!members.length) {
+  if (
+    !members.length
+  ) {
+
 
     body.innerHTML = `
 
@@ -593,109 +845,127 @@ function renderMembers() {
           colspan="6"
           class="empty-cell"
         >
-          NO PERSONNEL RECORDS
+          目前沒有成員資料
         </td>
 
       </tr>
 
     `;
 
+
     return;
   }
 
 
   body.innerHTML =
-    members.map(member => {
-
-      const complete =
-        member.target_file_complete === true;
-
-
-      return `
-
-        <tr>
-
-          <td class="file-number">
-
-            ${fileNumber(
-              member.file_no
-            )}
-
-          </td>
+    members
+      .map(
+        member => {
 
 
-          <td class="member-name">
-
-            ${escapeHTML(
-              member.username ||
-              "—"
-            )}
-
-          </td>
+          const complete =
+            member
+              .target_file_complete === true;
 
 
-          <td>
+          return `
 
-            ${escapeHTML(
-              member.real_name ||
-              "—"
-            )}
-
-          </td>
+            <tr>
 
 
-          <td class="${
-            complete
-              ? "status-complete"
-              : "status-pending"
-          }">
+              <td
+                class="file-number"
+              >
 
-            ${
-              complete
-                ? "COMPLETE"
-                : "PENDING"
-            }
+                ${fileNumber(
+                  member.file_no
+                )}
 
-          </td>
+              </td>
 
 
-          <td>
+              <td
+                class="member-name"
+              >
 
-            ${formatTime(
-              member.$createdAt
-            )}
+                ${escapeHTML(
+                  member.username ||
+                  "—"
+                )}
 
-          </td>
+              </td>
 
 
-          <td
-            class="user-id"
-            title="${escapeHTML(
-              member.$id
-            )}"
-          >
+              <td>
 
-            ${escapeHTML(
-              member.$id
-            )}
+                ${escapeHTML(
+                  member.real_name ||
+                  "—"
+                )}
 
-          </td>
+              </td>
 
-        </tr>
 
-      `;
+              <td
+                class="${
+                  complete
+                    ? "status-complete"
+                    : "status-pending"
+                }"
+              >
 
-    }).join("");
+                ${
+                  complete
+                    ? "已完成"
+                    : "尚未完成"
+                }
+
+              </td>
+
+
+              <td>
+
+                ${formatTime(
+                  member.$createdAt
+                )}
+
+              </td>
+
+
+              <td
+                class="user-id"
+                title="${escapeHTML(
+                  member.$id
+                )}"
+              >
+
+                ${escapeHTML(
+                  member.$id
+                )}
+
+              </td>
+
+
+            </tr>
+
+          `;
+
+        }
+      )
+      .join("");
 }
 
 
-/* =========================================
-   RENUMBER FILES
-========================================= */
+/* =========================================================
+   重新編號
+========================================================= */
 
 async function renumberMembers() {
 
-  if (!members.length) {
+
+  if (
+    !members.length
+  ) {
 
     showMessage(
       "memberMessage",
@@ -708,11 +978,24 @@ async function renumberMembers() {
 
   const confirmed =
     confirm(
-      "確定要依照註冊時間重新編號嗎？\n\n最早註冊 = 01\n第二位 = 02\n第三位 = 03..."
+
+      "確定要依照註冊時間重新編號嗎？\n\n" +
+
+      "最早註冊 = 01\n" +
+
+      "第二位 = 02\n" +
+
+      "第三位 = 03\n\n" +
+
+      "這會更新所有會員的檔案編號。"
+
     );
 
 
-  if (!confirmed) {
+  if (
+    !confirmed
+  ) {
+
     return;
   }
 
@@ -721,10 +1004,12 @@ async function renumberMembers() {
     $("renumberMembers");
 
 
-  button.disabled = true;
+  button.disabled =
+    true;
+
 
   button.textContent =
-    "NUMBERING...";
+    "編號中...";
 
 
   showMessage(
@@ -735,12 +1020,21 @@ async function renumberMembers() {
 
   try {
 
+
     const ordered =
-      [...members]
+      [
+        ...members
+      ]
         .sort(
           (a, b) =>
-            new Date(a.$createdAt) -
-            new Date(b.$createdAt)
+
+            new Date(
+              a.$createdAt
+            ) -
+
+            new Date(
+              b.$createdAt
+            )
         );
 
 
@@ -750,6 +1044,7 @@ async function renumberMembers() {
       index++
     ) {
 
+
       const member =
         ordered[index];
 
@@ -758,20 +1053,28 @@ async function renumberMembers() {
         index + 1;
 
 
-      await databases.updateDocument(
-        DATABASE_ID,
-        COLLECTIONS.members,
-        member.$id,
-        {
-          file_no: newNumber
-        }
-      );
+      await databases
+        .updateDocument(
+
+          DATABASE_ID,
+
+          COLLECTIONS.members,
+
+          member.$id,
+
+          {
+            file_no:
+              newNumber
+          }
+
+        );
+
     }
 
 
     showMessage(
       "memberMessage",
-      "FILE NUMBERING COMPLETE // 編號完成",
+      "檔案編號更新完成。",
       true
     );
 
@@ -781,8 +1084,9 @@ async function renumberMembers() {
 
   } catch (error) {
 
+
     console.error(
-      "RENUMBER ERROR:",
+      "重新編號失敗：",
       error
     );
 
@@ -795,100 +1099,470 @@ async function renumberMembers() {
 
   } finally {
 
-    button.disabled = false;
+
+    button.disabled =
+      false;
+
 
     button.textContent =
-      "RENUMBER FILES";
+      "依註冊順序重新編號";
+
   }
 }
 
 
-/* =========================================
-   INTELLIGENCE SUBJECT LIST
-========================================= */
+/* =========================================================
+   RSVP
+========================================================= */
+
+async function loadRsvp() {
+
+
+  const body =
+    $("rsvpTableBody");
+
+
+  if (body) {
+
+    body.innerHTML = `
+
+      <tr>
+
+        <td
+          colspan="7"
+          class="empty-cell"
+        >
+          正在讀取 RSVP 資料...
+        </td>
+
+      </tr>
+
+    `;
+  }
+
+
+  if (
+    $("rsvpStatus")
+  ) {
+
+    $("rsvpStatus")
+      .textContent =
+      "讀取中...";
+  }
+
+
+  try {
+
+
+    const response =
+      await fetch(
+
+        RSVP_SUPABASE_URL +
+
+        "/rest/v1/" +
+
+        RSVP_TABLE +
+
+        "?select=id,created_at,name,travel,people,stay_pref,roommate,note" +
+
+        "&order=created_at.desc",
+
+        {
+
+          headers: {
+
+            apikey:
+              RSVP_SUPABASE_KEY
+
+          }
+
+        }
+
+      );
+
+
+    if (
+      !response.ok
+    ) {
+
+      throw new Error(
+        await response.text()
+      );
+    }
+
+
+    rsvpRows =
+      await response.json();
+
+
+    if (
+      $("rsvpStatus")
+    ) {
+
+      $("rsvpStatus")
+        .textContent =
+        "連線正常";
+    }
+
+
+    renderRsvp();
+
+    renderDashboard();
+
+
+  } catch (error) {
+
+
+    console.error(
+      "RSVP 讀取失敗：",
+      error
+    );
+
+
+    rsvpRows =
+      [];
+
+
+    if (
+      $("rsvpStatus")
+    ) {
+
+      $("rsvpStatus")
+        .textContent =
+        "讀取失敗";
+    }
+
+
+    if (
+      body
+    ) {
+
+      body.innerHTML = `
+
+        <tr>
+
+          <td
+            colspan="7"
+            class="empty-cell"
+          >
+            RSVP 資料讀取失敗
+          </td>
+
+        </tr>
+
+      `;
+    }
+
+
+    showMessage(
+      "rsvpMessage",
+      "無法讀取舊 RSVP 資料。"
+    );
+
+  }
+}
+
+
+/* =========================================================
+   顯示 RSVP
+========================================================= */
+
+function renderRsvp() {
+
+
+  const body =
+    $("rsvpTableBody");
+
+
+  if (!body) {
+
+    return;
+  }
+
+
+  const count =
+    rsvpRows.length;
+
+
+  const drivers =
+    rsvpRows.filter(
+
+      row =>
+        row.travel ===
+        "自己開車"
+
+    ).length;
+
+
+  const doubleBeds =
+    rsvpRows.filter(
+
+      row =>
+
+        row.stay_pref ===
+          "雙人床" ||
+
+        row.stay_pref ===
+          "希望睡雙人床"
+
+    ).length;
+
+
+  $("rsvpCount")
+    .textContent =
+    count;
+
+
+  $("rsvpDrivers")
+    .textContent =
+    drivers;
+
+
+  $("rsvpDouble")
+    .textContent =
+    doubleBeds;
+
+
+  if (
+    !rsvpRows.length
+  ) {
+
+
+    body.innerHTML = `
+
+      <tr>
+
+        <td
+          colspan="7"
+          class="empty-cell"
+        >
+          目前尚無 RSVP 回覆
+        </td>
+
+      </tr>
+
+    `;
+
+
+    return;
+  }
+
+
+  body.innerHTML =
+    "";
+
+
+  rsvpRows
+    .forEach(
+      row => {
+
+
+        const tr =
+          document
+            .createElement(
+              "tr"
+            );
+
+
+        const values = [
+
+          row.name ||
+            "—",
+
+          row.travel ||
+            "—",
+
+          row.travel ===
+            "自己開車" &&
+
+          row.people !==
+            null
+
+            ? `${row.people} 位`
+
+            : "—",
+
+          row.stay_pref ||
+            "—",
+
+          row.roommate ||
+            "—",
+
+          row.note ||
+            "—",
+
+          formatTime(
+            row.created_at
+          )
+
+        ];
+
+
+        values
+          .forEach(
+            (
+              value,
+              index
+            ) => {
+
+
+              const td =
+                document
+                  .createElement(
+                    "td"
+                  );
+
+
+              td.textContent =
+                value;
+
+
+              if (
+                index === 0
+              ) {
+
+                td.className =
+                  "member-name";
+              }
+
+
+              tr.appendChild(
+                td
+              );
+
+            }
+          );
+
+
+        body.appendChild(
+          tr
+        );
+
+      }
+    );
+}
+
+
+/* =========================================================
+   情報檔案名單
+========================================================= */
 
 function renderSubjects() {
+
 
   const container =
     $("subjectList");
 
 
-  if (!container) {
+  if (
+    !container
+  ) {
+
     return;
   }
 
 
-  if (!members.length) {
+  if (
+    !members.length
+  ) {
+
 
     container.innerHTML = `
 
-      <div class="empty-subject">
-        NO PERSONNEL
+      <div
+        class="empty-subject"
+      >
+        目前沒有成員
       </div>
 
     `;
+
 
     return;
   }
 
 
   container.innerHTML =
-    members.map(member => `
+    members
+      .map(
+        member => `
 
-      <button
-        class="subject-button"
-        data-subject-id="${escapeHTML(
-          member.$id
-        )}"
-      >
+          <button
+            class="subject-button"
+            data-subject-id="${escapeHTML(
+              member.$id
+            )}"
+          >
 
-        <small>
+            <small>
 
-          FILE //
-          ${fileNumber(
-            member.file_no
-          )}
+              檔案編號 //
+              ${fileNumber(
+                member.file_no
+              )}
 
-        </small>
+            </small>
 
-        <strong>
 
-          ${escapeHTML(
-            member.real_name ||
-            member.username ||
-            "UNKNOWN"
-          )}
+            <strong>
 
-        </strong>
+              ${escapeHTML(
 
-      </button>
+                member.real_name ||
 
-    `).join("");
+                member.username ||
+
+                "未知成員"
+
+              )}
+
+            </strong>
+
+          </button>
+
+        `
+      )
+      .join("");
 }
 
 
-/* =========================================
-   OPEN INTELLIGENCE
-========================================= */
+/* =========================================================
+   查看情報檔案
+========================================================= */
 
-function openIntelligence(userId) {
+function openIntelligence(
+  userId
+) {
+
 
   const member =
     members.find(
+
       item =>
-        item.$id === userId
+        item.$id ===
+        userId
+
     );
 
 
   const file =
     targetFiles.find(
+
       item =>
-        item.user_id === userId ||
-        item.$id === userId
+
+        item.user_id ===
+          userId ||
+
+        item.$id ===
+          userId
+
     );
 
 
-  if (!member) {
+  if (
+    !member
+  ) {
+
     return;
   }
 
@@ -897,32 +1571,49 @@ function openIntelligence(userId) {
     .querySelectorAll(
       ".subject-button"
     )
-    .forEach(button => {
-
-      button.classList.toggle(
-        "active",
-        button.dataset.subjectId === userId
-      );
-
-    });
+    .forEach(
+      button => {
 
 
-  if (!file) {
+        button
+          .classList
+          .toggle(
+
+            "active",
+
+            button
+              .dataset
+              .subjectId ===
+              userId
+
+          );
+
+      }
+    );
+
+
+  if (
+    !file
+  ) {
+
 
     $("intelDocument")
       .innerHTML = `
 
-        <div class="empty-intelligence">
+        <div
+          class="empty-intelligence"
+        >
 
-          FILE INCOMPLETE
+          尚未完成
 
           <small>
-            此成員尚未完成 RED FILE
+            此成員尚未填寫情報檔案
           </small>
 
         </div>
 
       `;
+
 
     return;
   }
@@ -944,13 +1635,18 @@ function openIntelligence(userId) {
       >
 
         <small>
-          ${escapeHTML(title)}
+          ${escapeHTML(
+            title
+          )}
         </small>
 
         <p>
+
           ${escapeHTML(
-            value || "—"
+            value ||
+            "—"
           )}
+
         </p>
 
       </article>
@@ -961,102 +1657,131 @@ function openIntelligence(userId) {
   $("intelDocument")
     .innerHTML = `
 
-      <div class="intel-header">
+
+      <div
+        class="intel-header"
+      >
+
 
         <div>
 
+
           <small>
-            CLASSIFIED PERSONNEL FILE
+            成員情報檔案
           </small>
+
 
           <h3>
 
             ${escapeHTML(
+
               member.real_name ||
-              "UNKNOWN"
+
+              "未知成員"
+
             )}
 
           </h3>
 
+
         </div>
 
 
-        <div class="intel-file-number">
+        <div
+          class="intel-file-number"
+        >
 
-          FILE //
+          檔案 //
           ${fileNumber(
             member.file_no
           )}
 
         </div>
 
+
       </div>
 
 
-      <div class="intel-grid">
+
+      <div
+        class="intel-grid"
+      >
+
 
         ${field(
-          "MEMBER ID",
+          "會員帳號",
           member.username
         )}
 
+
         ${field(
-          "GENDER",
+          "性別",
           file.gender
         )}
 
+
         ${field(
-          "BIRTHDAY RANGE",
+          "生日區間",
           file.birthday_range
         )}
 
+
         ${field(
-          "HEIGHT RANGE",
+          "身高區間",
           file.height_range
         )}
 
+
         ${field(
-          "SMOKED",
+          "是否抽菸",
           file.smoked
         )}
 
+
         ${field(
-          "HAS PET",
+          "是否有寵物",
           file.has_pet
         )}
 
+
         ${field(
-          "ALCOHOL FREQUENCY",
+          "飲酒頻率",
           file.alcohol_frequency
         )}
 
+
         ${field(
-          "LIFESTYLE",
+          "生活型態",
           file.lifestyle
         )}
 
+
         ${field(
-          "SWEET PREFERENCE",
+          "甜食偏好",
           file.sweet_preference
         )}
 
+
         ${field(
-          "WISH",
+          "想要的禮物 / 願望",
           file.wish,
           true
         )}
 
+
         ${field(
-          "PREFERENCE",
+          "喜好",
           file.preference,
           true
         )}
 
+
         ${field(
-          "MESSAGE",
+          "給送禮者的留言",
           file.message,
           true
         )}
+
 
       </div>
 
@@ -1064,9 +1789,9 @@ function openIntelligence(userId) {
 }
 
 
-/* =========================================
-   EVENTS
-========================================= */
+/* =========================================================
+   EVENT
+========================================================= */
 
 $("adminLoginButton")
   .addEventListener(
@@ -1080,10 +1805,14 @@ $("adminPassword")
     "keydown",
     event => {
 
-      if (event.key === "Enter") {
+      if (
+        event.key ===
+        "Enter"
+      ) {
 
         adminLogin();
       }
+
     }
   );
 
@@ -1093,10 +1822,15 @@ $("adminEmail")
     "keydown",
     event => {
 
-      if (event.key === "Enter") {
+      if (
+        event.key ===
+        "Enter"
+      ) {
 
-        $("adminPassword").focus();
+        $("adminPassword")
+          .focus();
       }
+
     }
   );
 
@@ -1111,7 +1845,13 @@ $("adminLogoutButton")
 $("refreshDashboard")
   .addEventListener(
     "click",
-    loadDatabase
+    async () => {
+
+      await loadDatabase();
+
+      await loadRsvp();
+
+    }
   );
 
 
@@ -1122,6 +1862,13 @@ $("refreshMembers")
   );
 
 
+$("refreshRsvp")
+  .addEventListener(
+    "click",
+    loadRsvp
+  );
+
+
 $("renumberMembers")
   .addEventListener(
     "click",
@@ -1129,74 +1876,98 @@ $("renumberMembers")
   );
 
 
-document.addEventListener(
-  "click",
-  event => {
-
-    const navButton =
-      event.target.closest(
-        "[data-admin-page]"
-      );
+document
+  .addEventListener(
+    "click",
+    event => {
 
 
-    if (navButton) {
+      const navButton =
+        event.target.closest(
+          "[data-admin-page]"
+        );
 
-      openAdminPage(
-        navButton.dataset.adminPage
-      );
 
-      return;
+      if (
+        navButton
+      ) {
+
+        openAdminPage(
+          navButton
+            .dataset
+            .adminPage
+        );
+
+        return;
+      }
+
+
+      const subjectButton =
+        event.target.closest(
+          "[data-subject-id]"
+        );
+
+
+      if (
+        subjectButton
+      ) {
+
+        openIntelligence(
+          subjectButton
+            .dataset
+            .subjectId
+        );
+      }
+
     }
+  );
 
 
-    const subjectButton =
-      event.target.closest(
-        "[data-subject-id]"
-      );
+/* =========================================================
+   初始化
+========================================================= */
+
+window
+  .addEventListener(
+    "DOMContentLoaded",
+    async () => {
 
 
-    if (subjectButton) {
+      /*
+        後台重新整理後
+        強制重新登入
+      */
 
-      openIntelligence(
-        subjectButton.dataset.subjectId
-      );
+      try {
+
+        await account
+          .deleteSession(
+            "current"
+          );
+
+      } catch (error) {
+
+        // 沒有 Session 不處理
+      }
+
+
+      adminUser =
+        null;
+
+
+      members =
+        [];
+
+
+      targetFiles =
+        [];
+
+
+      rsvpRows =
+        [];
+
+
+      showAdminLogin();
+
     }
-  }
-);
-
-
-/* =========================================
-   INITIALIZE
-========================================= */
-
-window.addEventListener(
-  "DOMContentLoaded",
-  async () => {
-
-    /*
-      每次開啟 / 重新整理後台
-      都要求重新登入。
-    */
-
-    try {
-
-      await account.deleteSession(
-        "current"
-      );
-
-    } catch (error) {
-      // 沒有 Session 就忽略
-    }
-
-
-    adminUser = null;
-
-    members = [];
-
-    targetFiles = [];
-
-
-    showAdminLogin();
-
-  }
-);
+  );
