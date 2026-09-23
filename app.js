@@ -872,6 +872,7 @@ function createSnow() {
 
 /* =========================
    INITIALIZE
+   每次進入網站都必須重新登入
 ========================= */
 
 window.addEventListener(
@@ -881,78 +882,47 @@ window.addEventListener(
     createSnow();
 
     /*
-      網站剛開啟時，
-      先全部鎖回 LOGIN。
+      每次重新開啟 / 重新整理網站，
+      都清除之前留下的登入 Session。
+    */
 
-      等 Appwrite 確認 Session 後，
-      才決定是否放行。
+    try {
+
+      await account.deleteSession({
+        sessionId: "current"
+      });
+
+    } catch (error) {
+
+      /*
+        沒有 Session 時會進這裡，
+        不需要做任何處理。
+      */
+
+      console.log("No previous session.");
+
+    }
+
+    /*
+      清除前端登入狀態
     */
 
     currentUser = null;
     currentMemberId = "";
 
+    /*
+      隱藏會員檔案書籤
+    */
+
     document
       .getElementById("folderTabs")
       ?.classList.add("hidden");
 
+    /*
+      每次一律回 LOGIN
+    */
+
     showOnly("loginPage");
 
-    try {
-
-      /*
-        Appwrite 有有效 Session
-      */
-
-      currentUser =
-        await account.get();
-
-      const member =
-        await tablesDB.getRow({
-
-          databaseId: DATABASE_ID,
-          tableId: TABLES.members,
-          rowId: currentUser.$id
-        });
-
-      currentMemberId =
-        member.username || "";
-
-      /*
-        個人檔案已完成
-        → 登入後首頁 MY FILE
-      */
-
-      if (member.target_file_complete) {
-
-        await openFileTab("myFile");
-      }
-
-      /*
-        尚未完成
-        → 繼續填個人檔案
-      */
-
-      else {
-
-        showOnly("redFilePage");
-      }
-    }
-
-    catch (error) {
-
-      /*
-        沒 Session 是正常狀況。
-        一律停留 LOGIN。
-      */
-
-      currentUser = null;
-      currentMemberId = "";
-
-      document
-        .getElementById("folderTabs")
-        ?.classList.add("hidden");
-
-      showOnly("loginPage");
-    }
   }
 );
