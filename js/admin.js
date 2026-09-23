@@ -100,6 +100,7 @@ let rsvpRows =
 
 let assignments = [];
 let assignmentPreview = [];
+let targetMissionActive = false;
 
 
 /* =========================================================
@@ -699,6 +700,14 @@ async function loadDatabase() {
         row => row.active !== false
       );
 
+    const settingsDocument = await databases.getDocument(
+      DATABASE_ID,
+      COLLECTIONS.settings,
+      "main"
+    );
+
+    targetMissionActive = settingsDocument.target_mission_active === true;
+
     assignmentPreview = [];
 
 
@@ -713,6 +722,7 @@ async function loadDatabase() {
 
     renderSubjects();
     renderAssignments(assignments, false);
+    renderTargetMissionControl();
 
 
   } catch (error) {
@@ -2037,7 +2047,36 @@ async function saveAssignments() {
           agent_id: row.agent_id,
           target_id: row.target_id,
           active: true
-        }
+        },
+        [
+          Appwrite.Permission.read(Appwrite.Role.user(row.agent_id))
+        ]
+      );
+
+      // 讓送禮者只能讀取自己 TARGET 的成員資料與情報檔案。
+      // 管理員仍透過 Christmas Admin 的資料表權限管理全部資料。
+      await databases.updateDocument(
+        DATABASE_ID,
+        COLLECTIONS.members,
+        row.target_id,
+        {},
+        [
+          Appwrite.Permission.read(Appwrite.Role.user(row.target_id)),
+          Appwrite.Permission.update(Appwrite.Role.user(row.target_id)),
+          Appwrite.Permission.read(Appwrite.Role.user(row.agent_id))
+        ]
+      );
+
+      await databases.updateDocument(
+        DATABASE_ID,
+        COLLECTIONS.targetFiles,
+        row.target_id,
+        {},
+        [
+          Appwrite.Permission.read(Appwrite.Role.user(row.target_id)),
+          Appwrite.Permission.update(Appwrite.Role.user(row.target_id)),
+          Appwrite.Permission.read(Appwrite.Role.user(row.agent_id))
+        ]
       );
     }
 
@@ -2224,6 +2263,11 @@ $("refreshAssignments").addEventListener(
   loadAssignments
 );
 
+$("toggleTargetMission")?.addEventListener(
+  "click",
+  toggleTargetMission
+);
+
 
 document
   .addEventListener(
@@ -2271,6 +2315,55 @@ document
     }
   );
 
+
+/* =========================================================
+   TARGET 活動控制
+========================================================= */
+
+function renderTargetMissionControl() {
+  const status = $("targetControlStatus");
+  const button = $("toggleTargetMission");
+
+  if (status) {
+    status.textContent = targetMissionActive ? "已開放" : "尚未開放";
+    status.classList.toggle("locked", !targetMissionActive);
+    status.classList.toggle("active", targetMissionActive);
+  }
+
+  if (button) {
+    button.textContent = targetMissionActive ? "關閉 TARGET" : "開放 TARGET";
+  }
+}
+
+async function toggleTargetMission() {
+  const nextValue = !targetMissionActive;
+  const actionText = nextValue ? "開放" : "關閉";
+
+  if (!confirm(`確定要${actionText} TARGET 嗎？`)) return;
+
+  const button = $("toggleTargetMission");
+  if (button) {
+    button.disabled = true;
+    button.textContent = "更新中...";
+  }
+
+  try {
+    await databases.updateDocument(
+      DATABASE_ID,
+      COLLECTIONS.settings,
+      "main",
+      { target_mission_active: nextValue }
+    );
+
+    targetMissionActive = nextValue;
+    renderTargetMissionControl();
+  } catch (error) {
+    console.error("TARGET 狀態更新失敗：", error);
+    alert("TARGET 狀態更新失敗，請確認 Settings 權限。");
+  } finally {
+    if (button) button.disabled = false;
+  }
+}
 
 /* =========================================================
    初始化
