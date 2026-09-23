@@ -57,158 +57,80 @@
 ========================= -->
 
 <main class="page" id="loginPage">
-
 <section class="file">
-
   <div class="christmas-mark">✦</div>
-
-  <div class="top-secret">
-    CLASSIFIED
-  </div>
-
-  <div class="file-number">
-    FILE NO. XMAS-II / 2026 / 1225
-  </div>
-
-  <div class="eyebrow">
-    RESTRICTED ACCESS
-  </div>
-
-  <h1>
-    PROJECT :
-    <span>CHRISTMAS II</span>
-  </h1>
-
+  <div class="top-secret">CLASSIFIED</div>
+  <div class="file-number">FILE NO. XMAS-II / 2026 / 1225</div>
+  <div class="eyebrow">MEMBER ACCESS</div>
+  <h1>PROJECT : <span>CHRISTMAS II</span></h1>
   <div class="line"></div>
+  <div class="classified">本文件包含 <strong>PROJECT : CHRISTMAS II</strong> 機密行動資訊。<br>僅限本次受邀成員閱覽。</div>
 
-  <div class="classified">
-
-    本文件包含
-    <strong>PROJECT : CHRISTMAS II</strong>
-    機密行動資訊。<br>
-
-    僅限本次受邀成員閱覽。<br><br>
-
-    未經授權者，請立即關閉本頁。
-
+  <div class="auth-switch">
+    <button class="auth-tab active" id="loginTab" type="button" onclick="showAuthMode('login')">LOGIN</button>
+    <button class="auth-tab" id="registerTab" type="button" onclick="showAuthMode('register')">CREATE ID</button>
   </div>
 
-  <div class="verification">
-
-    <div class="verification-title">
-      IDENTITY VERIFICATION
+  <div class="verification" id="authBox">
+    <div class="verification-title" id="authTitle">IDENTITY VERIFICATION</div>
+    <p id="authDescription">輸入你設定的 MEMBER ID 與密碼。</p>
+    <div class="form-stack">
+      <label class="field-label">MEMBER ID</label>
+      <input id="memberId" type="text" maxlength="20" placeholder="3–20 位英文、數字、_ 或 -" autocomplete="username">
+      <div id="registerOnly" class="hidden">
+        <label class="field-label">REAL NAME</label>
+        <input id="realName" type="text" maxlength="50" placeholder="輸入你的真實姓名" autocomplete="name">
+      </div>
+      <label class="field-label">PASSWORD</label>
+      <input id="memberPassword" type="password" minlength="8" placeholder="至少 8 個字元" autocomplete="current-password">
+      <button class="verify-button full-button" id="authButton" type="button" onclick="submitAuth()">登入系統</button>
     </div>
-
-    <p>
-      請輸入你的行動代號以確認身分。
-    </p>
-
-    <div class="input-wrap">
-
-      <input
-        id="agentCode"
-        type="text"
-        placeholder="輸入行動代號"
-        autocomplete="off"
-      >
-
-      <button
-        class="verify-button"
-        id="verifyButton"
-        onclick="verifyAgent()"
-      >
-        驗證身分
-      </button>
-
-    </div>
-
-    <div
-      class="terminal"
-      id="terminal"
-    >
-
-      <div class="terminal-header">
-
-        <span>
-          XMAS-II SECURITY TERMINAL
-        </span>
-
-        <span>
-          ONLINE
-        </span>
-
-      </div>
-
-      <div
-        class="terminal-output"
-        id="terminalOutput"
-      ></div>
-
-      <div
-        class="agent-read"
-        id="agentRead"
-      >
-
-        <div class="agent-label">
-          AGENT CODE DETECTED
-        </div>
-
-        <div
-          class="agent-value"
-          id="agentValue"
-        ></div>
-
-      </div>
-
-      <div class="progress-info">
-
-        <span>
-          SECURITY CHECK
-        </span>
-
-        <span id="percentage">
-          0%
-        </span>
-
-      </div>
-
-      <div class="progress">
-
-        <div
-          class="progress-bar"
-          id="progressBar"
-        ></div>
-
-      </div>
-
-    </div>
-
-    <div
-      class="message"
-      id="message"
-    ></div>
-
+    <div class="message" id="authMessage"></div>
   </div>
 
   <div class="bottom">
-
-    <div>
-      DATE OF OPERATION<br>
-      25 DEC 2026<br><br>
-
-      SECURITY LEVEL : II
-    </div>
-
-    <div class="seal">
-      PROJECT<br>
-      CHRISTMAS<br>
-      II
-    </div>
-
+    <div>DATE OF OPERATION<br>25 DEC 2026<br><br>SECURITY LEVEL : II</div>
+    <div class="seal">PROJECT<br>CHRISTMAS<br>II</div>
   </div>
-
 </section>
+</main>
 
+<!-- =========================
+     RED FILE
+========================= -->
+<main class="page hidden" id="redFilePage">
+<section class="file red-file">
+  <div class="christmas-mark">✦</div>
+  <div class="top-secret red-stamp">RED FILE</div>
+  <div class="file-number">PERSONAL INTELLIGENCE / XMAS-II</div>
+  <div class="eyebrow">TARGET INTELLIGENCE FORM</div>
+  <h1>RED <span>FILE</span></h1>
+  <div class="line"></div>
+  <div class="classified">這份資料會成為另一位成員準備禮物與辨識 TARGET 的情報。<br><strong>請依照真實狀況填寫。</strong></div>
+
+  <form id="redFileForm" class="red-form" onsubmit="submitRedFile(event)">
+    <div class="form-section-title">A / GIFT INTELLIGENCE</div>
+    <label class="field-label">01｜如果收到禮物，你目前最想收到什麼？</label>
+    <textarea id="wish" maxlength="2000" required placeholder="可以寫品項、類型，或給對方一些方向"></textarea>
+    <label class="field-label">02｜你平常喜歡什麼？</label>
+    <textarea id="preference" maxlength="2000" required placeholder="興趣、風格、顏色、收藏、日常用品等"></textarea>
+    <label class="field-label">03｜有什麼是你不希望收到的，或想提醒準備禮物的人？</label>
+    <textarea id="giftMessage" maxlength="3000" required placeholder="禁忌、不喜歡的類型，或其他提示"></textarea>
+
+    <div class="form-section-title">B / IDENTITY INTELLIGENCE</div>
+    <div class="choice-field"><span>性別</span><div class="choice-grid" data-field="gender"><button type="button" data-value="男">男</button><button type="button" data-value="女">女</button></div></div>
+    <div class="choice-field"><span>生日月份</span><select id="birthdayRange" required><option value="">請選擇</option><option>1月</option><option>2月</option><option>3月</option><option>4月</option><option>5月</option><option>6月</option><option>7月</option><option>8月</option><option>9月</option><option>10月</option><option>11月</option><option>12月</option></select></div>
+    <div class="choice-field"><span>身高區間</span><select id="heightRange" required><option value="">請選擇</option><option>150cm 以下</option><option>150–159cm</option><option>160–169cm</option><option>170–179cm</option><option>180–189cm</option><option>190cm 以上</option></select></div>
+    <div class="choice-field"><span>是否抽過菸</span><div class="choice-grid" data-field="smoked"><button type="button" data-value="有">有</button><button type="button" data-value="沒有">沒有</button></div></div>
+    <div class="choice-field"><span>目前有沒有養寵物</span><div class="choice-grid" data-field="has_pet"><button type="button" data-value="有">有</button><button type="button" data-value="沒有">沒有</button></div></div>
+    <div class="choice-field"><span>喝酒頻率</span><div class="choice-grid" data-field="alcohol_frequency"><button type="button" data-value="常喝">常喝</button><button type="button" data-value="偶爾">偶爾</button><button type="button" data-value="很少">很少</button><button type="button" data-value="不喝">不喝</button></div></div>
+    <div class="choice-field"><span>平常比較喜歡</span><div class="choice-grid" data-field="lifestyle"><button type="button" data-value="待在室內">待在室內</button><button type="button" data-value="出門活動">出門活動</button></div></div>
+    <div class="choice-field"><span>甜食接受度</span><div class="choice-grid" data-field="sweet_preference"><button type="button" data-value="喜歡">喜歡</button><button type="button" data-value="可以接受">可以接受</button><button type="button" data-value="不喜歡">不喜歡</button></div></div>
+
+    <div class="message" id="redFileMessage"></div>
+    <button class="verify-button full-button" id="redFileSubmit" type="submit">SUBMIT RED FILE</button>
+  </form>
+</section>
 </main>
 
 <!-- =========================
@@ -606,9 +528,7 @@
         <label class="field-label" for="roommateCode">
           希望與哪位行動成員共用雙人床？
         </label>
-        <select id="roommateCode" class="mission-select">
-          <option value="">請選擇行動代號</option>
-        </select>
+        <input id="roommateCode" class="mission-select" type="text" maxlength="20" placeholder="輸入對方的 MEMBER ID">
         <div class="field-hint">
           此項僅作偏好登記，實際安排仍由總召決定。
         </div>
@@ -797,6 +717,7 @@
 </section>
 </main>
 
+<script src="https://cdn.jsdelivr.net/npm/appwrite@23.0.0"></script>
 <script src="app.js"></script>
 
 </body>
