@@ -1,8 +1,3 @@
-/* =====================================================
-   PROJECT : CHRISTMAS II
-   APPWRITE
-===================================================== */
-
 const APPWRITE_ENDPOINT =
   "https://sgp.cloud.appwrite.io/v1";
 
@@ -12,37 +7,23 @@ const APPWRITE_PROJECT_ID =
 const DATABASE_ID =
   "christmas-2026";
 
-
 const TABLES = {
-
-  members:
-    "members",
-
-  targetFiles:
-    "target_files",
-
-  assignments:
-    "assignments",
-
-  settings:
-    "settings"
-
+  members:"members",
+  targetFiles:"target_files",
+  assignments:"assignments",
+  settings:"settings"
 };
-
 
 const client =
   new Appwrite.Client()
     .setEndpoint(APPWRITE_ENDPOINT)
     .setProject(APPWRITE_PROJECT_ID);
 
-
 const account =
   new Appwrite.Account(client);
 
-
 const tablesDB =
   new Appwrite.TablesDB(client);
-
 
 
 /* =====================================================
@@ -50,53 +31,38 @@ const tablesDB =
 ===================================================== */
 
 let currentUser = null;
-
 let currentMemberId = "";
-
 let authMode = "login";
-
 let redAnswers = {};
-
 let switchingDocument = false;
-
 
 
 /* =====================================================
    HELPERS
 ===================================================== */
 
-const wait =
-  ms =>
-    new Promise(
-      resolve =>
-        setTimeout(resolve,ms)
-    );
-
+const wait = ms =>
+  new Promise(resolve =>
+    setTimeout(resolve,ms)
+  );
 
 function memberEmail(id){
-
   return (
     id.toLowerCase() +
     "@christmas.example"
   );
-
 }
-
 
 function validMemberId(value){
-
   return /^[A-Za-z0-9_-]{3,20}$/
     .test(value);
-
 }
-
 
 function setMessage(
   id,
   text,
   type="error"
 ){
-
   const element =
     document.getElementById(id);
 
@@ -109,9 +75,7 @@ function setMessage(
 
   element.innerHTML =
     text;
-
 }
-
 
 
 /* =====================================================
@@ -121,70 +85,41 @@ function setMessage(
 function hideStandalonePages(){
 
   document
-    .querySelectorAll(
-      ".standalone-page"
-    )
+    .querySelectorAll(".standalone-page")
     .forEach(page=>{
-
-      page.classList.add(
-        "hidden"
-      );
-
+      page.classList.add("hidden");
     });
-
 }
-
 
 function showStandalonePage(id){
 
   hideStandalonePages();
 
   document
-    .getElementById(
-      "fileCabinet"
-    )
-    ?.classList.add(
-      "hidden"
-    );
-
+    .getElementById("fileCabinet")
+    ?.classList.add("hidden");
 
   const page =
     document.getElementById(id);
 
   if(page){
-
-    page.classList.remove(
-      "hidden"
-    );
-
+    page.classList.remove("hidden");
   }
 
-
   window.scrollTo({
-
     top:0,
-
     behavior:"instant"
-
   });
-
 }
-
 
 function showCabinet(){
 
   hideStandalonePages();
 
   document
-    .getElementById(
-      "fileCabinet"
-    )
-    ?.classList.remove(
-      "hidden"
-    );
-
+    .getElementById("fileCabinet")
+    ?.classList.remove("hidden");
 }
-
 
 
 /* =====================================================
@@ -195,119 +130,78 @@ function showAuthMode(mode){
 
   authMode = mode;
 
-
   const loginTab =
-    document.getElementById(
-      "loginTab"
-    );
+    document.getElementById("loginTab");
 
   const registerTab =
-    document.getElementById(
-      "registerTab"
-    );
+    document.getElementById("registerTab");
 
   const registerOnly =
-    document.getElementById(
-      "registerOnly"
-    );
+    document.getElementById("registerOnly");
 
   const authTitle =
-    document.getElementById(
-      "authTitle"
-    );
+    document.getElementById("authTitle");
 
   const authDescription =
-    document.getElementById(
-      "authDescription"
-    );
+    document.getElementById("authDescription");
 
   const authButton =
-    document.getElementById(
-      "authButton"
-    );
+    document.getElementById("authButton");
 
   const password =
-    document.getElementById(
-      "memberPassword"
-    );
-
+    document.getElementById("memberPassword");
 
   loginTab?.classList.toggle(
     "active",
     mode === "login"
   );
 
-
   registerTab?.classList.toggle(
     "active",
     mode === "register"
   );
-
 
   registerOnly?.classList.toggle(
     "hidden",
     mode !== "register"
   );
 
-
   if(authTitle){
-
     authTitle.textContent =
       mode === "register"
-      ? "CREATE MEMBER ID"
-      : "IDENTITY VERIFICATION";
-
+        ? "CREATE MEMBER ID"
+        : "IDENTITY VERIFICATION";
   }
-
 
   if(authDescription){
-
     authDescription.textContent =
       mode === "register"
-      ? "第一次進入請建立 MEMBER ID、密碼並填寫真實姓名。"
-      : "輸入你設定的 MEMBER ID 與密碼。";
-
+        ? "第一次進入請建立 MEMBER ID、密碼並填寫真實姓名。"
+        : "輸入你設定的 MEMBER ID 與密碼。";
   }
-
 
   if(authButton){
-
     authButton.textContent =
       mode === "register"
-      ? "建立帳號"
-      : "登入系統";
-
+        ? "建立帳號"
+        : "登入系統";
   }
-
 
   if(password){
-
     password.autocomplete =
       mode === "register"
-      ? "new-password"
-      : "current-password";
-
+        ? "new-password"
+        : "current-password";
   }
-
 
   const message =
-    document.getElementById(
-      "authMessage"
-    );
-
+    document.getElementById("authMessage");
 
   if(message){
-
-    message.className =
-      "message";
-
-    message.innerHTML =
-      "";
-
+    message.className = "message";
+    message.innerHTML = "";
   }
-
 }
-
 
 
 /* =====================================================
@@ -317,44 +211,27 @@ function showAuthMode(mode){
 async function submitAuth(){
 
   const memberIdInput =
-    document.getElementById(
-      "memberId"
-    );
+    document.getElementById("memberId");
 
   const passwordInput =
-    document.getElementById(
-      "memberPassword"
-    );
+    document.getElementById("memberPassword");
 
   const realNameInput =
-    document.getElementById(
-      "realName"
-    );
+    document.getElementById("realName");
 
   const button =
-    document.getElementById(
-      "authButton"
-    );
-
+    document.getElementById("authButton");
 
   const id =
-    memberIdInput
-      ?.value
-      .trim() || "";
+    memberIdInput?.value.trim() || "";
 
   const password =
-    passwordInput
-      ?.value || "";
+    passwordInput?.value || "";
 
   const realName =
-    realNameInput
-      ?.value
-      .trim() || "";
+    realNameInput?.value.trim() || "";
 
-
-  if(
-    !validMemberId(id)
-  ){
+  if(!validMemberId(id)){
 
     setMessage(
       "authMessage",
@@ -362,13 +239,9 @@ async function submitAuth(){
     );
 
     return;
-
   }
 
-
-  if(
-    password.length < 8
-  ){
+  if(password.length < 8){
 
     setMessage(
       "authMessage",
@@ -376,9 +249,7 @@ async function submitAuth(){
     );
 
     return;
-
   }
-
 
   if(
     authMode === "register" &&
@@ -391,87 +262,44 @@ async function submitAuth(){
     );
 
     return;
-
   }
 
-
   button.disabled = true;
-
-  button.textContent =
-    "VERIFYING...";
-
+  button.textContent = "VERIFYING...";
 
   try{
 
-
-    /* =========================
-       REGISTER
-    ========================= */
-
-    if(
-      authMode === "register"
-    ){
+    if(authMode === "register"){
 
       currentUser =
         await account.create({
-
-          userId:
-            Appwrite.ID.unique(),
-
-          email:
-            memberEmail(id),
-
-          password:
-            password,
-
-          name:
-            id
-
+          userId:Appwrite.ID.unique(),
+          email:memberEmail(id),
+          password:password,
+          name:id
         });
-
 
       await account
         .createEmailPasswordSession({
-
-          email:
-            memberEmail(id),
-
-          password:
-            password
-
+          email:memberEmail(id),
+          password:password
         });
-
 
       currentUser =
         await account.get();
 
-
       await tablesDB.createRow({
-
-        databaseId:
-          DATABASE_ID,
-
-        tableId:
-          TABLES.members,
-
-        rowId:
-          currentUser.$id,
+        databaseId:DATABASE_ID,
+        tableId:TABLES.members,
+        rowId:currentUser.$id,
 
         data:{
-
-          username:
-            id,
-
-          real_name:
-            realName,
-
-          target_file_complete:
-            false
-
+          username:id,
+          real_name:realName,
+          target_file_complete:false
         },
 
         permissions:[
-
           Appwrite.Permission.read(
             Appwrite.Role.user(
               currentUser.$id
@@ -483,112 +311,64 @@ async function submitAuth(){
               currentUser.$id
             )
           )
-
         ]
-
       });
 
-
-      currentMemberId =
-        id;
-
+      currentMemberId = id;
 
       showStandalonePage(
         "redFilePage"
       );
 
-    }
-
-
-    /* =========================
-       LOGIN
-    ========================= */
-
-    else{
-
+    }else{
 
       await account
         .createEmailPasswordSession({
-
-          email:
-            memberEmail(id),
-
-          password:
-            password
-
+          email:memberEmail(id),
+          password:password
         });
-
 
       currentUser =
         await account.get();
 
-
-      currentMemberId =
-        id;
-
+      currentMemberId = id;
 
       await routeAfterLogin();
-
     }
 
+  }catch(error){
 
-  }
-  catch(error){
-
-    console.error(
-      error
-    );
-
+    console.error(error);
 
     let message =
       "登入／註冊失敗，請確認資料後再試一次。";
 
-
-    if(
-      error.code === 409
-    ){
-
+    if(error.code === 409){
       message =
         "這個 MEMBER ID 已經被使用，請改用 LOGIN。";
-
     }
 
-
-    if(
-      error.code === 401
-    ){
-
+    if(error.code === 401){
       message =
         "MEMBER ID 或密碼不正確。";
-
     }
 
-
     setMessage(
-
       "authMessage",
-
       "<strong>ACCESS DENIED</strong><br>" +
       message
-
     );
 
-  }
-  finally{
+  }finally{
 
-    button.disabled =
-      false;
-
+    button.disabled = false;
 
     button.textContent =
       authMode === "register"
-      ? "建立帳號"
-      : "登入系統";
-
+        ? "建立帳號"
+        : "登入系統";
   }
-
 }
-
 
 
 /* =====================================================
@@ -601,27 +381,16 @@ async function routeAfterLogin(){
 
     const member =
       await tablesDB.getRow({
-
-        databaseId:
-          DATABASE_ID,
-
-        tableId:
-          TABLES.members,
-
-        rowId:
-          currentUser.$id
-
+        databaseId:DATABASE_ID,
+        tableId:TABLES.members,
+        rowId:currentUser.$id
       });
-
 
     currentMemberId =
       member.username ||
       currentMemberId;
 
-
-    if(
-      member.target_file_complete
-    ){
+    if(member.target_file_complete){
 
       await runDecryptSequence();
 
@@ -630,35 +399,25 @@ async function routeAfterLogin(){
         true
       );
 
-    }
-    else{
+    }else{
 
       showStandalonePage(
         "redFilePage"
       );
-
     }
 
-  }
-  catch(error){
+  }catch(error){
 
-    console.error(
-      error
-    );
-
+    console.error(error);
 
     await logoutMember();
-
 
     setMessage(
       "authMessage",
       "會員資料讀取失敗，請聯絡總召。"
     );
-
   }
-
 }
-
 
 
 /* =====================================================
@@ -669,46 +428,25 @@ async function logoutMember(){
 
   try{
 
-    await account
-      .deleteSession({
+    await account.deleteSession({
+      sessionId:"current"
+    });
 
-        sessionId:
-          "current"
-
-      });
-
-  }
-  catch(error){
-
-    console.log(
-      "No active session."
-    );
-
+  }catch(error){
+    console.log("No active session.");
   }
 
-
-  currentUser =
-    null;
-
-  currentMemberId =
-    "";
-
+  currentUser = null;
+  currentMemberId = "";
 
   document
-    .getElementById(
-      "fileCabinet"
-    )
-    ?.classList.add(
-      "hidden"
-    );
-
+    .getElementById("fileCabinet")
+    ?.classList.add("hidden");
 
   showStandalonePage(
     "loginPage"
   );
-
 }
-
 
 
 /* =====================================================
@@ -719,31 +457,18 @@ async function submitRedFile(event){
 
   event.preventDefault();
 
-
   const required = [
-
     "gender",
-
     "smoked",
-
     "has_pet",
-
     "alcohol_frequency",
-
     "lifestyle",
-
     "sweet_preference"
-
   ];
 
+  for(const key of required){
 
-  for(
-    const key of required
-  ){
-
-    if(
-      !redAnswers[key]
-    ){
+    if(!redAnswers[key]){
 
       setMessage(
         "redFileMessage",
@@ -751,24 +476,17 @@ async function submitRedFile(event){
       );
 
       return;
-
     }
-
   }
-
 
   const button =
     document.getElementById(
       "redFileSubmit"
     );
 
-
-  button.disabled =
-    true;
-
+  button.disabled = true;
   button.textContent =
     "TRANSMITTING...";
-
 
   const data = {
 
@@ -777,25 +495,19 @@ async function submitRedFile(event){
 
     wish:
       document
-        .getElementById(
-          "wish"
-        )
+        .getElementById("wish")
         .value
         .trim(),
 
     preference:
       document
-        .getElementById(
-          "preference"
-        )
+        .getElementById("preference")
         .value
         .trim(),
 
     message:
       document
-        .getElementById(
-          "giftMessage"
-        )
+        .getElementById("giftMessage")
         .value
         .trim(),
 
@@ -804,16 +516,12 @@ async function submitRedFile(event){
 
     birthday_range:
       document
-        .getElementById(
-          "birthdayRange"
-        )
+        .getElementById("birthdayRange")
         .value,
 
     height_range:
       document
-        .getElementById(
-          "heightRange"
-        )
+        .getElementById("heightRange")
         .value,
 
     smoked:
@@ -823,38 +531,24 @@ async function submitRedFile(event){
       redAnswers.has_pet,
 
     alcohol_frequency:
-      redAnswers
-        .alcohol_frequency,
+      redAnswers.alcohol_frequency,
 
     lifestyle:
       redAnswers.lifestyle,
 
     sweet_preference:
-      redAnswers
-        .sweet_preference
-
+      redAnswers.sweet_preference
   };
-
 
   try{
 
-
     await tablesDB.createRow({
-
-      databaseId:
-        DATABASE_ID,
-
-      tableId:
-        TABLES.targetFiles,
-
-      rowId:
-        currentUser.$id,
-
-      data:
-        data,
+      databaseId:DATABASE_ID,
+      tableId:TABLES.targetFiles,
+      rowId:currentUser.$id,
+      data:data,
 
       permissions:[
-
         Appwrite.Permission.read(
           Appwrite.Role.user(
             currentUser.$id
@@ -866,88 +560,54 @@ async function submitRedFile(event){
             currentUser.$id
           )
         )
-
       ]
-
     });
-
 
     await tablesDB.updateRow({
-
-      databaseId:
-        DATABASE_ID,
-
-      tableId:
-        TABLES.members,
-
-      rowId:
-        currentUser.$id,
+      databaseId:DATABASE_ID,
+      tableId:TABLES.members,
+      rowId:currentUser.$id,
 
       data:{
-
-        target_file_complete:
-          true
-
+        target_file_complete:true
       }
-
     });
 
-
     setMessage(
-
       "redFileMessage",
-
       "<strong>FILE ACCEPTED</strong><br>情報檔案已完成。",
-
       "success"
-
     );
 
-
-    await wait(
-      650
-    );
-
+    await wait(650);
 
     await runDecryptSequence();
-
 
     await openFileTab(
       "myFile",
       true
     );
 
+  }catch(error){
 
-  }
-  catch(error){
-
-    console.error(
-      error
-    );
-
+    console.error(error);
 
     setMessage(
       "redFileMessage",
       "資料傳送失敗。若你已填過檔案，請重新登入。"
     );
 
-  }
-  finally{
+  }finally{
 
-    button.disabled =
-      false;
-
+    button.disabled = false;
     button.textContent =
       "SUBMIT FILE";
-
   }
-
 }
 
 
-
 /* =====================================================
-   RED FILE CHOICE BUTTONS
+   CHOICE BUTTON
 ===================================================== */
 
 document.addEventListener(
@@ -959,46 +619,31 @@ document.addEventListener(
         ".choices button[data-value]"
       );
 
-
-    if(
-      !button
-    ){
+    if(!button){
       return;
     }
 
-
     const group =
-      button.closest(
-        ".choices"
-      );
-
+      button.closest(".choices");
 
     group
-      .querySelectorAll(
-        "button"
-      )
+      .querySelectorAll("button")
       .forEach(item=>{
-
         item.classList.remove(
           "selected"
         );
-
       });
-
 
     button.classList.add(
       "selected"
     );
 
-
     redAnswers[
       group.dataset.field
     ] =
       button.dataset.value;
-
   }
 );
-
 
 
 /* =====================================================
@@ -1009,18 +654,14 @@ document.addEventListener(
   "keydown",
   event=>{
 
-    if(
-      event.key !== "Enter"
-    ){
+    if(event.key !== "Enter"){
       return;
     }
-
 
     const loginPage =
       document.getElementById(
         "loginPage"
       );
-
 
     if(
       loginPage &&
@@ -1028,14 +669,10 @@ document.addEventListener(
         "hidden"
       )
     ){
-
       submitAuth();
-
     }
-
   }
 );
-
 
 
 /* =====================================================
@@ -1044,107 +681,90 @@ document.addEventListener(
 
 async function loadMyFile(){
 
-  const results =
+  const [
+    member,
+    file
+  ] =
     await Promise.all([
 
       tablesDB.getRow({
-
-        databaseId:
-          DATABASE_ID,
-
-        tableId:
-          TABLES.members,
-
-        rowId:
-          currentUser.$id
-
+        databaseId:DATABASE_ID,
+        tableId:TABLES.members,
+        rowId:currentUser.$id
       }),
 
-
       tablesDB.getRow({
-
-        databaseId:
-          DATABASE_ID,
-
-        tableId:
-          TABLES.targetFiles,
-
-        rowId:
-          currentUser.$id
-
+        databaseId:DATABASE_ID,
+        tableId:TABLES.targetFiles,
+        rowId:currentUser.$id
       })
 
     ]);
 
 
-  const member =
-    results[0];
+  /*
+    FILE NO.
 
-  const file =
-    results[1];
+    Appwrite：
+    1 -> 01
+    2 -> 02
+    10 -> 10
+  */
+
+  const fileNumber =
+    member.file_no !== null &&
+    member.file_no !== undefined
+
+      ? String(
+          member.file_no
+        ).padStart(2,"0")
+
+      : "--";
 
 
   const values = {
 
     myFileNo:
-      (
-        member.username ||
-        "---"
-      )
-      .toUpperCase(),
+      fileNumber,
 
     myRealName:
-      member.real_name ||
-      "---",
+      member.real_name || "---",
 
     myMemberId:
-      member.username ||
-      "---",
+      member.username || "---",
 
     myWish:
-      file.wish ||
-      "---",
+      file.wish || "---",
 
     myPreference:
-      file.preference ||
-      "---",
+      file.preference || "---",
 
     myGiftMessage:
-      file.message ||
-      "---",
+      file.message || "---",
 
     myGender:
-      file.gender ||
-      "---",
+      file.gender || "---",
 
     myBirthday:
-      file.birthday_range ||
-      "---",
+      file.birthday_range || "---",
 
     myHeight:
-      file.height_range ||
-      "---",
+      file.height_range || "---",
 
     mySmoked:
-      file.smoked ||
-      "---",
+      file.smoked || "---",
 
     myPet:
-      file.has_pet ||
-      "---",
+      file.has_pet || "---",
 
     myAlcohol:
-      file.alcohol_frequency ||
-      "---",
+      file.alcohol_frequency || "---",
 
     myLifestyle:
-      file.lifestyle ||
-      "---",
+      file.lifestyle || "---",
 
     mySweet:
-      file.sweet_preference ||
-      "---"
-
+      file.sweet_preference || "---"
   };
 
 
@@ -1154,23 +774,15 @@ async function loadMyFile(){
       ([id,value])=>{
 
         const element =
-          document.getElementById(
-            id
-          );
-
+          document.getElementById(id);
 
         if(element){
-
           element.textContent =
             value;
-
         }
-
       }
     );
-
 }
-
 
 
 /* =====================================================
@@ -1185,21 +797,12 @@ function setActiveFileTab(tab){
     )
     .forEach(button=>{
 
-      button
-        .classList
-        .toggle(
-
-          "active",
-
-          button.dataset.fileTab ===
-          tab
-
-        );
-
+      button.classList.toggle(
+        "active",
+        button.dataset.fileTab === tab
+      );
     });
-
 }
-
 
 
 /* =====================================================
@@ -1208,98 +811,123 @@ function setActiveFileTab(tab){
 
 async function openFileTab(
   tab,
-  skipDelay=false
+  instant=false
 ){
 
-  if(
-    !currentUser
-  ){
+  if(!currentUser){
 
     showStandalonePage(
       "loginPage"
     );
 
     return;
-
   }
 
 
-  if(
-    switchingDocument
-  ){
+  if(switchingDocument){
     return;
   }
 
 
-  switchingDocument =
-    true;
+  switchingDocument = true;
 
 
   showCabinet();
 
-
-  setActiveFileTab(
-    tab
-  );
+  setActiveFileTab(tab);
 
 
-  let pageId =
-    "";
+  let pageId = "";
 
 
-  if(
-    tab === "myFile"
-  ){
+  if(tab === "myFile"){
 
     pageId =
       "myFilePage";
 
-
     try{
-
       await loadMyFile();
-
-    }
-    catch(error){
-
-      console.error(
-        error
-      );
-
+    }catch(error){
+      console.error(error);
     }
 
-  }
-
-
-  else if(
-    tab === "lodging"
-  ){
+  }else if(tab === "lodging"){
 
     pageId =
       "lodgingPage";
 
-  }
-
-
-  else if(
-    tab === "target"
-  ){
+  }else if(tab === "target"){
 
     pageId =
       "targetPage";
 
-  }
-
-
-  else if(
-    tab === "red"
-  ){
+  }else if(tab === "red"){
 
     pageId =
       "redLockedPage";
-
   }
 
+
+  /*
+    找出目前正在顯示的文件
+  */
+
+  const oldPage =
+    document.querySelector(
+      ".document-page:not(.hidden)"
+    );
+
+
+  const newPage =
+    document.getElementById(
+      pageId
+    );
+
+
+  if(!newPage){
+
+    switchingDocument = false;
+    return;
+  }
+
+
+  /*
+    如果第一次進入，
+    不需要舊頁淡出。
+  */
+
+  if(
+    oldPage &&
+    oldPage !== newPage &&
+    !instant
+  ){
+
+    /*
+      只淡內容。
+      不移動紙張。
+    */
+
+    oldPage
+      .querySelectorAll(
+        ".file > *"
+      )
+      .forEach(element=>{
+
+        element.style.transition =
+          "opacity .13s ease";
+
+        element.style.opacity =
+          "0";
+      });
+
+
+    await wait(135);
+  }
+
+
+  /*
+    隱藏所有文件
+  */
 
   document
     .querySelectorAll(
@@ -1315,65 +943,69 @@ async function openFileTab(
         "document-enter"
       );
 
+
+      page
+        .querySelectorAll(
+          ".file > *"
+        )
+        .forEach(element=>{
+
+          element.style.transition =
+            "";
+
+          element.style.opacity =
+            "";
+
+        });
+
     });
 
 
-  const page =
-    document.getElementById(
-      pageId
-    );
+  /*
+    顯示新文件
+  */
+
+  newPage.classList.remove(
+    "hidden"
+  );
 
 
-  if(page){
+  /*
+    重新觸發動畫
+  */
 
-    page.classList.remove(
-      "hidden"
-    );
-
-
-    /*
-      強制瀏覽器重新計算，
-      讓每次點分頁動畫都會重新播放
-    */
-
-    void page.offsetWidth;
+  void newPage.offsetWidth;
 
 
-    page.classList.add(
-      "document-enter"
-    );
+  newPage.classList.add(
+    "document-enter"
+  );
 
-  }
 
+  /*
+    不再 smooth scroll。
+    避免整個檔案看起來跟書籤分開。
+  */
 
   window.scrollTo({
-
     top:0,
-
-    behavior:
-      skipDelay
-      ? "instant"
-      : "smooth"
-
+    behavior:"instant"
   });
 
 
   await wait(
-    skipDelay
-    ? 100
-    : 430
+    instant
+      ? 80
+      : 430
   );
 
 
-  switchingDocument =
-    false;
-
+  switchingDocument = false;
 }
 
 
-
 /* =====================================================
-   DECRYPT ANIMATION
+   DECRYPT LOGIN
 ===================================================== */
 
 async function runDecryptSequence(){
@@ -1403,7 +1035,6 @@ async function runDecryptSequence(){
       "decryptPercent"
     );
 
-
   if(
     !overlay ||
     !status ||
@@ -1418,94 +1049,58 @@ async function runDecryptSequence(){
     "hidden"
   );
 
-
   title.textContent =
     "AUTHORIZATION VERIFIED";
 
-
-  bar.style.width =
-    "0%";
-
-
-  percent.textContent =
-    "0%";
-
+  bar.style.width = "0%";
+  percent.textContent = "0%";
 
   status.textContent =
     "VERIFYING MEMBER CREDENTIALS...";
 
-
-  await wait(
-    280
-  );
+  await wait(280);
 
 
-  bar.style.width =
-    "24%";
-
-  percent.textContent =
-    "24%";
+  bar.style.width = "24%";
+  percent.textContent = "24%";
 
   status.textContent =
     "ACCESSING PERSONNEL DATABASE...";
 
-
-  await wait(
-    330
-  );
+  await wait(330);
 
 
-  bar.style.width =
-    "51%";
-
-  percent.textContent =
-    "51%";
+  bar.style.width = "51%";
+  percent.textContent = "51%";
 
   status.textContent =
     "DECRYPTING CLASSIFIED RECORD...";
 
-
-  await wait(
-    360
-  );
+  await wait(360);
 
 
-  bar.style.width =
-    "78%";
-
-  percent.textContent =
-    "78%";
+  bar.style.width = "78%";
+  percent.textContent = "78%";
 
   status.textContent =
     "VERIFYING SECURITY CLEARANCE...";
 
-
-  await wait(
-    330
-  );
+  await wait(330);
 
 
-  bar.style.width =
-    "100%";
-
-  percent.textContent =
-    "100%";
+  bar.style.width = "100%";
+  percent.textContent = "100%";
 
   status.textContent =
     "FILE DECRYPTED";
 
-
-  await wait(
-    420
-  );
+  await wait(420);
 
 
   overlay.classList.add(
     "hidden"
   );
-
 }
-
 
 
 /* =====================================================
@@ -1519,17 +1114,11 @@ function createSnow(){
       "snow"
     );
 
-
-  if(
-    !snow
-  ){
+  if(!snow){
     return;
   }
 
-
-  snow.innerHTML =
-    "";
-
+  snow.innerHTML = "";
 
   for(
     let i=0;
@@ -1542,51 +1131,29 @@ function createSnow(){
         "span"
       );
 
-
-    flake.textContent =
-      "•";
-
+    flake.textContent = "•";
 
     flake.style.left =
-      Math.random() *
-      100 +
-      "%";
-
+      Math.random() * 100 + "%";
 
     flake.style.fontSize =
       (
-        Math.random() *
-        12 +
-        6
-      ) +
-      "px";
-
+        Math.random() * 12 + 6
+      ) + "px";
 
     flake.style.animationDuration =
       (
-        Math.random() *
-        8 +
-        8
-      ) +
-      "s";
-
+        Math.random() * 8 + 8
+      ) + "s";
 
     flake.style.animationDelay =
       (
-        Math.random() *
-        -15
-      ) +
-      "s";
+        Math.random() * -15
+      ) + "s";
 
-
-    snow.appendChild(
-      flake
-    );
-
+    snow.appendChild(flake);
   }
-
 }
-
 
 
 /* =====================================================
@@ -1597,61 +1164,38 @@ window.addEventListener(
   "DOMContentLoaded",
   async()=>{
 
-
     createSnow();
 
 
     /*
-      使用者要求：
-      每次重新整理或重新進入網站，
-      都必須重新登入。
-
-      因此網站啟動時直接刪除目前 session。
+      每次重新整理網站
+      都要求重新登入。
     */
 
     try{
 
-      await account
-        .deleteSession({
+      await account.deleteSession({
+        sessionId:"current"
+      });
 
-          sessionId:
-            "current"
-
-        });
-
-    }
-    catch(error){
-
+    }catch(error){
       /*
-        沒有 session 時
-        Appwrite 可能回錯誤，
-        這裡直接忽略即可。
+        沒有登入狀態時忽略。
       */
-
     }
 
 
-    currentUser =
-      null;
-
-
-    currentMemberId =
-      "";
+    currentUser = null;
+    currentMemberId = "";
 
 
     document
-      .getElementById(
-        "fileCabinet"
-      )
-      ?.classList.add(
-        "hidden"
-      );
+      .getElementById("fileCabinet")
+      ?.classList.add("hidden");
 
 
     showStandalonePage(
       "loginPage"
     );
-
-
   }
 );
