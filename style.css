@@ -1,1 +1,598 @@
-*{box-sizing:border-box}html{background:#0d0f11}body{margin:0;background:radial-gradient(circle at top,#25292d 0,#111417 42%,#08090a 100%);color:#17191b;font-family:Arial,"Noto Sans TC",sans-serif;min-height:100vh}.hidden{display:none!important}.page{width:min(100% - 28px,920px);margin:0 auto;padding:56px 0 80px}.file{position:relative;background:#e6e6e1;padding:58px 62px;min-height:640px;box-shadow:0 30px 80px #0009;border:1px solid #73777a;overflow:hidden}.file:before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.14;background:repeating-linear-gradient(0deg,#0000 0 3px,#000 4px)}.stamp{position:absolute;right:38px;top:30px;border:3px solid #2b2d2f;padding:7px 12px;font-weight:900;letter-spacing:3px;transform:rotate(-3deg)}.stamp.red{color:#a31318;border-color:#a31318}.meta,.eyebrow,small,label{letter-spacing:1.8px;font-size:12px;font-weight:800}.meta{color:#65696c;margin-bottom:50px}.eyebrow{color:#555b60;margin:0 0 8px}h1{font-size:clamp(36px,7vw,72px);line-height:.95;margin:0 0 30px;letter-spacing:-3px}h1 span{color:#9b1117}.notice,.panel,.location{border:1px solid #96999a;background:#f1f1ed;padding:20px;line-height:1.7}.auth-switch{display:flex;gap:8px;margin-top:28px}.auth-tab,.folder-tabs button,.choices button{border:1px solid #777;background:#d9dad6;padding:12px 18px;font-weight:800;cursor:pointer}.auth-tab.active,.folder-tabs button.active,.choices button.selected{background:#17191b;color:#fff}.panel{margin-top:8px}.panel h2,.section-title{font-size:14px;letter-spacing:3px;margin:28px 0 18px;border-bottom:2px solid #1d2022;padding-bottom:10px}label{display:block;margin:16px 0 7px}input,textarea,select{width:100%;border:1px solid #85898c;background:#fafaf7;padding:13px;font:inherit}textarea{min-height:110px;resize:vertical}.primary{width:100%;margin-top:22px;padding:15px;border:0;background:#17191b;color:#fff;font-weight:900;letter-spacing:2px;cursor:pointer}.message{margin-top:14px;line-height:1.5}.message.error{color:#9b1117}.message.success{color:#245c3d}.choices{display:flex;flex-wrap:wrap;gap:8px}.choice-field{margin:18px 0}footer{margin-top:45px;border-top:1px solid #999;padding-top:16px;font-size:11px;letter-spacing:2px}.folder-tabs{width:min(100% - 28px,920px);margin:26px auto -1px;display:flex;align-items:end;gap:4px;position:relative;z-index:3}.folder-tabs button{background:#c9cbc8;border-color:#666;border-bottom:0}.folder-tabs .locked:after{content:" •";color:#9b1117}.folder-tabs .redtab{color:#8f1016}.folder-tabs .logout{margin-left:auto;background:#111;color:#ddd}.dossier{display:grid;grid-template-columns:230px 1fr;gap:34px;align-items:start}.portrait-card{background:#111;border:1px solid #555;padding:9px;color:#ddd}.portrait-card img{display:block;width:100%;aspect-ratio:3/4;object-fit:cover;filter:grayscale(1) contrast(1.15)}.portrait-card span{display:block;padding:10px 4px 3px;font-size:10px;letter-spacing:2px}.facts{display:grid;grid-template-columns:1fr 1fr;border-top:2px solid #222}.facts div,.identity-grid div{padding:14px 0;border-bottom:1px solid #999}.facts small,.identity-grid small,.intel-grid small,.brief-grid small{display:block;color:#65696c;margin-bottom:5px}.facts strong,.identity-grid strong{font-size:16px}.intel-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.intel-grid article,.brief-grid article{border:1px solid #999;background:#f4f4f0;padding:18px}.intel-grid p{white-space:pre-wrap;line-height:1.6}.identity-grid{display:grid;grid-template-columns:repeat(2,1fr);column-gap:30px}.brief-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:28px 0}.brief-grid strong{display:block;font-size:24px;margin-top:10px}.rooms{display:grid;gap:16px}.rooms article{display:grid;grid-template-columns:240px 1fr;border:1px solid #999;background:#f3f3ef}.rooms img{width:100%;height:160px;object-fit:cover;background:#ddd}.rooms article div{padding:20px}.restricted{text-align:center}.locked-portrait{width:220px;aspect-ratio:3/4;object-fit:cover;filter:grayscale(1) brightness(.55);border:1px solid #555;margin:30px auto}.restricted h1{font-size:52px}.bars{margin:28px 0;font-family:monospace;font-size:20px;letter-spacing:4px}.snow{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:20}.snow span{position:absolute;top:-20px;color:#fff7;animation:fall linear infinite}@keyframes fall{to{transform:translateY(110vh)}}@media(max-width:700px){.page{width:min(100% - 16px,920px);padding:24px 0 55px}.file{padding:42px 22px}.stamp{right:18px;top:18px;font-size:10px}.meta{margin-bottom:42px}.folder-tabs{width:100%;overflow-x:auto;margin:14px 0 -1px;padding:0 8px}.folder-tabs button{white-space:nowrap;padding:10px 12px}.folder-tabs .logout{margin-left:0}.dossier{grid-template-columns:1fr}.portrait-card{width:min(240px,75%)}.intel-grid,.brief-grid,.identity-grid{grid-template-columns:1fr}.rooms article{grid-template-columns:1fr}.rooms img{height:210px}h1{letter-spacing:-2px}}
+*{
+  box-sizing:border-box;
+}
+
+html{
+  background:#0d0f11;
+}
+
+body{
+  margin:0;
+  background:
+    radial-gradient(
+      circle at top,
+      #25292d 0,
+      #111417 42%,
+      #08090a 100%
+    );
+  color:#17191b;
+  font-family:Arial,"Noto Sans TC",sans-serif;
+  min-height:100vh;
+}
+
+.hidden{
+  display:none!important;
+}
+
+/* =========================
+   PAGE
+========================= */
+
+.page{
+  width:min(100% - 28px,920px);
+  margin:0 auto;
+  padding:56px 0 80px;
+}
+
+/* 登入後有分頁的頁面
+   取消頂部空間，讓分頁直接接文件 */
+.folder-tabs:not(.hidden) + .page:not(.hidden){
+  padding-top:0;
+}
+
+/* =========================
+   FILE
+========================= */
+
+.file{
+  position:relative;
+  background:#e6e6e1;
+  padding:58px 62px;
+  min-height:640px;
+
+  box-shadow:
+    0 30px 80px #0009;
+
+  border:1px solid #73777a;
+  overflow:hidden;
+}
+
+.file:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  opacity:.14;
+
+  background:
+    repeating-linear-gradient(
+      0deg,
+      #0000 0 3px,
+      #000 4px
+    );
+}
+
+/* =========================
+   STAMP
+========================= */
+
+.stamp{
+  position:absolute;
+  right:38px;
+  top:30px;
+
+  border:3px solid #2b2d2f;
+  padding:7px 12px;
+
+  font-weight:900;
+  letter-spacing:3px;
+
+  transform:rotate(-3deg);
+}
+
+.stamp.red{
+  color:#a31318;
+  border-color:#a31318;
+}
+
+/* =========================
+   TYPOGRAPHY
+========================= */
+
+.meta,
+.eyebrow,
+small,
+label{
+  letter-spacing:1.8px;
+  font-size:12px;
+  font-weight:800;
+}
+
+.meta{
+  color:#65696c;
+  margin-bottom:50px;
+}
+
+.eyebrow{
+  color:#555b60;
+  margin:0 0 8px;
+}
+
+h1{
+  font-size:clamp(36px,7vw,72px);
+  line-height:.95;
+  margin:0 0 30px;
+  letter-spacing:-3px;
+}
+
+h1 span{
+  color:#9b1117;
+}
+
+/* =========================
+   BASIC BOXES
+========================= */
+
+.notice,
+.panel,
+.location{
+  border:1px solid #96999a;
+  background:#f1f1ed;
+  padding:20px;
+  line-height:1.7;
+}
+
+/* =========================
+   LOGIN
+========================= */
+
+.auth-switch{
+  display:flex;
+  gap:8px;
+  margin-top:28px;
+}
+
+.auth-tab,
+.folder-tabs button,
+.choices button{
+  border:1px solid #777;
+  background:#d9dad6;
+  padding:12px 18px;
+  font-weight:800;
+  cursor:pointer;
+}
+
+.auth-tab.active,
+.folder-tabs button.active,
+.choices button.selected{
+  background:#17191b;
+  color:#fff;
+}
+
+.panel{
+  margin-top:8px;
+}
+
+.panel h2,
+.section-title{
+  font-size:14px;
+  letter-spacing:3px;
+  margin:28px 0 18px;
+  border-bottom:2px solid #1d2022;
+  padding-bottom:10px;
+}
+
+label{
+  display:block;
+  margin:16px 0 7px;
+}
+
+input,
+textarea,
+select{
+  width:100%;
+  border:1px solid #85898c;
+  background:#fafaf7;
+  padding:13px;
+  font:inherit;
+}
+
+textarea{
+  min-height:110px;
+  resize:vertical;
+}
+
+.primary{
+  width:100%;
+  margin-top:22px;
+  padding:15px;
+
+  border:0;
+  background:#17191b;
+  color:#fff;
+
+  font-weight:900;
+  letter-spacing:2px;
+  cursor:pointer;
+}
+
+.message{
+  margin-top:14px;
+  line-height:1.5;
+}
+
+.message.error{
+  color:#9b1117;
+}
+
+.message.success{
+  color:#245c3d;
+}
+
+.choices{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+
+.choice-field{
+  margin:18px 0;
+}
+
+footer{
+  margin-top:45px;
+  border-top:1px solid #999;
+  padding-top:16px;
+
+  font-size:11px;
+  letter-spacing:2px;
+}
+
+/* =========================
+   FOLDER TABS
+========================= */
+
+.folder-tabs{
+  width:min(100% - 28px,920px);
+
+  /* 上方保留空間，下方直接貼文件 */
+  margin:26px auto 0;
+
+  display:flex;
+  align-items:flex-end;
+  gap:4px;
+
+  position:relative;
+  z-index:3;
+}
+
+.folder-tabs button{
+  background:#c9cbc8;
+  border-color:#666;
+
+  /* 下方不要產生第二條邊框 */
+  border-bottom:0;
+
+  position:relative;
+  z-index:2;
+}
+
+.folder-tabs button.active{
+  background:#e6e6e1;
+  color:#17191b;
+
+  /* active tab 與文件連成一體 */
+  margin-bottom:-1px;
+  padding-bottom:13px;
+}
+
+.folder-tabs .locked:after{
+  content:" •";
+  color:#9b1117;
+}
+
+.folder-tabs .redtab{
+  color:#8f1016;
+}
+
+.folder-tabs .logout{
+  margin-left:auto;
+  background:#111;
+  color:#ddd;
+}
+
+/* 分頁後面的顯示頁面直接接上 */
+.folder-tabs:not(.hidden) + .page:not(.hidden){
+  margin-top:0;
+  padding-top:0;
+}
+
+.folder-tabs:not(.hidden) + .page:not(.hidden) .file{
+  margin-top:0;
+}
+
+/* =========================
+   MY FILE
+========================= */
+
+.dossier{
+  display:grid;
+  grid-template-columns:230px 1fr;
+  gap:34px;
+  align-items:start;
+}
+
+.portrait-card{
+  background:#111;
+  border:1px solid #555;
+  padding:9px;
+  color:#ddd;
+}
+
+.portrait-card img{
+  display:block;
+  width:100%;
+  aspect-ratio:3/4;
+  object-fit:cover;
+
+  filter:
+    grayscale(1)
+    contrast(1.15);
+}
+
+.portrait-card span{
+  display:block;
+  padding:10px 4px 3px;
+
+  font-size:10px;
+  letter-spacing:2px;
+}
+
+/* =========================
+   PERSONNEL FACTS
+========================= */
+
+.facts{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  border-top:2px solid #222;
+}
+
+.facts div,
+.identity-grid div{
+  padding:14px 0;
+  border-bottom:1px solid #999;
+}
+
+.facts small,
+.identity-grid small,
+.intel-grid small,
+.brief-grid small{
+  display:block;
+  color:#65696c;
+  margin-bottom:5px;
+}
+
+.facts strong,
+.identity-grid strong{
+  font-size:16px;
+}
+
+/* =========================
+   GIFT INTELLIGENCE
+========================= */
+
+.intel-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:12px;
+}
+
+.intel-grid article,
+.brief-grid article{
+  border:1px solid #999;
+  background:#f4f4f0;
+  padding:18px;
+}
+
+.intel-grid p{
+  white-space:pre-wrap;
+  line-height:1.6;
+}
+
+/* =========================
+   IDENTITY INTELLIGENCE
+========================= */
+
+.identity-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  column-gap:30px;
+}
+
+/* =========================
+   LODGING
+========================= */
+
+.brief-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  margin:28px 0;
+}
+
+.brief-grid strong{
+  display:block;
+  font-size:24px;
+  margin-top:10px;
+}
+
+.rooms{
+  display:grid;
+  gap:16px;
+}
+
+.rooms article{
+  display:grid;
+  grid-template-columns:240px 1fr;
+
+  border:1px solid #999;
+  background:#f3f3ef;
+}
+
+.rooms img{
+  width:100%;
+  height:160px;
+  object-fit:cover;
+  background:#ddd;
+}
+
+.rooms article div{
+  padding:20px;
+}
+
+/* =========================
+   TARGET / RED FILE LOCKED
+========================= */
+
+.restricted{
+  text-align:center;
+}
+
+.locked-portrait{
+  width:220px;
+  aspect-ratio:3/4;
+  object-fit:cover;
+
+  filter:
+    grayscale(1)
+    brightness(.55);
+
+  border:1px solid #555;
+  margin:30px auto;
+}
+
+.restricted h1{
+  font-size:52px;
+}
+
+.bars{
+  margin:28px 0;
+
+  font-family:monospace;
+  font-size:20px;
+  letter-spacing:4px;
+}
+
+/* =========================
+   SNOW
+========================= */
+
+.snow{
+  position:fixed;
+  inset:0;
+
+  pointer-events:none;
+  overflow:hidden;
+
+  z-index:20;
+}
+
+.snow span{
+  position:absolute;
+  top:-20px;
+
+  color:#fff7;
+
+  animation:
+    fall linear infinite;
+}
+
+@keyframes fall{
+
+  to{
+    transform:translateY(110vh);
+  }
+
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media(max-width:700px){
+
+  .page{
+    width:min(100% - 16px,920px);
+    padding:24px 0 55px;
+  }
+
+  /* 有導覽列時不要留下黑色縫隙 */
+  .folder-tabs:not(.hidden) + .page:not(.hidden){
+    padding-top:0;
+  }
+
+  .file{
+    padding:42px 22px;
+  }
+
+  .stamp{
+    right:18px;
+    top:18px;
+    font-size:10px;
+  }
+
+  .meta{
+    margin-bottom:42px;
+  }
+
+  .folder-tabs{
+    width:calc(100% - 16px);
+    overflow-x:auto;
+
+    margin:14px auto 0;
+    padding:0;
+
+    gap:3px;
+  }
+
+  .folder-tabs button{
+    white-space:nowrap;
+    padding:10px 12px;
+  }
+
+  .folder-tabs button.active{
+    padding-bottom:11px;
+  }
+
+  .folder-tabs .logout{
+    margin-left:0;
+  }
+
+  .dossier{
+    grid-template-columns:1fr;
+  }
+
+  .portrait-card{
+    width:min(240px,75%);
+  }
+
+  .intel-grid,
+  .brief-grid,
+  .identity-grid{
+    grid-template-columns:1fr;
+  }
+
+  .rooms article{
+    grid-template-columns:1fr;
+  }
+
+  .rooms img{
+    height:210px;
+  }
+
+  h1{
+    letter-spacing:-2px;
+  }
+
+}
