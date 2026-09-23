@@ -1,810 +1,126 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>PROJECT : CHRISTMAS II</title>
-
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>PROJECT : CHRISTMAS II</title>
+  <link rel="stylesheet" href="style.css?v=20260923-6">
 </head>
-
 <body>
-
 <div class="snow" id="snow"></div>
-<div class="screen-flash" id="screenFlash"></div>
-
-<!-- =========================
-     DECRYPT
-========================= -->
-
-<div class="decrypt-overlay" id="decryptOverlay">
-
-  <div class="decrypt-box">
-
-    <div class="decrypt-label">
-      XMAS-II / SECURE DATA TRANSFER
-    </div>
-
-    <div class="decrypt-title">
-      DECRYPTING MISSION FILE
-    </div>
-
-    <div class="decrypt-status" id="decryptStatus">
-      Awaiting authorization...
-    </div>
-
-    <div class="decrypt-progress">
-      <div
-        class="decrypt-progress-bar"
-        id="decryptProgressBar"
-      ></div>
-    </div>
-
-    <div
-      class="decrypt-percent"
-      id="decryptPercent"
-    >
-      0%
-    </div>
-
-  </div>
-
-</div>
-
-<!-- =========================
-     PAGE 1
-========================= -->
 
 <main class="page" id="loginPage">
-<section class="file">
-  <div class="christmas-mark">✦</div>
-  <div class="top-secret">CLASSIFIED</div>
-  <div class="file-number">FILE NO. XMAS-II / 2026 / 1225</div>
-  <div class="eyebrow">MEMBER ACCESS</div>
-  <h1>PROJECT : <span>CHRISTMAS II</span></h1>
-  <div class="line"></div>
-  <div class="classified">本文件包含 <strong>PROJECT : CHRISTMAS II</strong> 機密行動資訊。<br>僅限本次受邀成員閱覽。</div>
-
-  <div class="auth-switch">
-    <button class="auth-tab active" id="loginTab" type="button" onclick="showAuthMode('login')">LOGIN</button>
-    <button class="auth-tab" id="registerTab" type="button" onclick="showAuthMode('register')">CREATE ID</button>
-  </div>
-
-  <div class="verification" id="authBox">
-    <div class="verification-title" id="authTitle">IDENTITY VERIFICATION</div>
-    <p id="authDescription">輸入你設定的 MEMBER ID 與密碼。</p>
-    <div class="form-stack">
-      <label class="field-label">MEMBER ID</label>
-      <input id="memberId" type="text" maxlength="20" placeholder="3–20 位英文、數字、_ 或 -" autocomplete="username">
-      <div id="registerOnly" class="hidden">
-        <label class="field-label">REAL NAME</label>
-        <input id="realName" type="text" maxlength="50" placeholder="輸入你的真實姓名" autocomplete="name">
-      </div>
-      <label class="field-label">PASSWORD</label>
-      <input id="memberPassword" type="password" minlength="8" placeholder="至少 8 個字元" autocomplete="current-password">
-      <button class="verify-button full-button" id="authButton" type="button" onclick="submitAuth()">登入系統</button>
+  <section class="file">
+    <div class="stamp">CLASSIFIED</div>
+    <div class="meta">FILE NO. XMAS-II / 2026 / 1225</div>
+    <p class="eyebrow">MEMBER ACCESS</p>
+    <h1>PROJECT : <span>CHRISTMAS II</span></h1>
+    <p class="notice">本文件包含 PROJECT : CHRISTMAS II 機密行動資訊。僅限本次受邀成員閱覽。</p>
+    <div class="auth-switch">
+      <button class="auth-tab active" id="loginTab" onclick="showAuthMode('login')">LOGIN</button>
+      <button class="auth-tab" id="registerTab" onclick="showAuthMode('register')">CREATE ID</button>
     </div>
-    <div class="message" id="authMessage"></div>
-  </div>
-
-  <div class="bottom">
-    <div>DATE OF OPERATION<br>25 DEC 2026<br><br>SECURITY LEVEL : II</div>
-    <div class="seal">PROJECT<br>CHRISTMAS<br>II</div>
-  </div>
-</section>
+    <div class="panel">
+      <h2 id="authTitle">IDENTITY VERIFICATION</h2>
+      <p id="authDescription">輸入你設定的 MEMBER ID 與密碼。</p>
+      <label>MEMBER ID</label><input id="memberId" maxlength="20" autocomplete="username">
+      <div id="registerOnly" class="hidden"><label>REAL NAME</label><input id="realName" maxlength="50" autocomplete="name"></div>
+      <label>PASSWORD</label><input id="memberPassword" type="password" minlength="8" autocomplete="current-password">
+      <button class="primary" id="authButton" onclick="submitAuth()">登入系統</button>
+      <div class="message" id="authMessage"></div>
+    </div>
+    <footer>DATE OF OPERATION / 25 DEC 2026　　SECURITY LEVEL : II</footer>
+  </section>
 </main>
 
-<!-- =========================
-     RED FILE
-========================= -->
 <main class="page hidden" id="redFilePage">
-<section class="file red-file">
-  <div class="christmas-mark">✦</div>
-  <div class="top-secret red-stamp">RED FILE</div>
-  <div class="file-number">PERSONAL INTELLIGENCE / XMAS-II</div>
-  <div class="eyebrow">TARGET INTELLIGENCE FORM</div>
-  <h1>RED <span>FILE</span></h1>
-  <div class="line"></div>
-  <div class="classified">這份資料會成為另一位成員準備禮物與辨識 TARGET 的情報。<br><strong>請依照真實狀況填寫。</strong></div>
-
-  <form id="redFileForm" class="red-form" onsubmit="submitRedFile(event)">
-    <div class="form-section-title">A / GIFT INTELLIGENCE</div>
-    <label class="field-label">01｜如果收到禮物，你目前最想收到什麼？</label>
-    <textarea id="wish" maxlength="2000" required placeholder="可以寫品項、類型，或給對方一些方向"></textarea>
-    <label class="field-label">02｜你平常喜歡什麼？</label>
-    <textarea id="preference" maxlength="2000" required placeholder="興趣、風格、顏色、收藏、日常用品等"></textarea>
-    <label class="field-label">03｜有什麼是你不希望收到的，或想提醒準備禮物的人？</label>
-    <textarea id="giftMessage" maxlength="3000" required placeholder="禁忌、不喜歡的類型，或其他提示"></textarea>
-
-    <div class="form-section-title">B / IDENTITY INTELLIGENCE</div>
-    <div class="choice-field"><span>性別</span><div class="choice-grid" data-field="gender"><button type="button" data-value="男">男</button><button type="button" data-value="女">女</button></div></div>
-    <div class="choice-field"><span>生日月份</span><select id="birthdayRange" required><option value="">請選擇</option><option>1月</option><option>2月</option><option>3月</option><option>4月</option><option>5月</option><option>6月</option><option>7月</option><option>8月</option><option>9月</option><option>10月</option><option>11月</option><option>12月</option></select></div>
-    <div class="choice-field"><span>身高區間</span><select id="heightRange" required><option value="">請選擇</option><option>150cm 以下</option><option>150–159cm</option><option>160–169cm</option><option>170–179cm</option><option>180–189cm</option><option>190cm 以上</option></select></div>
-    <div class="choice-field"><span>是否抽過菸</span><div class="choice-grid" data-field="smoked"><button type="button" data-value="有">有</button><button type="button" data-value="沒有">沒有</button></div></div>
-    <div class="choice-field"><span>目前有沒有養寵物</span><div class="choice-grid" data-field="has_pet"><button type="button" data-value="有">有</button><button type="button" data-value="沒有">沒有</button></div></div>
-    <div class="choice-field"><span>喝酒頻率</span><div class="choice-grid" data-field="alcohol_frequency"><button type="button" data-value="常喝">常喝</button><button type="button" data-value="偶爾">偶爾</button><button type="button" data-value="很少">很少</button><button type="button" data-value="不喝">不喝</button></div></div>
-    <div class="choice-field"><span>平常比較喜歡</span><div class="choice-grid" data-field="lifestyle"><button type="button" data-value="待在室內">待在室內</button><button type="button" data-value="出門活動">出門活動</button></div></div>
-    <div class="choice-field"><span>甜食接受度</span><div class="choice-grid" data-field="sweet_preference"><button type="button" data-value="喜歡">喜歡</button><button type="button" data-value="可以接受">可以接受</button><button type="button" data-value="不喜歡">不喜歡</button></div></div>
-
-    <div class="message" id="redFileMessage"></div>
-    <button class="verify-button full-button" id="redFileSubmit" type="submit">SUBMIT RED FILE</button>
-  </form>
-</section>
+  <section class="file">
+    <div class="stamp red">RED FILE</div>
+    <div class="meta">PERSONAL INTELLIGENCE / XMAS-II</div>
+    <p class="eyebrow">TARGET INTELLIGENCE FORM</p>
+    <h1>PERSONNEL <span>FILE</span></h1>
+    <p class="notice">這份資料會成為另一位成員準備禮物與辨識 TARGET 的情報。請依照真實狀況填寫。</p>
+    <form id="redFileForm" onsubmit="submitRedFile(event)">
+      <h2 class="section-title">A / GIFT INTELLIGENCE</h2>
+      <label>01｜如果收到禮物，你目前最想收到什麼？</label><textarea id="wish" required></textarea>
+      <label>02｜你平常喜歡什麼？</label><textarea id="preference" required></textarea>
+      <label>03｜不希望收到什麼，或想提醒準備禮物的人？</label><textarea id="giftMessage" required></textarea>
+      <h2 class="section-title">B / IDENTITY INTELLIGENCE</h2>
+      <div class="choice-field"><label>性別</label><div class="choices" data-field="gender"><button type="button" data-value="男">男</button><button type="button" data-value="女">女</button></div></div>
+      <label>生日月份</label><select id="birthdayRange" required><option value="">請選擇</option><option>1月</option><option>2月</option><option>3月</option><option>4月</option><option>5月</option><option>6月</option><option>7月</option><option>8月</option><option>9月</option><option>10月</option><option>11月</option><option>12月</option></select>
+      <label>身高區間</label><select id="heightRange" required><option value="">請選擇</option><option>150cm 以下</option><option>150–159cm</option><option>160–169cm</option><option>170–179cm</option><option>180–189cm</option><option>190cm 以上</option></select>
+      <div class="choice-field"><label>是否抽過菸</label><div class="choices" data-field="smoked"><button type="button" data-value="有">有</button><button type="button" data-value="沒有">沒有</button></div></div>
+      <div class="choice-field"><label>目前有沒有養寵物</label><div class="choices" data-field="has_pet"><button type="button" data-value="有">有</button><button type="button" data-value="沒有">沒有</button></div></div>
+      <div class="choice-field"><label>喝酒頻率</label><div class="choices" data-field="alcohol_frequency"><button type="button" data-value="常喝">常喝</button><button type="button" data-value="偶爾">偶爾</button><button type="button" data-value="很少">很少</button><button type="button" data-value="不喝">不喝</button></div></div>
+      <div class="choice-field"><label>平常比較喜歡</label><div class="choices" data-field="lifestyle"><button type="button" data-value="待在室內">待在室內</button><button type="button" data-value="出門活動">出門活動</button></div></div>
+      <div class="choice-field"><label>甜食接受度</label><div class="choices" data-field="sweet_preference"><button type="button" data-value="喜歡">喜歡</button><button type="button" data-value="可以接受">可以接受</button><button type="button" data-value="不喜歡">不喜歡</button></div></div>
+      <div class="message" id="redFileMessage"></div>
+      <button class="primary" id="redFileSubmit" type="submit">SUBMIT FILE</button>
+    </form>
+  </section>
 </main>
 
-
-<!-- =========================
-     MEMBER FILE SYSTEM
-========================= -->
-<nav class="folder-tabs hidden" id="folderTabs" aria-label="Member file navigation">
-  <button class="folder-tab" data-file-tab="myFile" onclick="openFileTab('myFile')">MY FILE</button>
-  <button class="folder-tab" data-file-tab="mission" onclick="openFileTab('mission')">MISSION</button>
-  <button class="folder-tab" data-file-tab="lodging" onclick="openFileTab('lodging')">LODGING</button>
-  <button class="folder-tab" data-file-tab="rsvp" onclick="openFileTab('rsvp')">RSVP</button>
-  <button class="folder-tab locked-tab" data-file-tab="target" onclick="openFileTab('target')">TARGET</button>
-  <button class="folder-tab locked-tab red-tab" data-file-tab="red" onclick="openFileTab('red')">RED FILE</button>
+<nav class="folder-tabs hidden" id="folderTabs">
+  <button data-file-tab="myFile" onclick="openFileTab('myFile')">MY FILE</button>
+  <button data-file-tab="lodging" onclick="openFileTab('lodging')">LODGING</button>
+  <button data-file-tab="target" class="locked" onclick="openFileTab('target')">TARGET</button>
+  <button data-file-tab="red" class="locked redtab" onclick="openFileTab('red')">RED FILE</button>
+  <button class="logout" onclick="logoutMember()">LOGOUT</button>
 </nav>
 
-<main class="page hidden folder-page" id="myFilePage">
-<section class="file mission-file folder-sheet">
-  <div class="christmas-mark">✦</div>
-  <div class="top-secret">CLASSIFIED</div>
-  <div class="mission-code">PERSONNEL FILE / PROJECT : CHRISTMAS II</div>
-  <div class="file-title-row">
-    <div>
-      <div class="eyebrow">AUTHORIZED MEMBER RECORD</div>
-      <h1 class="folder-page-title">MY FILE</h1>
-    </div>
-    <div class="file-number">FILE NO.<br><strong id="myFileNo">---</strong></div>
-  </div>
-  <div class="identity-strip">
-    <div><span>AGENT</span><strong id="myRealName">---</strong></div>
-    <div><span>MEMBER ID</span><strong id="myMemberId">---</strong></div>
-    <div><span>STATUS</span><strong>ACTIVE</strong></div>
-    <div><span>FILE</span><strong>COMPLETE</strong></div>
-  </div>
-
-  <div class="section-title">GIFT INTELLIGENCE</div>
-  <div class="intel-paper-grid">
-    <article class="intel-paper"><span>WISH</span><p id="myWish">---</p></article>
-    <article class="intel-paper"><span>PREFERENCE</span><p id="myPreference">---</p></article>
-    <article class="intel-paper"><span>MESSAGE</span><p id="myGiftMessage">---</p></article>
-  </div>
-
-  <div class="section-title">IDENTITY INTELLIGENCE</div>
-  <div class="identity-table">
-    <div><span>性別</span><strong id="myGender">---</strong></div>
-    <div><span>生日月份</span><strong id="myBirthday">---</strong></div>
-    <div><span>身高區間</span><strong id="myHeight">---</strong></div>
-    <div><span>是否抽過菸</span><strong id="mySmoked">---</strong></div>
-    <div><span>目前有沒有養寵物</span><strong id="myPet">---</strong></div>
-    <div><span>喝酒頻率</span><strong id="myAlcohol">---</strong></div>
-    <div><span>平常比較喜歡</span><strong id="myLifestyle">---</strong></div>
-    <div><span>甜食接受度</span><strong id="mySweet">---</strong></div>
-  </div>
-  <div class="folder-footer">AUTHORIZED PERSONNEL ONLY // PROJECT : CHRISTMAS II</div>
-</section>
-</main>
-
-<main class="page hidden folder-page" id="targetPage">
-<section class="file mission-file folder-sheet restricted-sheet">
-  <div class="christmas-mark">✦</div>
-  <div class="top-secret">RESTRICTED</div>
-  <div class="mission-code">TARGET ASSIGNMENT / CONTROLLED INTELLIGENCE</div>
-  <div class="restricted-center">
-    <div class="restricted-stamp">SEALED</div>
-    <div class="eyebrow">TARGET ASSIGNMENT</div>
-    <h1 class="folder-page-title">AWAITING AUTHORIZATION</h1>
-    <p>COMMAND CENTER 尚未發布 TARGET 任務。</p>
-    <div class="classified-bars"><i></i><i></i><i></i></div>
-    <small>STATUS // PENDING</small>
-  </div>
-</section>
-</main>
-
-<main class="page hidden folder-page" id="redLockedPage">
-<section class="file mission-file folder-sheet restricted-sheet red-restricted">
-  <div class="christmas-mark">✦</div>
-  <div class="top-secret">RED FILE</div>
-  <div class="mission-code">IDENTITY INTELLIGENCE / ACCESS CONTROL</div>
-  <div class="restricted-center">
-    <div class="restricted-stamp">LOCKED</div>
-    <div class="eyebrow">IDENTITY VERIFICATION FILE</div>
-    <h1 class="folder-page-title">ACCESS DENIED</h1>
-    <p>此檔案尚未解除封存。</p>
-    <div class="classified-bars"><i></i><i></i><i></i></div>
-    <small>CLEARANCE // NOT AUTHORIZED</small>
-  </div>
-</section>
-</main>
-
-<!-- =========================
-     PAGE 2
-========================= -->
-
-<main
-  class="page hidden"
-  id="missionPage"
->
-
-<section
-  class="file mission-file"
-  id="missionFile"
->
-
-  <div class="christmas-mark">✦</div>
-
-  <div class="top-secret">
-    DECLASSIFIED
-  </div>
-
-  <div class="mission-header">
-
-    <div class="mission-code">
-      MISSION FILE 01 / LOCATION INTELLIGENCE
-    </div>
-
-    <div class="mission-location-label">
-      MISSION LOCATION
-    </div>
-
-    <div class="location-name">
-      山裡醒來・北埔
-    </div>
-
-    <div class="location-sub">
-      XINZHU / BEIPU / 25 DEC 2026
-    </div>
-
-  </div>
-
-  <div class="address-box mission-only">
-
-    <div class="info-label">
-      TARGET ADDRESS
-    </div>
-
-    <div class="address">
-      新竹縣北埔鄉埔尾村3鄰<br>
-      中山路111巷17號
-    </div>
-
-  </div>
-
-  <div class="section-title lodging-only">
-    ACCOMMODATION DATA
-  </div>
-
-  <div class="room-grid lodging-only">
-
-    <div class="room-card">
-
-      <div class="room-photo-wrap">
-        <img
-          src="images/room-2f.png"
-          alt="2F 通鋪"
-          class="room-photo"
-        >
-        <div class="photo-tag">
-          ROOM FILE / 2F
-        </div>
-      </div>
-
-      <div class="room-info">
-
-        <div class="room-capacity">
-          MAX 08
-        </div>
-
-        <div class="room-floor">
-          2F
-        </div>
-
-        <div class="room-type">
-          通鋪
-        </div>
-
-        <div class="room-desc">
-          最多 8 人住宿。<br>
-          本次行動主要團體住宿區域。
-        </div>
-
-      </div>
-
-    </div>
-
-    <div class="room-card">
-
-      <div class="room-photo-wrap">
-        <img
-          src="images/room-3f.png"
-          alt="3F 雙人床與沙發床"
-          class="room-photo"
-        >
-        <div class="photo-tag">
-          ROOM FILE / 3F
-        </div>
-      </div>
-
-      <div class="room-info">
-
-        <div class="room-capacity">
-          MAX 03
-        </div>
-
-        <div class="room-floor">
-          3F
-        </div>
-
-        <div class="room-type">
-          雙人床＋沙發床
-        </div>
-
-        <div class="room-desc">
-          最多 3 人住宿。<br>
-          配置一張雙人床與一張沙發床。
-        </div>
-
-      </div>
-
-    </div>
-
-    <div class="room-card">
-
-      <div class="room-photo-wrap">
-        <img
-          src="images/room-4f.png"
-          alt="4F 雙人床與沙發床"
-          class="room-photo"
-        >
-        <div class="photo-tag">
-          ROOM FILE / 4F
-        </div>
-      </div>
-
-      <div class="room-info">
-
-        <div class="room-capacity">
-          MAX 03
-        </div>
-
-        <div class="room-floor">
-          4F
-        </div>
-
-        <div class="room-type">
-          雙人床＋沙發床
-        </div>
-
-        <div class="room-desc">
-          最多 3 人住宿。<br>
-          配置一張雙人床與一張沙發床。
-        </div>
-
-      </div>
-
-    </div>
-
-  </div>
-
-  <div class="section-title mission-only">
-    MISSION REQUIREMENTS
-  </div>
-
-  <div class="brief-grid mission-only">
-
-    <div class="brief-card">
-
-      <div class="brief-label">
-        ACCOMMODATION COST
-      </div>
-
-      <div class="brief-main">
-        NT$ 2,387
-      </div>
-
-      <div class="brief-sub">
-        每位行動成員住宿費用
-      </div>
-
-    </div>
-
-    <div class="brief-card red">
-
-      <div class="brief-label">
-        GIFT EXCHANGE
-      </div>
-
-      <div class="brief-main">
-        NT$ 711+
-      </div>
-
-      <div class="brief-sub">
-        最低 711 元<br>
-        上不封頂
-      </div>
-
-    </div>
-
-    <div class="brief-card">
-
-      <div class="brief-label">
-        DRESS CODE
-      </div>
-
-      <div class="brief-main">
-        RED / GREEN / WHITE
-      </div>
-
-      <div class="dress-colors">
-
-        <div class="color-dot color-red"></div>
-        <div class="color-dot color-green"></div>
-        <div class="color-dot color-white"></div>
-
-      </div>
-
-    </div>
-
-    <div class="brief-card red">
-
-      <div class="brief-label">
-        OPERATION DATE
-      </div>
-
-      <div class="brief-main">
-        25 DEC
-      </div>
-
-      <div class="brief-sub">
-        PROJECT : CHRISTMAS II
-      </div>
-
-    </div>
-
-  </div>
-
-<div class="action-wrap mission-only">
-
-    <button
-      class="action-button"
-      onclick="startFinalConfirmation()"
-    >
-      我已確認以上資訊，並同意參與此次行動
-    </button>
-
-    <div class="action-sub">
-      ACCEPT MISSION TERMS &amp; PROCEED
-    </div>
-
-    <button
-      class="decline-button"
-      onclick="declineMission()"
-    >
-      無法參與此次行動
-    </button>
-
-  </div>
-
-  <div class="bottom mission-only">
-
-    <div>
-      STATUS<br>
-      LOCATION FILE DECRYPTED<br><br>
-
-      CLEARANCE : APPROVED
-    </div>
-
-    <div class="seal">
-      LOCATION<br>
-      VERIFIED<br>
-      II
-    </div>
-
-  </div>
-
-</section>
-
-</main>
-
-
-<!-- =========================
-     PAGE 3 / RSVP
-========================= -->
-
-<main class="page hidden" id="rsvpPage">
-<section class="file mission-file" id="rsvpFile">
-
-  <div class="christmas-mark">✦</div>
-  <div class="top-secret">RESPONSE FILE</div>
-
-  <div class="mission-code">
-    MISSION FILE 02 / PARTICIPATION RESPONSE
-  </div>
-
-  <div class="eyebrow">FINAL MISSION CONFIRMATION</div>
-
-  <h1 class="rsvp-title">
-    OPERATION
-    <span>RESPONSE</span>
-  </h1>
-
-  <div class="line"></div>
-
-  <div class="rsvp-agent">
-    VERIFIED AGENT // <strong id="rsvpAgentCode">---</strong>
-  </div>
-
-  <div class="rsvp-step">
-    <div class="step-number">01</div>
-    <div class="step-content">
-      <div class="step-label">TRANSPORTATION</div>
-      <div class="step-title">交通方式</div>
-
-      <div class="choice-grid" id="transportChoices">
-        <button class="choice-button" type="button" data-group="transport" data-value="自己開車">
-          <span class="choice-main">自己開車</span>
-          <span class="choice-sub">DRIVING</span>
-        </button>
-
-        <button class="choice-button" type="button" data-group="transport" data-value="搭朋友的車">
-          <span class="choice-main">搭朋友的車</span>
-          <span class="choice-sub">RIDING WITH FRIEND</span>
-        </button>
-
-        <button class="choice-button" type="button" data-group="transport" data-value="需要安排搭車">
-          <span class="choice-main">需要安排搭車</span>
-          <span class="choice-sub">NEED A RIDE</span>
-        </button>
-      </div>
-
-      <div class="conditional-box hidden" id="driverSeatsBox">
-        <label class="field-label" for="driverSeats">
-          除了自己之外，還可以載幾位？
-        </label>
-        <select id="driverSeats" class="mission-select">
-          <option value="">請選擇</option>
-          <option value="0">0 位</option>
-          <option value="1">1 位</option>
-          <option value="2">2 位</option>
-          <option value="3">3 位</option>
-          <option value="4">4 位</option>
-          <option value="5">5 位以上</option>
-        </select>
-      </div>
-    </div>
-  </div>
-
-  <div class="rsvp-step">
-    <div class="step-number">02</div>
-    <div class="step-content">
-      <div class="step-label">ACCOMMODATION PREFERENCE</div>
-      <div class="step-title">住宿偏好</div>
-
-      <div class="lodging-notice">
-        <strong>NOTICE //</strong><br>
-        雙人床數量有限，住宿偏好僅作為登記，
-        實際房間與床位將由總召依整體人數統一安排。
-      </div>
-
-      <div class="choice-grid" id="lodgingChoices">
-        <button class="choice-button" type="button" data-group="lodging" data-value="雙人床">
-          <span class="choice-main">雙人床</span>
-          <span class="choice-sub">DOUBLE BED</span>
-        </button>
-
-        <button class="choice-button" type="button" data-group="lodging" data-value="沙發床">
-          <span class="choice-main">沙發床</span>
-          <span class="choice-sub">SOFA BED</span>
-        </button>
-
-        <button class="choice-button" type="button" data-group="lodging" data-value="通鋪">
-          <span class="choice-main">通鋪</span>
-          <span class="choice-sub">2F FLOOR BED</span>
-        </button>
-
-        <button class="choice-button" type="button" data-group="lodging" data-value="都可以，由總召安排">
-          <span class="choice-main">都可以，由總召安排</span>
-          <span class="choice-sub">NO PREFERENCE</span>
-        </button>
-      </div>
-
-      <div class="conditional-box hidden" id="roommateBox">
-        <label class="field-label" for="roommateCode">
-          希望與哪位行動成員共用雙人床？
-        </label>
-        <input id="roommateCode" class="mission-select" type="text" maxlength="20" placeholder="輸入對方的 MEMBER ID">
-        <div class="field-hint">
-          此項僅作偏好登記，實際安排仍由總召決定。
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="rsvp-step">
-    <div class="step-number">03</div>
-    <div class="step-content">
-      <div class="step-label">ADDITIONAL INTELLIGENCE</div>
-      <div class="step-title">備註</div>
-
-      <label class="field-label" for="notes">
-        有其他需求再填寫，沒有可留白
-      </label>
-
-      <textarea
-        id="notes"
-        class="mission-textarea"
-        placeholder="例如：飲食需求、晚到／早退、住宿需求……"
-      ></textarea>
-    </div>
-  </div>
-
-  <div class="form-message hidden" id="rsvpMessage"></div>
-
-  <div class="action-wrap">
-    <button class="action-button" type="button" onclick="reviewMissionResponse()">
-      檢查並進入最終確認
-    </button>
-    <div class="action-sub">
-      REVIEW MISSION RESPONSE
-    </div>
-  </div>
-
-</section>
-</main>
-
-<!-- =========================
-     REVIEW
-========================= -->
-
-<main class="page hidden" id="reviewPage">
-<section class="file mission-file">
-
-  <div class="christmas-mark">✦</div>
-  <div class="top-secret">FINAL CHECK</div>
-
-  <div class="mission-code">
-    MISSION FILE 03 / RESPONSE REVIEW
-  </div>
-
-  <div class="eyebrow">CONFIRM BEFORE SUBMISSION</div>
-
-  <h1 class="rsvp-title">
-    FINAL
-    <span>CHECK</span>
-  </h1>
-
-  <div class="line"></div>
-
-  <div class="review-grid">
-    <div class="review-row">
-      <span>AGENT</span>
-      <strong id="reviewAgent">---</strong>
-    </div>
-    <div class="review-row">
-      <span>TRANSPORTATION</span>
-      <strong id="reviewTransport">---</strong>
-    </div>
-    <div class="review-row hidden" id="reviewSeatsRow">
-      <span>AVAILABLE SEATS</span>
-      <strong id="reviewSeats">---</strong>
-    </div>
-    <div class="review-row">
-      <span>ACCOMMODATION</span>
-      <strong id="reviewLodging">---</strong>
-    </div>
-    <div class="review-row hidden" id="reviewRoommateRow">
-      <span>ROOMMATE</span>
-      <strong id="reviewRoommate">---</strong>
-    </div>
-    <div class="review-row">
-      <span>NOTES</span>
-      <strong id="reviewNotes">無</strong>
-    </div>
-  </div>
-
-  <div class="review-actions">
-    <button class="secondary-button" type="button" onclick="backToRsvp()">
-      返回修改
-    </button>
-    <button class="action-button" type="button" onclick="submitMissionResponse()">
-      確認以上資料
-    </button>
-  </div>
-
-</section>
-</main>
-
-<!-- =========================
-     DECLINED
-========================= -->
-
-<main class="page hidden" id="declinedPage">
+<main class="page hidden" id="myFilePage">
 <section class="file">
-  <div class="christmas-mark">✦</div>
-  <div class="top-secret">FILE CLOSED</div>
-  <div class="file-number">PROJECT : CHRISTMAS II / STATUS REPORT</div>
-  <div class="eyebrow">MISSION STATUS</div>
-
-  <h1>
-    MISSION
-    <span>DECLINED</span>
-  </h1>
-
-  <div class="line"></div>
-
-  <div class="classified">
-    已收到你的回覆。<br><br>
-    本次行動已標記為 <strong>無法參與</strong>。
+  <div class="stamp">CLASSIFIED</div><div class="meta">PERSONNEL FILE / PROJECT : CHRISTMAS II</div>
+  <div class="dossier">
+    <div class="portrait-card"><img src="images/agent-unknown.webp" alt="Anonymous agent silhouette"><span>SUBJECT // AUTHORIZED</span></div>
+    <div class="subject">
+      <p class="eyebrow">AUTHORIZED MEMBER RECORD</p><h1>MY <span>FILE</span></h1>
+      <div class="facts">
+        <div><small>SUBJECT</small><strong id="myRealName">---</strong></div>
+        <div><small>MEMBER ID</small><strong id="myMemberId">---</strong></div>
+        <div><small>STATUS</small><strong>● AUTHORIZED</strong></div>
+        <div><small>FILE NO.</small><strong id="myFileNo">---</strong></div>
+        <div><small>CLEARANCE</small><strong>LEVEL II</strong></div>
+      </div>
+    </div>
   </div>
-
-  <div class="bottom">
-    <div>
-      STATUS : DECLINED<br>
-      PROJECT : CHRISTMAS II
-    </div>
-    <div class="seal">
-      MISSION<br>
-      CLOSED
-    </div>
+  <h2 class="section-title">GIFT INTELLIGENCE</h2>
+  <div class="intel-grid"><article><small>01 / WISH</small><p id="myWish">---</p></article><article><small>02 / PREFERENCE</small><p id="myPreference">---</p></article><article><small>03 / MESSAGE</small><p id="myGiftMessage">---</p></article></div>
+  <h2 class="section-title">IDENTITY INTELLIGENCE</h2>
+  <div class="identity-grid">
+    <div><small>性別</small><strong id="myGender">---</strong></div><div><small>生日月份</small><strong id="myBirthday">---</strong></div>
+    <div><small>身高區間</small><strong id="myHeight">---</strong></div><div><small>是否抽過菸</small><strong id="mySmoked">---</strong></div>
+    <div><small>寵物</small><strong id="myPet">---</strong></div><div><small>喝酒頻率</small><strong id="myAlcohol">---</strong></div>
+    <div><small>生活偏好</small><strong id="myLifestyle">---</strong></div><div><small>甜食</small><strong id="mySweet">---</strong></div>
   </div>
 </section>
 </main>
 
-<!-- =========================
-     SUCCESS
-========================= -->
-
-<main class="page hidden" id="successPage">
+<main class="page hidden" id="lodgingPage">
 <section class="file">
-  <div class="christmas-mark">✦</div>
-  <div class="top-secret">APPROVED</div>
-  <div class="file-number">PROJECT : CHRISTMAS II / CLEARANCE REPORT</div>
-  <div class="eyebrow">MISSION CONFIRMED</div>
-
-  <h1>
-    CLEARANCE
-    <span>APPROVED</span>
-  </h1>
-
-  <div class="line"></div>
-
-  <div class="classified">
-    歡迎你，<strong id="successAgent">---</strong>。<br><br>
-    你的席位已正式加入 PROJECT : CHRISTMAS II。
+  <div class="stamp">DECLASSIFIED</div><div class="meta">LODGING INTELLIGENCE / XMAS-II</div>
+  <p class="eyebrow">LODGING FILE</p><h1>山裡醒來・<span>北埔</span></h1>
+  <div class="location"><small>LOCATION</small><strong>新竹縣北埔鄉埔尾村3鄰<br>中山路111巷17號</strong></div>
+  <div class="brief-grid">
+    <article><small>ACCOMMODATION COST</small><strong>NT$ 2,387</strong><p>每位行動成員住宿費用</p></article>
+    <article><small>GIFT EXCHANGE</small><strong>NT$ 711+</strong><p>最低 711 元，上不封頂</p></article>
+    <article><small>DRESS CODE</small><strong>RED / GREEN / WHITE</strong></article>
+    <article><small>OPERATION DATE</small><strong>25–26 DEC 2026</strong></article>
   </div>
-
-  <div class="success-note">
-    後續任務資訊將於 LINE 群組發布。<br>
-    請點擊下方按鈕進入本次行動通訊頻道。
-  </div>
-
-  <a
-    href="https://line.me/ti/g/CvmVrHFj_j"
-    class="line-button"
-    target="_blank"
-    rel="noopener noreferrer"
-  >
-    加入 PROJECT II LINE 群組
-  </a>
-
-  <div class="bottom">
-    <div>
-      STATUS : CONFIRMED<br>
-      25 DEC 2026
-    </div>
-    <div class="seal">
-      CLEARANCE<br>
-      APPROVED<br>
-      II
-    </div>
+  <h2 class="section-title">ACCOMMODATION DATA</h2>
+  <div class="rooms">
+    <article><img src="images/room-2f.png" alt="2F"><div><strong>2F / 通鋪</strong><p>最多 8 人住宿。</p></div></article>
+    <article><img src="images/room-3f.png" alt="3F"><div><strong>3F / 雙人床＋沙發床</strong><p>最多 3 人住宿。</p></div></article>
+    <article><img src="images/room-4f.png" alt="4F"><div><strong>4F / 雙人床＋沙發床</strong><p>最多 3 人住宿。</p></div></article>
   </div>
 </section>
 </main>
+
+<main class="page hidden" id="targetPage"><section class="file restricted"><div class="stamp">RESTRICTED</div><img class="locked-portrait" src="images/agent-unknown.webp" alt=""><p class="eyebrow">TARGET ASSIGNMENT</p><h1>AWAITING <span>AUTHORIZATION</span></h1><p>COMMAND CENTER 尚未發布 TARGET 任務。</p><div class="bars">████ ███████ ████</div><small>STATUS // PENDING</small></section></main>
+
+<main class="page hidden" id="redLockedPage"><section class="file restricted"><div class="stamp red">RED FILE</div><img class="locked-portrait" src="images/agent-unknown.webp" alt=""><p class="eyebrow">IDENTITY VERIFICATION FILE</p><h1>ACCESS <span>DENIED</span></h1><p>此檔案尚未解除封存。</p><div class="bars">██████ ███ █████</div><small>CLEARANCE // NOT AUTHORIZED</small></section></main>
 
 <script src="https://cdn.jsdelivr.net/npm/appwrite@27.0.0"></script>
-<script src="app.js?v=20260923-2"></script>
-
+<script src="app.js?v=20260923-6"></script>
 </body>
 </html>
