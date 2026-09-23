@@ -1,88 +1,119 @@
 <!doctype html>
 <html lang="zh-Hant">
+
 <head>
+
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
 
-  <title>PROJECT : CHRISTMAS II // COMMAND CENTER</title>
+  <meta
+    name="viewport"
+    content="width=device-width,initial-scale=1"
+  >
 
-  <link rel="stylesheet" href="css/admin.css?v=20260923-1">
+  <title>
+    PROJECT : CHRISTMAS II // 管理中心
+  </title>
+
+  <link
+    rel="stylesheet"
+    href="css/admin.css?v=20260923-3"
+  >
 
   <script src="https://cdn.jsdelivr.net/npm/appwrite@17.0.0"></script>
+
 </head>
+
 
 <body>
 
+
 <div class="admin-shell">
 
+
   <!-- ==================================================
-       LOGIN
+       管理員登入
   =================================================== -->
 
-  <section class="admin-file" id="adminLogin">
+  <section
+    class="admin-file"
+    id="adminLogin"
+  >
 
     <div class="classification">
-      XMAS-II / RESTRICTED ADMINISTRATIVE ACCESS
+      PROJECT : CHRISTMAS II / 管理員專用
     </div>
+
 
     <div class="eyebrow">
-      AUTHORIZED PERSONNEL ONLY
+      僅限授權管理員進入
     </div>
 
+
     <h1>
-      COMMAND
-      <span>CENTER</span>
+      管理
+      <span>中心</span>
     </h1>
+
 
     <div class="gold-line"></div>
 
+
     <div class="login-panel">
 
+
       <div class="login-status">
-        ADMINISTRATOR IDENTITY VERIFICATION
+        管理員身分驗證
       </div>
 
+
       <label for="adminEmail">
-        ADMIN EMAIL
+        管理員 EMAIL
       </label>
+
 
       <input
         id="adminEmail"
         type="email"
         autocomplete="username"
-        placeholder="管理員 Email"
+        placeholder="輸入 Asoup0529 綁定的 Email"
       >
 
+
       <label for="adminPassword">
-        PASSWORD
+        密碼
       </label>
+
 
       <input
         id="adminPassword"
         type="password"
         autocomplete="current-password"
-        placeholder="管理員密碼"
+        placeholder="輸入密碼"
       >
+
 
       <button
         class="primary-button"
         id="adminLoginButton"
       >
-        VERIFY ADMINISTRATOR
+        登入管理中心
       </button>
+
 
       <div
         class="message"
         id="loginMessage"
       ></div>
 
+
     </div>
 
   </section>
 
 
+
   <!-- ==================================================
-       COMMAND CENTER
+       管理中心
   =================================================== -->
 
   <section
@@ -90,89 +121,116 @@
     id="commandCenter"
   >
 
+
+    <!-- 頂部 -->
+
     <header class="command-header">
+
 
       <div>
 
         <div class="classification">
-          PROJECT : CHRISTMAS II / COMMAND CENTER
+          PROJECT : CHRISTMAS II / ADMIN
         </div>
+
 
         <div class="eyebrow">
-          ADMINISTRATIVE CONTROL SYSTEM
+          活動管理系統
         </div>
 
+
         <h1>
-          COMMAND
-          <span>CENTER</span>
+          管理
+          <span>中心</span>
         </h1>
 
       </div>
 
+
       <div class="admin-badge">
 
-        <small>SESSION</small>
+        <small>
+          目前登入身分
+        </small>
 
         <strong>
-          ADMIN // AUTHORIZED
+          管理員 / 已授權
         </strong>
+
 
         <button
           class="logout-button"
           id="adminLogoutButton"
         >
-          LOGOUT
+          登出
         </button>
 
       </div>
 
+
     </header>
+
 
     <div class="gold-line"></div>
 
 
+
     <!-- ==================================================
-         NAVIGATION
+         導覽
     =================================================== -->
 
     <nav class="admin-nav">
+
 
       <button
         class="active"
         data-admin-page="dashboard"
       >
-        DASHBOARD
+        總覽
       </button>
+
 
       <button
         data-admin-page="members"
       >
-        MEMBERS
+        成員管理
       </button>
+
+
+      <button
+        data-admin-page="rsvp"
+      >
+        RSVP 回覆
+      </button>
+
 
       <button
         data-admin-page="intelligence"
       >
-        INTELLIGENCE
+        情報檔案
       </button>
+
 
       <button
         data-admin-page="assignment"
       >
-        ASSIGNMENT
+        禮物配對
       </button>
+
 
       <button
         data-admin-page="control"
       >
-        CONTROL
+        活動控制
       </button>
+
 
     </nav>
 
 
+
     <!-- ==================================================
-         DASHBOARD
+         總覽
     =================================================== -->
 
     <main
@@ -180,18 +238,24 @@
       id="dashboardPage"
     >
 
+
       <div class="section-code">
-        01 / SYSTEM OVERVIEW
+        01 / 活動狀態總覽
       </div>
 
-      <h2>MISSION STATUS</h2>
+
+      <h2>
+        活動狀態
+      </h2>
+
 
       <div class="stats-grid">
+
 
         <article class="stat-card">
 
           <small>
-            REGISTERED MEMBERS
+            已註冊成員
           </small>
 
           <strong id="registeredCount">
@@ -204,7 +268,7 @@
         <article class="stat-card">
 
           <small>
-            RED FILE COMPLETE
+            已完成情報檔案
           </small>
 
           <strong id="completeCount">
@@ -217,7 +281,7 @@
         <article class="stat-card">
 
           <small>
-            FILE NUMBERED
+            已建立檔案編號
           </small>
 
           <strong id="numberedCount">
@@ -230,60 +294,73 @@
         <article class="stat-card danger-card">
 
           <small>
-            TARGET STATUS
+            TARGET 開放狀態
           </small>
 
           <strong id="targetStatus">
-            LOCKED
+            尚未開放
           </strong>
 
         </article>
 
+
       </div>
+
 
 
       <div class="system-panel">
 
+
         <div>
 
-          <small>DATABASE STATUS</small>
+          <small>
+            APPWRITE 資料庫狀態
+          </small>
 
           <strong id="databaseStatus">
-            CONNECTING...
+            連線中...
           </strong>
 
         </div>
+
 
         <button
           class="small-button"
           id="refreshDashboard"
         >
-          REFRESH DATABASE
+          重新整理
         </button>
+
 
       </div>
 
 
+
       <div class="activity-box">
 
+
         <div class="section-code">
-          PERSONNEL SUMMARY
+          成員狀態摘要
         </div>
+
 
         <div
           class="summary-list"
           id="dashboardSummary"
         >
-          Loading...
+          正在讀取資料...
         </div>
 
+
       </div>
+
 
     </main>
 
 
+
     <!-- ==================================================
-         MEMBERS
+         成員管理
     =================================================== -->
 
     <main
@@ -291,88 +368,118 @@
       id="membersPage"
     >
 
+
       <div class="page-heading">
+
 
         <div>
 
           <div class="section-code">
-            02 / PERSONNEL DATABASE
+            02 / 成員資料庫
           </div>
 
-          <h2>MEMBERS</h2>
+          <h2>
+            成員管理
+          </h2>
 
         </div>
 
+
         <div class="page-actions">
+
 
           <button
             class="small-button"
             id="refreshMembers"
           >
-            REFRESH
+            重新整理
           </button>
+
 
           <button
             class="red-button"
             id="renumberMembers"
           >
-            RENUMBER FILES
+            依註冊順序重新編號
           </button>
 
+
         </div>
+
 
       </div>
 
 
+
       <div class="notice-box">
 
-        FILE NO. 會依照會員的註冊時間
-        $createdAt 由舊到新排列。
+        檔案編號會依照會員註冊時間由舊到新排列。
 
         <strong>
-          第一位 = 01、第二位 = 02……
+          第一位 = 01、第二位 = 02、第三位 = 03……
         </strong>
 
       </div>
 
 
+
       <div class="table-wrap">
 
+
         <table>
+
 
           <thead>
 
             <tr>
 
-              <th>FILE NO.</th>
+              <th>
+                檔案編號
+              </th>
 
-              <th>MEMBER ID</th>
+              <th>
+                會員帳號
+              </th>
 
-              <th>SUBJECT</th>
+              <th>
+                姓名
+              </th>
 
-              <th>RED FILE</th>
+              <th>
+                情報檔案
+              </th>
 
-              <th>REGISTERED</th>
+              <th>
+                註冊時間
+              </th>
 
-              <th>USER ID</th>
+              <th>
+                USER ID
+              </th>
 
             </tr>
 
           </thead>
 
+
           <tbody id="membersTableBody">
 
             <tr>
 
-              <td colspan="6" class="empty-cell">
-                DATABASE CONNECTING...
+              <td
+                colspan="6"
+                class="empty-cell"
+              >
+                正在讀取成員資料...
               </td>
 
             </tr>
 
           </tbody>
 
+
         </table>
+
 
       </div>
 
@@ -382,11 +489,213 @@
         id="memberMessage"
       ></div>
 
+
     </main>
 
 
+
     <!-- ==================================================
-         INTELLIGENCE
+         RSVP
+    =================================================== -->
+
+    <main
+      class="admin-page hidden"
+      id="rsvpPage"
+    >
+
+
+      <div class="page-heading">
+
+
+        <div>
+
+          <div class="section-code">
+            03 / RSVP 與住宿交通回覆
+          </div>
+
+          <h2>
+            RSVP 回覆
+          </h2>
+
+        </div>
+
+
+        <div class="page-actions">
+
+          <button
+            class="small-button"
+            id="refreshRsvp"
+          >
+            重新整理 RSVP
+          </button>
+
+        </div>
+
+
+      </div>
+
+
+
+      <div class="stats-grid">
+
+
+        <article class="stat-card">
+
+          <small>
+            已確認回覆
+          </small>
+
+          <strong id="rsvpCount">
+            0
+          </strong>
+
+        </article>
+
+
+        <article class="stat-card">
+
+          <small>
+            自己開車人數
+          </small>
+
+          <strong id="rsvpDrivers">
+            0
+          </strong>
+
+        </article>
+
+
+        <article class="stat-card">
+
+          <small>
+            雙人床需求
+          </small>
+
+          <strong id="rsvpDouble">
+            0
+          </strong>
+
+        </article>
+
+
+        <article class="stat-card">
+
+          <small>
+            RSVP 資料庫
+          </small>
+
+          <strong
+            id="rsvpStatus"
+            style="font-size:16px"
+          >
+            尚未讀取
+          </strong>
+
+        </article>
+
+
+      </div>
+
+
+
+      <div
+        class="system-panel"
+        style="margin-bottom:20px"
+      >
+
+        <div>
+
+          <small>
+            舊 RSVP 資料來源
+          </small>
+
+          <strong>
+            Supabase / christmas_2026_rsvp
+          </strong>
+
+        </div>
+
+      </div>
+
+
+
+      <div class="table-wrap">
+
+
+        <table>
+
+
+          <thead>
+
+            <tr>
+
+              <th>
+                成員
+              </th>
+
+              <th>
+                交通方式
+              </th>
+
+              <th>
+                可載人數
+              </th>
+
+              <th>
+                住宿偏好
+              </th>
+
+              <th>
+                室友
+              </th>
+
+              <th>
+                備註
+              </th>
+
+              <th>
+                提交時間
+              </th>
+
+            </tr>
+
+          </thead>
+
+
+          <tbody id="rsvpTableBody">
+
+            <tr>
+
+              <td
+                colspan="7"
+                class="empty-cell"
+              >
+                尚未讀取 RSVP 資料
+              </td>
+
+            </tr>
+
+          </tbody>
+
+
+        </table>
+
+
+      </div>
+
+
+      <div
+        class="message"
+        id="rsvpMessage"
+      ></div>
+
+
+    </main>
+
+
+
+    <!-- ==================================================
+         情報檔案
     =================================================== -->
 
     <main
@@ -394,14 +703,20 @@
       id="intelligencePage"
     >
 
+
       <div class="section-code">
-        03 / CLASSIFIED PERSONNEL INTELLIGENCE
+        04 / 成員情報資料
       </div>
 
-      <h2>INTELLIGENCE FILES</h2>
+
+      <h2>
+        情報檔案
+      </h2>
+
 
 
       <div class="intel-layout">
+
 
         <aside
           class="subject-list"
@@ -409,10 +724,11 @@
         >
 
           <div class="empty-subject">
-            Loading personnel...
+            正在讀取成員...
           </div>
 
         </aside>
+
 
 
         <section
@@ -420,25 +736,30 @@
           id="intelDocument"
         >
 
+
           <div class="empty-intelligence">
 
-            SELECT SUBJECT
+            選擇成員
 
             <small>
-              選擇左側成員以查看情報檔案
+              點選左側成員查看完整情報
             </small>
 
           </div>
 
+
         </section>
 
+
       </div>
+
 
     </main>
 
 
+
     <!-- ==================================================
-         ASSIGNMENT
+         禮物配對
     =================================================== -->
 
     <main
@@ -446,38 +767,51 @@
       id="assignmentPage"
     >
 
+
       <div class="section-code">
-        04 / TARGET ASSIGNMENT
+        05 / 交換禮物配對
       </div>
 
-      <h2>TARGET ASSIGNMENT</h2>
+
+      <h2>
+        禮物配對
+      </h2>
+
 
 
       <div class="locked-admin-panel">
+
 
         <div class="lock-symbol">
           ×
         </div>
 
+
         <strong>
-          ASSIGNMENT SYSTEM
+          配對系統尚未啟用
         </strong>
 
-        <p>
-          這一區下一步會接交換禮物配對。
-        </p>
 
         <p>
-          可以設定「誰抽到誰」，並避免自己抽到自己。
+          下一階段會在這裡進行交換禮物抽籤。
         </p>
+
+
+        <p>
+          系統會避免自己抽到自己，
+          並由管理員查看完整配對結果。
+        </p>
+
 
       </div>
+
 
     </main>
 
 
+
     <!-- ==================================================
-         CONTROL
+         活動控制
     =================================================== -->
 
     <main
@@ -485,44 +819,55 @@
       id="controlPage"
     >
 
+
       <div class="section-code">
-        05 / MISSION CONTROL
+        06 / 活動權限控制
       </div>
 
-      <h2>MISSION CONTROL</h2>
+
+      <h2>
+        活動控制
+      </h2>
+
 
 
       <div class="control-grid">
 
+
         <article class="control-card">
+
 
           <div>
 
             <small>
-              TARGET FILE
+              TARGET
             </small>
 
             <strong>
-              TARGET RELEASE
+              TARGET 開放
             </strong>
 
             <p>
-              控制所有會員是否可以查看自己的 TARGET。
+              控制所有成員是否可以查看自己抽到的對象。
             </p>
 
           </div>
+
 
           <div
             class="control-status locked"
             id="targetControlStatus"
           >
-            LOCKED
+            尚未開放
           </div>
+
 
         </article>
 
 
+
         <article class="control-card">
+
 
           <div>
 
@@ -531,43 +876,59 @@
             </small>
 
             <strong>
-              RED FILE RELEASE
+              RED FILE 狀態
             </strong>
 
             <p>
-              控制 RED FILE 的活動開放狀態。
+              控制活動情報檔案的開放狀態。
             </p>
 
           </div>
+
 
           <div
             class="control-status locked"
             id="redControlStatus"
           >
-            LOCKED
+            尚未開放
           </div>
+
 
         </article>
 
+
       </div>
+
 
 
       <div class="notice-box">
 
-        CONTROL 的真正開關我們會在
-        <strong>settings</strong>
-        資料表接上後啟用。
+        這裡下一階段會正式接上
+
+        <strong>
+          Settings
+        </strong>
+
+        資料表。
+
+        到時候你可以直接從後台控制前台，
+        不需要再修改程式碼。
 
       </div>
 
+
     </main>
 
+
   </section>
+
 
 </div>
 
 
-<script src="js/admin.js?v=20260923-2"></script>
+<script src="js/admin.js?v=20260923-3"></script>
+
 
 </body>
+
 </html>
