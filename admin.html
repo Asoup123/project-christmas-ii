@@ -1,50 +1,573 @@
 <!doctype html>
-<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>PROJECT : CHRISTMAS II // COMMAND CENTER</title>
-<style>
-:root{--r:#8f1d24;--g:#173c32;--c:#f3ead7;--gold:#c9a86a;--w:#fffdf8}
-*{box-sizing:border-box}body{margin:0;background:var(--g);font-family:"Courier New",monospace;color:#302e2a}
-.hidden{display:none!important}.wrap{width:min(1180px,calc(100% - 24px));margin:28px auto}.file{background:var(--c);padding:32px;border:1px solid #aa9473;box-shadow:0 18px 45px #0005}
-.code,.eye{letter-spacing:2px;font-size:12px}.code{color:var(--r);font-weight:bold}.eye{margin-top:24px;color:#756a59}
-h1{font-size:clamp(34px,7vw,64px);line-height:.9;color:var(--g);margin:8px 0 22px}h1 span{display:block;color:var(--r)}
-.line{height:2px;background:var(--gold);margin-bottom:25px}.login{max-width:450px;margin:30px auto}
-label{display:block;font-size:12px;letter-spacing:2px;margin-bottom:8px}input,button{width:100%;padding:15px;font:inherit}
-input{background:var(--w);border:1px solid #b7a788;font-size:18px}button{border:0;background:var(--g);color:white;font-weight:bold;letter-spacing:2px;margin-top:12px;cursor:pointer}
-.err{color:var(--r);font-weight:bold;margin-top:12px;min-height:20px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-.card{border:1px solid #c6b798;padding:16px}.card small{display:block;color:#746958}.card strong{font-size:26px;color:var(--g)}
-.bar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:18px 0;font-size:13px}.bar button{width:auto;margin:0;background:var(--r)}
-.table{overflow:auto;border:1px solid #c6b798}table{width:100%;border-collapse:collapse;min-width:950px}th,td{padding:12px;border-bottom:1px solid #d4c8b0;text-align:left;vertical-align:top;font-size:13px}
-th{background:var(--g);color:white;font-size:11px;letter-spacing:1px}.agent{color:var(--r);font-weight:bold}.empty{text-align:center;padding:32px}
-@media(max-width:650px){.wrap{width:calc(100% - 12px);margin:6px auto}.file{padding:22px 14px}.stats{grid-template-columns:1fr}.bar{align-items:stretch;flex-direction:column}.bar button{width:100%}}
-</style></head><body><div class="wrap">
-<section class="file" id="login"><div class="code">XMAS-II / RESTRICTED ADMINISTRATIVE ACCESS</div><div class="eye">AUTHORIZED PERSONNEL ONLY</div><h1>COMMAND <span>CENTER</span></h1><div class="line"></div>
-<div class="login"><label>ADMIN ACCESS CODE</label><input id="code" type="password" inputmode="numeric" maxlength="4" placeholder="輸入管理代碼"><button id="enter">驗證管理權限</button><div class="err" id="err"></div></div></section>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
 
-<section class="file hidden" id="dash"><div class="code">PROJECT : CHRISTMAS II / RESPONSE DATABASE</div><div class="eye">MISSION RESPONSE CONTROL</div><h1>RESPONSE <span>DATABASE</span></h1><div class="line"></div>
-<div class="stats"><div class="card"><small>CONFIRMED RESPONSES</small><strong id="count">0</strong></div><div class="card"><small>AVAILABLE DRIVERS</small><strong id="drivers">0</strong></div><div class="card"><small>DOUBLE BED REQUESTS</small><strong id="double">0</strong></div></div>
-<div class="bar"><span id="status">DATABASE CONNECTING...</span><button id="refresh">重新整理資料</button></div>
-<div class="table"><table><thead><tr><th>AGENT</th><th>交通方式</th><th>可載人數</th><th>住宿偏好</th><th>室友</th><th>備註</th><th>提交時間</th></tr></thead><tbody id="body"></tbody></table></div></section>
-</div><script>
-const URL="https://sdkgiedglmhmchiietru.supabase.co";
-const KEY="sb_publishable_ofwe1YigppMHJjcWu_VjUA_XF7wNzEm";
-const CODE="0420";
-const $=id=>document.getElementById(id);
-$("enter").onclick=login;$("code").onkeydown=e=>{if(e.key==="Enter")login()};$("refresh").onclick=load;
-function login(){if($("code").value.trim()!==CODE){$("err").textContent="ACCESS DENIED // 管理代碼錯誤";$("code").value="";return}$("login").classList.add("hidden");$("dash").classList.remove("hidden");load()}
-async function load(){
- $("status").textContent="DATABASE CONNECTING...";$("body").innerHTML='<tr><td class="empty" colspan="7">正在讀取資料...</td></tr>';
- try{
-  const r=await fetch(URL+"/rest/v1/christmas_2026_rsvp?select=id,created_at,name,travel,people,stay_pref,roommate,note&order=created_at.desc",{headers:{apikey:KEY}});
-  if(!r.ok)throw new Error(await r.text());const rows=await r.json();
-  $("count").textContent=rows.length;$("drivers").textContent=rows.filter(x=>x.travel==="自己開車").length;
-  $("double").textContent=rows.filter(x=>x.stay_pref==="雙人床"||x.stay_pref==="希望睡雙人床").length;
-  $("body").innerHTML="";
-  if(!rows.length)$("body").innerHTML='<tr><td class="empty" colspan="7">目前尚無已確認回覆</td></tr>';
-  rows.forEach(x=>{const tr=document.createElement("tr");[
-   x.name||"—",x.travel||"—",x.travel==="自己開車"&&x.people!==null?x.people+" 位":"—",x.stay_pref||"—",x.roommate||"—",x.note||"—",time(x.created_at)
-  ].forEach((v,i)=>{const td=document.createElement("td");td.textContent=v;if(i===0)td.className="agent";tr.appendChild(td)});$("body").appendChild(tr)});
-  $("status").textContent="DATABASE ONLINE // "+rows.length+" RECORD(S)";
- }catch(e){console.error(e);$("status").textContent="DATABASE ERROR";$("body").innerHTML='<tr><td class="empty" colspan="7">資料讀取失敗，請稍後再試。</td></tr>'}
-}
-function time(v){return v?new Intl.DateTimeFormat("zh-TW",{timeZone:"Asia/Taipei",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hour12:false}).format(new Date(v)):"—"}
-</script></body></html>
+  <title>PROJECT : CHRISTMAS II // COMMAND CENTER</title>
+
+  <link rel="stylesheet" href="css/admin.css?v=20260923-1">
+
+  <script src="https://cdn.jsdelivr.net/npm/appwrite@17.0.0"></script>
+</head>
+
+<body>
+
+<div class="admin-shell">
+
+  <!-- ==================================================
+       LOGIN
+  =================================================== -->
+
+  <section class="admin-file" id="adminLogin">
+
+    <div class="classification">
+      XMAS-II / RESTRICTED ADMINISTRATIVE ACCESS
+    </div>
+
+    <div class="eyebrow">
+      AUTHORIZED PERSONNEL ONLY
+    </div>
+
+    <h1>
+      COMMAND
+      <span>CENTER</span>
+    </h1>
+
+    <div class="gold-line"></div>
+
+    <div class="login-panel">
+
+      <div class="login-status">
+        ADMINISTRATOR IDENTITY VERIFICATION
+      </div>
+
+      <label for="adminEmail">
+        ADMIN EMAIL
+      </label>
+
+      <input
+        id="adminEmail"
+        type="email"
+        autocomplete="username"
+        placeholder="管理員 Email"
+      >
+
+      <label for="adminPassword">
+        PASSWORD
+      </label>
+
+      <input
+        id="adminPassword"
+        type="password"
+        autocomplete="current-password"
+        placeholder="管理員密碼"
+      >
+
+      <button
+        class="primary-button"
+        id="adminLoginButton"
+      >
+        VERIFY ADMINISTRATOR
+      </button>
+
+      <div
+        class="message"
+        id="loginMessage"
+      ></div>
+
+    </div>
+
+  </section>
+
+
+  <!-- ==================================================
+       COMMAND CENTER
+  =================================================== -->
+
+  <section
+    class="admin-file hidden"
+    id="commandCenter"
+  >
+
+    <header class="command-header">
+
+      <div>
+
+        <div class="classification">
+          PROJECT : CHRISTMAS II / COMMAND CENTER
+        </div>
+
+        <div class="eyebrow">
+          ADMINISTRATIVE CONTROL SYSTEM
+        </div>
+
+        <h1>
+          COMMAND
+          <span>CENTER</span>
+        </h1>
+
+      </div>
+
+      <div class="admin-badge">
+
+        <small>SESSION</small>
+
+        <strong>
+          ADMIN // AUTHORIZED
+        </strong>
+
+        <button
+          class="logout-button"
+          id="adminLogoutButton"
+        >
+          LOGOUT
+        </button>
+
+      </div>
+
+    </header>
+
+    <div class="gold-line"></div>
+
+
+    <!-- ==================================================
+         NAVIGATION
+    =================================================== -->
+
+    <nav class="admin-nav">
+
+      <button
+        class="active"
+        data-admin-page="dashboard"
+      >
+        DASHBOARD
+      </button>
+
+      <button
+        data-admin-page="members"
+      >
+        MEMBERS
+      </button>
+
+      <button
+        data-admin-page="intelligence"
+      >
+        INTELLIGENCE
+      </button>
+
+      <button
+        data-admin-page="assignment"
+      >
+        ASSIGNMENT
+      </button>
+
+      <button
+        data-admin-page="control"
+      >
+        CONTROL
+      </button>
+
+    </nav>
+
+
+    <!-- ==================================================
+         DASHBOARD
+    =================================================== -->
+
+    <main
+      class="admin-page"
+      id="dashboardPage"
+    >
+
+      <div class="section-code">
+        01 / SYSTEM OVERVIEW
+      </div>
+
+      <h2>MISSION STATUS</h2>
+
+      <div class="stats-grid">
+
+        <article class="stat-card">
+
+          <small>
+            REGISTERED MEMBERS
+          </small>
+
+          <strong id="registeredCount">
+            0
+          </strong>
+
+        </article>
+
+
+        <article class="stat-card">
+
+          <small>
+            RED FILE COMPLETE
+          </small>
+
+          <strong id="completeCount">
+            0 / 0
+          </strong>
+
+        </article>
+
+
+        <article class="stat-card">
+
+          <small>
+            FILE NUMBERED
+          </small>
+
+          <strong id="numberedCount">
+            0 / 0
+          </strong>
+
+        </article>
+
+
+        <article class="stat-card danger-card">
+
+          <small>
+            TARGET STATUS
+          </small>
+
+          <strong id="targetStatus">
+            LOCKED
+          </strong>
+
+        </article>
+
+      </div>
+
+
+      <div class="system-panel">
+
+        <div>
+
+          <small>DATABASE STATUS</small>
+
+          <strong id="databaseStatus">
+            CONNECTING...
+          </strong>
+
+        </div>
+
+        <button
+          class="small-button"
+          id="refreshDashboard"
+        >
+          REFRESH DATABASE
+        </button>
+
+      </div>
+
+
+      <div class="activity-box">
+
+        <div class="section-code">
+          PERSONNEL SUMMARY
+        </div>
+
+        <div
+          class="summary-list"
+          id="dashboardSummary"
+        >
+          Loading...
+        </div>
+
+      </div>
+
+    </main>
+
+
+    <!-- ==================================================
+         MEMBERS
+    =================================================== -->
+
+    <main
+      class="admin-page hidden"
+      id="membersPage"
+    >
+
+      <div class="page-heading">
+
+        <div>
+
+          <div class="section-code">
+            02 / PERSONNEL DATABASE
+          </div>
+
+          <h2>MEMBERS</h2>
+
+        </div>
+
+        <div class="page-actions">
+
+          <button
+            class="small-button"
+            id="refreshMembers"
+          >
+            REFRESH
+          </button>
+
+          <button
+            class="red-button"
+            id="renumberMembers"
+          >
+            RENUMBER FILES
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <div class="notice-box">
+
+        FILE NO. 會依照會員的註冊時間
+        $createdAt 由舊到新排列。
+
+        <strong>
+          第一位 = 01、第二位 = 02……
+        </strong>
+
+      </div>
+
+
+      <div class="table-wrap">
+
+        <table>
+
+          <thead>
+
+            <tr>
+
+              <th>FILE NO.</th>
+
+              <th>MEMBER ID</th>
+
+              <th>SUBJECT</th>
+
+              <th>RED FILE</th>
+
+              <th>REGISTERED</th>
+
+              <th>USER ID</th>
+
+            </tr>
+
+          </thead>
+
+          <tbody id="membersTableBody">
+
+            <tr>
+
+              <td colspan="6" class="empty-cell">
+                DATABASE CONNECTING...
+              </td>
+
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+
+      <div
+        class="message"
+        id="memberMessage"
+      ></div>
+
+    </main>
+
+
+    <!-- ==================================================
+         INTELLIGENCE
+    =================================================== -->
+
+    <main
+      class="admin-page hidden"
+      id="intelligencePage"
+    >
+
+      <div class="section-code">
+        03 / CLASSIFIED PERSONNEL INTELLIGENCE
+      </div>
+
+      <h2>INTELLIGENCE FILES</h2>
+
+
+      <div class="intel-layout">
+
+        <aside
+          class="subject-list"
+          id="subjectList"
+        >
+
+          <div class="empty-subject">
+            Loading personnel...
+          </div>
+
+        </aside>
+
+
+        <section
+          class="intel-document"
+          id="intelDocument"
+        >
+
+          <div class="empty-intelligence">
+
+            SELECT SUBJECT
+
+            <small>
+              選擇左側成員以查看情報檔案
+            </small>
+
+          </div>
+
+        </section>
+
+      </div>
+
+    </main>
+
+
+    <!-- ==================================================
+         ASSIGNMENT
+    =================================================== -->
+
+    <main
+      class="admin-page hidden"
+      id="assignmentPage"
+    >
+
+      <div class="section-code">
+        04 / TARGET ASSIGNMENT
+      </div>
+
+      <h2>TARGET ASSIGNMENT</h2>
+
+
+      <div class="locked-admin-panel">
+
+        <div class="lock-symbol">
+          ×
+        </div>
+
+        <strong>
+          ASSIGNMENT SYSTEM
+        </strong>
+
+        <p>
+          這一區下一步會接交換禮物配對。
+        </p>
+
+        <p>
+          可以設定「誰抽到誰」，並避免自己抽到自己。
+        </p>
+
+      </div>
+
+    </main>
+
+
+    <!-- ==================================================
+         CONTROL
+    =================================================== -->
+
+    <main
+      class="admin-page hidden"
+      id="controlPage"
+    >
+
+      <div class="section-code">
+        05 / MISSION CONTROL
+      </div>
+
+      <h2>MISSION CONTROL</h2>
+
+
+      <div class="control-grid">
+
+        <article class="control-card">
+
+          <div>
+
+            <small>
+              TARGET FILE
+            </small>
+
+            <strong>
+              TARGET RELEASE
+            </strong>
+
+            <p>
+              控制所有會員是否可以查看自己的 TARGET。
+            </p>
+
+          </div>
+
+          <div
+            class="control-status locked"
+            id="targetControlStatus"
+          >
+            LOCKED
+          </div>
+
+        </article>
+
+
+        <article class="control-card">
+
+          <div>
+
+            <small>
+              RED FILE
+            </small>
+
+            <strong>
+              RED FILE RELEASE
+            </strong>
+
+            <p>
+              控制 RED FILE 的活動開放狀態。
+            </p>
+
+          </div>
+
+          <div
+            class="control-status locked"
+            id="redControlStatus"
+          >
+            LOCKED
+          </div>
+
+        </article>
+
+      </div>
+
+
+      <div class="notice-box">
+
+        CONTROL 的真正開關我們會在
+        <strong>settings</strong>
+        資料表接上後啟用。
+
+      </div>
+
+    </main>
+
+  </section>
+
+</div>
+
+
+<script src="js/admin.js?v=20260923-1"></script>
+
+</body>
+</html>
