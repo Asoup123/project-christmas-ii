@@ -7,11 +7,11 @@ const APPWRITE_PROJECT_ID =
 const DATABASE_ID =
   "christmas-2026";
 
-const TABLES = {
-  members:"members",
-  targetFiles:"target_files",
-  assignments:"assignments",
-  settings:"settings"
+const COLLECTIONS = {
+  members: "members",
+  targetFiles: "target_files",
+  assignments: "assignments",
+  settings: "settings"
 };
 
 
@@ -27,8 +27,8 @@ const client =
 const account =
   new Appwrite.Account(client);
 
-const tablesDB =
-  new Appwrite.TablesDB(client);
+const databases =
+  new Appwrite.Databases(client);
 
 
 /* =========================================
@@ -38,6 +38,7 @@ const tablesDB =
 let adminUser = null;
 
 let members = [];
+
 let targetFiles = [];
 
 
@@ -49,64 +50,71 @@ const $ =
   id => document.getElementById(id);
 
 
-function escapeHTML(value){
+function escapeHTML(value) {
 
   return String(value ?? "")
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;")
-    .replaceAll("'","&#039;");
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 }
 
 
-function fileNumber(value){
+function fileNumber(value) {
 
-  if(
+  if (
     value === null ||
     value === undefined ||
     value === ""
-  ){
+  ) {
     return "--";
   }
 
   return String(value)
-    .padStart(2,"0");
+    .padStart(2, "0");
 }
 
 
-function formatTime(value){
+function formatTime(value) {
 
-  if(!value){
+  if (!value) {
     return "—";
   }
 
-  return new Intl.DateTimeFormat(
-    "zh-TW",
-    {
-      timeZone:"Asia/Taipei",
-      year:"numeric",
-      month:"2-digit",
-      day:"2-digit",
-      hour:"2-digit",
-      minute:"2-digit",
-      hour12:false
-    }
-  ).format(
-    new Date(value)
-  );
+  try {
+
+    return new Intl.DateTimeFormat(
+      "zh-TW",
+      {
+        timeZone: "Asia/Taipei",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false
+      }
+    ).format(
+      new Date(value)
+    );
+
+  } catch (error) {
+
+    return "—";
+  }
 }
 
 
 function showMessage(
   id,
   text,
-  success=false
-){
+  success = false
+) {
 
   const element = $(id);
 
-  if(!element){
+  if (!element) {
     return;
   }
 
@@ -123,7 +131,7 @@ function showMessage(
    LOGIN VIEW
 ========================================= */
 
-function showAdminLogin(){
+function showAdminLogin() {
 
   $("commandCenter")
     .classList.add("hidden");
@@ -133,7 +141,7 @@ function showAdminLogin(){
 }
 
 
-function showCommandCenter(){
+function showCommandCenter() {
 
   $("adminLogin")
     .classList.add("hidden");
@@ -147,7 +155,7 @@ function showCommandCenter(){
    ADMIN LOGIN
 ========================================= */
 
-async function adminLogin(){
+async function adminLogin() {
 
   const email =
     $("adminEmail")
@@ -158,10 +166,8 @@ async function adminLogin(){
     $("adminPassword")
       .value;
 
-  if(
-    !email ||
-    !password
-  ){
+
+  if (!email || !password) {
 
     showMessage(
       "loginMessage",
@@ -175,47 +181,49 @@ async function adminLogin(){
   const button =
     $("adminLoginButton");
 
+
   button.disabled = true;
 
   button.textContent =
     "VERIFYING...";
 
 
-  try{
+  showMessage(
+    "loginMessage",
+    ""
+  );
+
+
+  try {
 
     /*
-      清掉可能存在的會員登入 Session
+      清除可能存在的前台登入 Session
     */
 
-    try{
+    try {
 
-      await account.deleteSession({
-        sessionId:"current"
-      });
+      await account.deleteSession(
+        "current"
+      );
 
-    }catch(error){
+    } catch (error) {
       // 沒有 session 時忽略
     }
 
 
+    /*
+      Appwrite Email / Password 登入
+    */
+
     await account
-      .createEmailPasswordSession({
+      .createEmailPasswordSession(
         email,
         password
-      });
+      );
 
 
     adminUser =
       await account.get();
-
-
-    /*
-      注意：
-      真正的 ADMIN 權限會由
-      Appwrite 權限決定。
-
-      不是靠前端 Email 判斷。
-    */
 
 
     showCommandCenter();
@@ -224,19 +232,46 @@ async function adminLogin(){
       "dashboard"
     );
 
+
+    /*
+      如果不是 christmas-admin，
+      後面的資料庫權限會直接拒絕。
+    */
+
     await loadDatabase();
 
 
-  }catch(error){
+  } catch (error) {
 
-    console.error(error);
+    console.error(
+      "ADMIN LOGIN ERROR:",
+      error
+    );
+
 
     showMessage(
       "loginMessage",
-      "ACCESS DENIED // 管理員帳號或權限驗證失敗"
+      "ACCESS DENIED // 登入失敗，請確認 Email 與密碼。"
     );
 
-  }finally{
+
+    try {
+
+      await account.deleteSession(
+        "current"
+      );
+
+    } catch (sessionError) {
+      // ignore
+    }
+
+
+    adminUser = null;
+
+    showAdminLogin();
+
+
+  } finally {
 
     button.disabled = false;
 
@@ -250,15 +285,16 @@ async function adminLogin(){
    LOGOUT
 ========================================= */
 
-async function adminLogout(){
+async function adminLogout() {
 
-  try{
+  try {
 
-    await account.deleteSession({
-      sessionId:"current"
-    });
+    await account.deleteSession(
+      "current"
+    );
 
-  }catch(error){
+  } catch (error) {
+
     console.log(error);
   }
 
@@ -266,11 +302,14 @@ async function adminLogout(){
   adminUser = null;
 
   members = [];
+
   targetFiles = [];
 
 
   $("adminEmail").value = "";
+
   $("adminPassword").value = "";
+
 
   showAdminLogin();
 }
@@ -280,17 +319,17 @@ async function adminLogout(){
    NAVIGATION
 ========================================= */
 
-function openAdminPage(page){
+function openAdminPage(page) {
 
   document
     .querySelectorAll(
       ".admin-page"
     )
-    .forEach(element=>{
+    .forEach(element => {
 
-      element.classList.add(
-        "hidden"
-      );
+      element
+        .classList
+        .add("hidden");
 
     });
 
@@ -299,7 +338,7 @@ function openAdminPage(page){
     .querySelectorAll(
       "[data-admin-page]"
     )
-    .forEach(button=>{
+    .forEach(button => {
 
       button.classList.toggle(
         "active",
@@ -312,18 +351,23 @@ function openAdminPage(page){
   const target =
     $(`${page}Page`);
 
-  if(target){
-    target.classList.remove(
-      "hidden"
-    );
+
+  if (target) {
+
+    target
+      .classList
+      .remove("hidden");
   }
 
 
-  if(page === "members"){
+  if (page === "members") {
+
     renderMembers();
   }
 
-  if(page === "intelligence"){
+
+  if (page === "intelligence") {
+
     renderSubjects();
   }
 }
@@ -333,84 +377,111 @@ function openAdminPage(page){
    LOAD DATABASE
 ========================================= */
 
-async function loadDatabase(){
+async function loadDatabase() {
 
-  $("databaseStatus")
-    .textContent =
+  if ($("databaseStatus")) {
+
+    $("databaseStatus")
+      .textContent =
       "CONNECTING...";
+  }
 
 
-  try{
+  try {
 
     /*
-      管理員必須有權限 LIST members。
+      MEMBERS
     */
 
     const memberResponse =
-      await tablesDB.listRows({
-        databaseId:DATABASE_ID,
-        tableId:TABLES.members,
-        queries:[
+      await databases.listDocuments(
+        DATABASE_ID,
+        COLLECTIONS.members,
+        [
           Appwrite.Query.limit(100)
         ]
-      });
+      );
 
 
     members =
-      [...memberResponse.rows]
+      [...memberResponse.documents]
         .sort(
-          (a,b)=>
+          (a, b) =>
             new Date(a.$createdAt) -
             new Date(b.$createdAt)
         );
 
 
     /*
-      管理員必須有權限 LIST target_files。
+      TARGET FILES
     */
 
     const targetResponse =
-      await tablesDB.listRows({
-        databaseId:DATABASE_ID,
-        tableId:TABLES.targetFiles,
-        queries:[
+      await databases.listDocuments(
+        DATABASE_ID,
+        COLLECTIONS.targetFiles,
+        [
           Appwrite.Query.limit(100)
         ]
-      });
+      );
 
 
     targetFiles =
-      targetResponse.rows;
+      targetResponse.documents;
 
 
-    $("databaseStatus")
-      .textContent =
+    if ($("databaseStatus")) {
+
+      $("databaseStatus")
+        .textContent =
         "DATABASE ONLINE";
+    }
 
 
     renderDashboard();
+
     renderMembers();
+
     renderSubjects();
 
 
-  }catch(error){
+  } catch (error) {
 
-    console.error(error);
+    console.error(
+      "DATABASE ERROR:",
+      error
+    );
 
-    $("databaseStatus")
-      .textContent =
+
+    if ($("databaseStatus")) {
+
+      $("databaseStatus")
+        .textContent =
         "PERMISSION DENIED / DATABASE ERROR";
+    }
 
 
-    $("dashboardSummary")
-      .innerHTML = `
-        <strong style="color:#8f1d24">
-          ADMIN DATABASE ACCESS DENIED
-        </strong>
-        <br><br>
-        管理員帳號目前尚未取得讀取所有
-        members / target_files 的 Appwrite 權限。
-      `;
+    if ($("dashboardSummary")) {
+
+      $("dashboardSummary")
+        .innerHTML = `
+
+          <strong style="color:#8f1d24">
+            ADMIN DATABASE ACCESS DENIED
+          </strong>
+
+          <br><br>
+
+          無法讀取 members 或 target_files。
+
+          <br>
+
+          請確認 Asoup0529 已加入
+          Christmas Admin Team，
+          並確認資料表權限已儲存。
+
+        `;
+    }
   }
 }
 
@@ -419,66 +490,81 @@ async function loadDatabase(){
    DASHBOARD
 ========================================= */
 
-function renderDashboard(){
+function renderDashboard() {
 
   const total =
     members.length;
 
+
   const complete =
     members.filter(
       member =>
-        member.target_file_complete
+        member.target_file_complete === true
     ).length;
+
 
   const numbered =
     members.filter(
       member =>
         member.file_no !== null &&
-        member.file_no !== undefined
+        member.file_no !== undefined &&
+        member.file_no !== ""
     ).length;
 
 
-  $("registeredCount")
-    .textContent =
+  if ($("registeredCount")) {
+
+    $("registeredCount")
+      .textContent =
       total;
+  }
 
 
-  $("completeCount")
-    .textContent =
+  if ($("completeCount")) {
+
+    $("completeCount")
+      .textContent =
       `${complete} / ${total}`;
+  }
 
 
-  $("numberedCount")
-    .textContent =
+  if ($("numberedCount")) {
+
+    $("numberedCount")
+      .textContent =
       `${numbered} / ${total}`;
+  }
 
 
   const pending =
     total - complete;
 
 
-  $("dashboardSummary")
-    .innerHTML = `
+  if ($("dashboardSummary")) {
 
-      REGISTERED PERSONNEL:
-      <strong>${total}</strong>
+    $("dashboardSummary")
+      .innerHTML = `
 
-      <br>
+        REGISTERED PERSONNEL:
+        <strong>${total}</strong>
 
-      COMPLETED INTELLIGENCE FILES:
-      <strong>${complete}</strong>
+        <br>
 
-      <br>
+        COMPLETED INTELLIGENCE FILES:
+        <strong>${complete}</strong>
 
-      PENDING INTELLIGENCE FILES:
-      <strong>${pending}</strong>
+        <br>
 
-      <br>
+        PENDING INTELLIGENCE FILES:
+        <strong>${pending}</strong>
 
-      FILE NUMBERS ASSIGNED:
-      <strong>${numbered}</strong>
+        <br>
 
-    `;
+        FILE NUMBERS ASSIGNED:
+        <strong>${numbered}</strong>
+
+      `;
+  }
 }
 
 
@@ -486,17 +572,18 @@ function renderDashboard(){
    MEMBERS TABLE
 ========================================= */
 
-function renderMembers(){
+function renderMembers() {
 
   const body =
     $("membersTableBody");
 
-  if(!body){
+
+  if (!body) {
     return;
   }
 
 
-  if(!members.length){
+  if (!members.length) {
 
     body.innerHTML = `
 
@@ -518,10 +605,11 @@ function renderMembers(){
 
 
   body.innerHTML =
-    members.map(member=>{
+    members.map(member => {
 
       const complete =
-        member.target_file_complete;
+        member.target_file_complete === true;
+
 
       return `
 
@@ -602,12 +690,18 @@ function renderMembers(){
 
 
 /* =========================================
-   RENUMBER
+   RENUMBER FILES
 ========================================= */
 
-async function renumberMembers(){
+async function renumberMembers() {
 
-  if(!members.length){
+  if (!members.length) {
+
+    showMessage(
+      "memberMessage",
+      "目前沒有會員資料。"
+    );
+
     return;
   }
 
@@ -618,7 +712,7 @@ async function renumberMembers(){
     );
 
 
-  if(!confirmed){
+  if (!confirmed) {
     return;
   }
 
@@ -635,62 +729,43 @@ async function renumberMembers(){
 
   showMessage(
     "memberMessage",
-    "正在重新編號..."
+    "正在依照註冊時間重新編號..."
   );
 
 
-  try{
-
-    /*
-      先再次按照註冊時間排序。
-    */
+  try {
 
     const ordered =
-      [...members].sort(
-        (a,b)=>
-          new Date(a.$createdAt) -
-          new Date(b.$createdAt)
-      );
+      [...members]
+        .sort(
+          (a, b) =>
+            new Date(a.$createdAt) -
+            new Date(b.$createdAt)
+        );
 
 
-    /*
-      一筆一筆更新。
-
-      01 -> 儲存 Integer 1
-      02 -> 儲存 Integer 2
-      ...
-    */
-
-    for(
-      let index=0;
-      index<ordered.length;
+    for (
+      let index = 0;
+      index < ordered.length;
       index++
-    ){
+    ) {
 
       const member =
         ordered[index];
+
 
       const newNumber =
         index + 1;
 
 
-      await tablesDB.updateRow({
-
-        databaseId:
-          DATABASE_ID,
-
-        tableId:
-          TABLES.members,
-
-        rowId:
-          member.$id,
-
-        data:{
-          file_no:newNumber
+      await databases.updateDocument(
+        DATABASE_ID,
+        COLLECTIONS.members,
+        member.$id,
+        {
+          file_no: newNumber
         }
-
-      });
-
+      );
     }
 
 
@@ -704,17 +779,21 @@ async function renumberMembers(){
     await loadDatabase();
 
 
-  }catch(error){
+  } catch (error) {
 
-    console.error(error);
-
-    showMessage(
-      "memberMessage",
-      "編號失敗。請確認 ADMIN 是否具有更新所有 members Row 的權限。"
+    console.error(
+      "RENUMBER ERROR:",
+      error
     );
 
 
-  }finally{
+    showMessage(
+      "memberMessage",
+      "編號失敗，請確認 Christmas Admin 的 UPDATE 權限。"
+    );
+
+
+  } finally {
 
     button.disabled = false;
 
@@ -725,20 +804,21 @@ async function renumberMembers(){
 
 
 /* =========================================
-   INTELLIGENCE SUBJECTS
+   INTELLIGENCE SUBJECT LIST
 ========================================= */
 
-function renderSubjects(){
+function renderSubjects() {
 
   const container =
     $("subjectList");
 
-  if(!container){
+
+  if (!container) {
     return;
   }
 
 
-  if(!members.length){
+  if (!members.length) {
 
     container.innerHTML = `
 
@@ -753,7 +833,7 @@ function renderSubjects(){
 
 
   container.innerHTML =
-    members.map(member=>`
+    members.map(member => `
 
       <button
         class="subject-button"
@@ -788,12 +868,10 @@ function renderSubjects(){
 
 
 /* =========================================
-   OPEN INTELLIGENCE FILE
+   OPEN INTELLIGENCE
 ========================================= */
 
-function openIntelligence(
-  userId
-){
+function openIntelligence(userId) {
 
   const member =
     members.find(
@@ -810,7 +888,7 @@ function openIntelligence(
     );
 
 
-  if(!member){
+  if (!member) {
     return;
   }
 
@@ -819,7 +897,7 @@ function openIntelligence(
     .querySelectorAll(
       ".subject-button"
     )
-    .forEach(button=>{
+    .forEach(button => {
 
       button.classList.toggle(
         "active",
@@ -829,7 +907,7 @@ function openIntelligence(
     });
 
 
-  if(!file){
+  if (!file) {
 
     $("intelDocument")
       .innerHTML = `
@@ -854,7 +932,7 @@ function openIntelligence(
     (
       title,
       value,
-      full=false
+      full = false
     ) => `
 
       <article
@@ -1000,12 +1078,25 @@ $("adminLoginButton")
 $("adminPassword")
   .addEventListener(
     "keydown",
-    event=>{
+    event => {
 
-      if(event.key === "Enter"){
+      if (event.key === "Enter") {
+
         adminLogin();
       }
+    }
+  );
 
+
+$("adminEmail")
+  .addEventListener(
+    "keydown",
+    event => {
+
+      if (event.key === "Enter") {
+
+        $("adminPassword").focus();
+      }
     }
   );
 
@@ -1040,14 +1131,15 @@ $("renumberMembers")
 
 document.addEventListener(
   "click",
-  event=>{
+  event => {
 
     const navButton =
       event.target.closest(
         "[data-admin-page]"
       );
 
-    if(navButton){
+
+    if (navButton) {
 
       openAdminPage(
         navButton.dataset.adminPage
@@ -1062,13 +1154,13 @@ document.addEventListener(
         "[data-subject-id]"
       );
 
-    if(subjectButton){
+
+    if (subjectButton) {
 
       openIntelligence(
         subjectButton.dataset.subjectId
       );
     }
-
   }
 );
 
@@ -1079,25 +1171,30 @@ document.addEventListener(
 
 window.addEventListener(
   "DOMContentLoaded",
-  async()=>{
+  async () => {
 
     /*
-      後台每次重新整理，
-      同樣要求重新登入。
+      每次開啟 / 重新整理後台
+      都要求重新登入。
     */
 
-    try{
+    try {
 
-      await account.deleteSession({
-        sessionId:"current"
-      });
+      await account.deleteSession(
+        "current"
+      );
 
-    }catch(error){
-      // 沒有 session 就忽略
+    } catch (error) {
+      // 沒有 Session 就忽略
     }
 
 
     adminUser = null;
+
+    members = [];
+
+    targetFiles = [];
+
 
     showAdminLogin();
 
