@@ -33,6 +33,8 @@ function setMessage(id, text, type="error"){
 function showOnly(pageId){
   document.querySelectorAll("main.page").forEach(p=>p.classList.add("hidden"));
   document.getElementById(pageId)?.classList.remove("hidden");
+  const memberPages=["myFilePage","missionPage","rsvpPage","reviewPage","targetPage","redLockedPage"];
+  document.getElementById("folderTabs")?.classList.toggle("hidden",!memberPages.includes(pageId));
   window.scrollTo({top:0,behavior:"instant"});
 }
 
@@ -93,7 +95,7 @@ async function routeAfterLogin(){
   try{
     const member=await tablesDB.getRow({databaseId:DATABASE_ID,tableId:TABLES.members,rowId:currentUser.$id});
     currentMemberId=member.username || currentMemberId;
-    if(member.target_file_complete){ await decryptMissionFile(); }
+    if(member.target_file_complete){ await openFileTab("myFile"); }
     else showOnly("redFilePage");
   }catch(error){
     console.error(error); await logoutMember();
@@ -103,7 +105,7 @@ async function routeAfterLogin(){
 
 async function logoutMember(){
   try{ await account.deleteSession({sessionId:"current"}); }catch(e){}
-  currentUser=null; currentMemberId=""; showOnly("loginPage");
+  currentUser=null; currentMemberId=""; document.getElementById("folderTabs")?.classList.add("hidden"); showOnly("loginPage");
 }
 
 async function submitRedFile(event){
@@ -135,7 +137,7 @@ async function submitRedFile(event){
     });
     await tablesDB.updateRow({databaseId:DATABASE_ID,tableId:TABLES.members,rowId:currentUser.$id,data:{target_file_complete:true}});
     setMessage("redFileMessage","<strong>RED FILE ACCEPTED</strong><br>情報檔案已完成。","success");
-    await wait(700); await decryptMissionFile();
+    await wait(700); await openFileTab("myFile");
   }catch(error){
     console.error(error);
     setMessage("redFileMessage","資料傳送失敗。若你已填過 RED FILE，請重新登入。","error");
@@ -159,9 +161,74 @@ window.addEventListener("DOMContentLoaded",async()=>{
     currentUser=await account.get();
     const member=await tablesDB.getRow({databaseId:DATABASE_ID,tableId:TABLES.members,rowId:currentUser.$id});
     currentMemberId=member.username;
-    if(member.target_file_complete) showOnly("missionPage"); else showOnly("redFilePage");
+    if(member.target_file_complete) await openFileTab("myFile"); else showOnly("redFilePage");
   }catch(e){ showOnly("loginPage"); }
 });
+
+
+/* =========================
+   FOLDER TAB MEMBER SYSTEM
+========================= */
+function setActiveFileTab(tab){
+  document.querySelectorAll(".folder-tab").forEach(button=>{
+    button.classList.toggle("active",button.dataset.fileTab===tab);
+  });
+}
+
+async function loadMyFile(){
+  const [member,file]=await Promise.all([
+    tablesDB.getRow({databaseId:DATABASE_ID,tableId:TABLES.members,rowId:currentUser.$id}),
+    tablesDB.getRow({databaseId:DATABASE_ID,tableId:TABLES.targetFiles,rowId:currentUser.$id})
+  ]);
+  const values={
+    myFileNo:(member.username||"---").toUpperCase(),
+    myRealName:member.real_name||"---",
+    myMemberId:member.username||"---",
+    myWish:file.wish||"---",
+    myPreference:file.preference||"---",
+    myGiftMessage:file.message||"---",
+    myGender:file.gender||"---",
+    myBirthday:file.birthday_range||"---",
+    myHeight:file.height_range||"---",
+    mySmoked:file.smoked||"---",
+    myPet:file.has_pet||"---",
+    myAlcohol:file.alcohol_frequency||"---",
+    myLifestyle:file.lifestyle||"---",
+    mySweet:file.sweet_preference||"---"
+  };
+  Object.entries(values).forEach(([id,value])=>{
+    const el=document.getElementById(id); if(el) el.textContent=value;
+  });
+}
+
+async function openFileTab(tab){
+  if(!currentUser){ showOnly("loginPage"); return; }
+  setActiveFileTab(tab);
+  document.body.classList.remove("folder-mode-mission","folder-mode-lodging");
+
+  if(tab==="myFile"){
+    showOnly("myFilePage");
+    try{ await loadMyFile(); }catch(error){ console.error(error); }
+    return;
+  }
+  if(tab==="mission"){
+    document.body.classList.add("folder-mode-mission");
+    showOnly("missionPage");
+    return;
+  }
+  if(tab==="lodging"){
+    document.body.classList.add("folder-mode-lodging");
+    showOnly("missionPage");
+    return;
+  }
+  if(tab==="rsvp"){
+    document.getElementById("rsvpAgentCode").textContent=currentMemberId||"---";
+    showOnly("rsvpPage");
+    return;
+  }
+  if(tab==="target"){ showOnly("targetPage"); return; }
+  if(tab==="red"){ showOnly("redLockedPage"); return; }
+}
 
 /* =========================
    ORIGINAL MISSION FLOW
