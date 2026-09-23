@@ -8,6 +8,9 @@ html{
 
 body{
   margin:0;
+
+  min-height:100vh;
+
   background:
     radial-gradient(
       circle at top,
@@ -15,324 +18,645 @@ body{
       #111417 42%,
       #08090a 100%
     );
+
   color:#17191b;
-  font-family:Arial,"Noto Sans TC",sans-serif;
-  min-height:100vh;
+
+  font-family:
+    Arial,
+    "Noto Sans TC",
+    sans-serif;
+}
+
+button,
+input,
+textarea,
+select{
+  font-family:inherit;
 }
 
 .hidden{
   display:none!important;
 }
 
-/* =========================
-   PAGE
-========================= */
+
+/* =====================================================
+   STANDALONE PAGE
+===================================================== */
 
 .page{
   width:min(100% - 28px,920px);
   margin:0 auto;
+}
+
+.standalone-page{
   padding:56px 0 80px;
 }
 
-/* 登入後有分頁的頁面
-   取消頂部空間，讓分頁直接接文件 */
-.folder-tabs:not(.hidden) + .page:not(.hidden){
-  padding-top:0;
+
+/* =====================================================
+   FILE CABINET
+===================================================== */
+
+.file-cabinet{
+  width:min(100% - 28px,920px);
+
+  margin:28px auto 80px;
+
+  position:relative;
 }
 
-/* =========================
-   FILE
-========================= */
+
+/* =====================================================
+   FOLDER TABS
+===================================================== */
+
+.folder-tabs{
+  width:100%;
+
+  display:flex;
+  align-items:stretch;
+
+  gap:5px;
+
+  margin:0;
+  padding:0;
+
+  position:relative;
+  z-index:10;
+}
+
+
+.folder-tabs button{
+  min-height:55px;
+
+  padding:0 22px;
+
+  border:1px solid #5d6062;
+  border-bottom:0;
+
+  background:#c9cbc8;
+
+  color:#111;
+
+  font-size:16px;
+  font-weight:900;
+
+  letter-spacing:.3px;
+
+  cursor:pointer;
+
+  position:relative;
+
+  transition:
+    background .18s ease,
+    color .18s ease,
+    transform .18s ease;
+}
+
+
+.folder-tabs button:hover{
+  background:#dedfdb;
+}
+
+
+.folder-tabs button.active{
+  background:#e6e6e1;
+
+  color:#111;
+
+  z-index:12;
+
+  /*
+    往下壓 1px，
+    讓 active tab 跟文件紙張完全連起來
+  */
+  margin-bottom:-1px;
+}
+
+
+.folder-tabs button.active:after{
+  content:"";
+
+  position:absolute;
+
+  left:0;
+  right:0;
+  bottom:-2px;
+
+  height:4px;
+
+  background:#e6e6e1;
+}
+
+
+.folder-tabs .locked:before{
+  content:"";
+
+  width:6px;
+  height:6px;
+
+  display:inline-block;
+
+  margin-right:7px;
+
+  border-radius:50%;
+
+  background:#9b1117;
+
+  vertical-align:2px;
+}
+
+
+.folder-tabs .redtab{
+  color:#9b1117;
+}
+
+
+.folder-tabs .logout{
+  margin-left:auto;
+
+  background:#111416;
+
+  color:#eee;
+
+  border:1px solid #555;
+
+  border-bottom:1px solid #555;
+}
+
+
+.folder-tabs .logout:hover{
+  background:#292d30;
+}
+
+
+/* =====================================================
+   DOCUMENT STAGE
+===================================================== */
+
+.document-stage{
+  width:100%;
+
+  margin:0;
+
+  padding:0;
+
+  position:relative;
+
+  z-index:5;
+}
+
+
+.document-page{
+  width:100%;
+
+  margin:0;
+  padding:0;
+
+  transform-origin:top center;
+}
+
+
+/* =====================================================
+   FILE PAPER
+===================================================== */
 
 .file{
   position:relative;
-  background:#e6e6e1;
-  padding:58px 62px;
+
+  width:100%;
+
   min-height:640px;
 
-  box-shadow:
-    0 30px 80px #0009;
+  padding:58px 62px;
+
+  margin:0;
+
+  background:#e6e6e1;
 
   border:1px solid #73777a;
+
+  box-shadow:
+    0 30px 80px rgba(0,0,0,.60);
+
   overflow:hidden;
 }
 
+
+.document-stage .file{
+  /*
+    直接接 folder tab
+  */
+  border-top:1px solid #73777a;
+}
+
+
 .file:before{
   content:"";
+
   position:absolute;
   inset:0;
+
   pointer-events:none;
+
   opacity:.14;
 
   background:
     repeating-linear-gradient(
       0deg,
-      #0000 0 3px,
+      transparent 0,
+      transparent 3px,
       #000 4px
     );
 }
 
-/* =========================
+
+/* =====================================================
+   DOCUMENT OPEN ANIMATION
+===================================================== */
+
+.document-page.document-enter{
+  animation:
+    documentOpen .42s
+    cubic-bezier(.22,.8,.28,1)
+    both;
+}
+
+
+@keyframes documentOpen{
+
+  0%{
+    opacity:0;
+
+    transform:
+      translateY(-10px)
+      scaleY(.985);
+
+    filter:
+      brightness(.82)
+      blur(1px);
+  }
+
+  55%{
+    opacity:1;
+
+    transform:
+      translateY(3px)
+      scaleY(1.002);
+  }
+
+  100%{
+    opacity:1;
+
+    transform:
+      translateY(0)
+      scaleY(1);
+
+    filter:
+      brightness(1)
+      blur(0);
+  }
+
+}
+
+
+/* =====================================================
    STAMP
-========================= */
+===================================================== */
 
 .stamp{
   position:absolute;
+
   right:38px;
   top:30px;
 
   border:3px solid #2b2d2f;
+
   padding:7px 12px;
 
   font-weight:900;
+
   letter-spacing:3px;
 
-  transform:rotate(-3deg);
+  transform:
+    rotate(-3deg);
+
+  transform-origin:center;
+
+  z-index:3;
 }
+
 
 .stamp.red{
   color:#a31318;
+
   border-color:#a31318;
 }
 
-/* =========================
+
+.document-page.document-enter .stamp{
+  animation:
+    stampHit .48s
+    .17s
+    cubic-bezier(.2,.8,.25,1.25)
+    both;
+}
+
+
+@keyframes stampHit{
+
+  0%{
+    opacity:0;
+
+    transform:
+      rotate(-8deg)
+      scale(1.55);
+  }
+
+  55%{
+    opacity:1;
+
+    transform:
+      rotate(-3deg)
+      scale(.92);
+  }
+
+  75%{
+    transform:
+      rotate(-3deg)
+      scale(1.04);
+  }
+
+  100%{
+    transform:
+      rotate(-3deg)
+      scale(1);
+  }
+
+}
+
+
+/* =====================================================
    TYPOGRAPHY
-========================= */
+===================================================== */
 
 .meta,
 .eyebrow,
 small,
 label{
   letter-spacing:1.8px;
+
   font-size:12px;
+
   font-weight:800;
 }
 
+
 .meta{
   color:#65696c;
+
   margin-bottom:50px;
 }
 
+
 .eyebrow{
   color:#555b60;
+
   margin:0 0 8px;
 }
 
+
 h1{
-  font-size:clamp(36px,7vw,72px);
+  font-size:
+    clamp(36px,7vw,72px);
+
   line-height:.95;
+
   margin:0 0 30px;
+
   letter-spacing:-3px;
 }
+
 
 h1 span{
   color:#9b1117;
 }
 
-/* =========================
-   BASIC BOXES
-========================= */
+
+/* =====================================================
+   NOTICE / PANEL
+===================================================== */
 
 .notice,
 .panel,
 .location{
   border:1px solid #96999a;
+
   background:#f1f1ed;
+
   padding:20px;
+
   line-height:1.7;
 }
 
-/* =========================
-   LOGIN
-========================= */
+
+/* =====================================================
+   AUTH
+===================================================== */
 
 .auth-switch{
   display:flex;
+
   gap:8px;
+
   margin-top:28px;
 }
 
+
 .auth-tab,
-.folder-tabs button,
 .choices button{
   border:1px solid #777;
+
   background:#d9dad6;
+
   padding:12px 18px;
+
   font-weight:800;
+
   cursor:pointer;
 }
 
+
 .auth-tab.active,
-.folder-tabs button.active,
 .choices button.selected{
   background:#17191b;
+
   color:#fff;
 }
+
 
 .panel{
   margin-top:8px;
 }
 
+
 .panel h2,
 .section-title{
   font-size:14px;
+
   letter-spacing:3px;
+
   margin:28px 0 18px;
-  border-bottom:2px solid #1d2022;
+
+  border-bottom:
+    2px solid #1d2022;
+
   padding-bottom:10px;
 }
 
+
 label{
   display:block;
+
   margin:16px 0 7px;
 }
+
 
 input,
 textarea,
 select{
   width:100%;
-  border:1px solid #85898c;
+
+  border:
+    1px solid #85898c;
+
   background:#fafaf7;
+
   padding:13px;
+
   font:inherit;
 }
 
+
 textarea{
   min-height:110px;
+
   resize:vertical;
 }
 
+
 .primary{
   width:100%;
+
   margin-top:22px;
+
   padding:15px;
 
   border:0;
+
   background:#17191b;
+
   color:#fff;
 
   font-weight:900;
+
   letter-spacing:2px;
+
   cursor:pointer;
 }
 
+
+.primary:disabled{
+  opacity:.55;
+
+  cursor:not-allowed;
+}
+
+
 .message{
   margin-top:14px;
+
   line-height:1.5;
 }
+
 
 .message.error{
   color:#9b1117;
 }
 
+
 .message.success{
   color:#245c3d;
 }
 
+
 .choices{
   display:flex;
+
   flex-wrap:wrap;
+
   gap:8px;
 }
+
 
 .choice-field{
   margin:18px 0;
 }
 
+
 footer{
   margin-top:45px;
-  border-top:1px solid #999;
+
+  border-top:
+    1px solid #999;
+
   padding-top:16px;
 
   font-size:11px;
+
   letter-spacing:2px;
 }
 
-/* =========================
-   FOLDER TABS
-========================= */
 
-.folder-tabs{
-  width:min(100% - 28px,920px);
-
-  /* 上方保留空間，下方直接貼文件 */
-  margin:26px auto 0;
-
-  display:flex;
-  align-items:flex-end;
-  gap:4px;
-
-  position:relative;
-  z-index:3;
-}
-
-.folder-tabs button{
-  background:#c9cbc8;
-  border-color:#666;
-
-  /* 下方不要產生第二條邊框 */
-  border-bottom:0;
-
-  position:relative;
-  z-index:2;
-}
-
-.folder-tabs button.active{
-  background:#e6e6e1;
-  color:#17191b;
-
-  /* active tab 與文件連成一體 */
-  margin-bottom:-1px;
-  padding-bottom:13px;
-}
-
-.folder-tabs .locked:after{
-  content:" •";
-  color:#9b1117;
-}
-
-.folder-tabs .redtab{
-  color:#8f1016;
-}
-
-.folder-tabs .logout{
-  margin-left:auto;
-  background:#111;
-  color:#ddd;
-}
-
-/* 分頁後面的顯示頁面直接接上 */
-.folder-tabs:not(.hidden) + .page:not(.hidden){
-  margin-top:0;
-  padding-top:0;
-}
-
-.folder-tabs:not(.hidden) + .page:not(.hidden) .file{
-  margin-top:0;
-}
-
-/* =========================
+/* =====================================================
    MY FILE
-========================= */
+===================================================== */
 
 .dossier{
   display:grid;
-  grid-template-columns:230px 1fr;
+
+  grid-template-columns:
+    230px 1fr;
+
   gap:34px;
+
   align-items:start;
 }
 
+
 .portrait-card{
   background:#111;
-  border:1px solid #555;
+
+  border:
+    1px solid #555;
+
   padding:9px;
+
   color:#ddd;
+
+  position:relative;
+
+  overflow:hidden;
 }
+
 
 .portrait-card img{
   display:block;
+
   width:100%;
+
   aspect-ratio:3/4;
+
   object-fit:cover;
 
   filter:
@@ -340,166 +664,491 @@ footer{
     contrast(1.15);
 }
 
+
 .portrait-card span{
   display:block;
-  padding:10px 4px 3px;
+
+  padding:
+    10px 4px 3px;
 
   font-size:10px;
+
   letter-spacing:2px;
 }
 
-/* =========================
-   PERSONNEL FACTS
-========================= */
+
+/* =====================================================
+   FACTS
+===================================================== */
 
 .facts{
   display:grid;
-  grid-template-columns:1fr 1fr;
-  border-top:2px solid #222;
+
+  grid-template-columns:
+    1fr 1fr;
+
+  border-top:
+    2px solid #222;
 }
+
 
 .facts div,
 .identity-grid div{
   padding:14px 0;
-  border-bottom:1px solid #999;
+
+  border-bottom:
+    1px solid #999;
 }
+
 
 .facts small,
 .identity-grid small,
 .intel-grid small,
 .brief-grid small{
   display:block;
+
   color:#65696c;
+
   margin-bottom:5px;
 }
+
 
 .facts strong,
 .identity-grid strong{
   font-size:16px;
 }
 
-/* =========================
-   GIFT INTELLIGENCE
-========================= */
+
+/* =====================================================
+   INTELLIGENCE
+===================================================== */
 
 .intel-grid{
   display:grid;
-  grid-template-columns:repeat(3,1fr);
+
+  grid-template-columns:
+    repeat(3,1fr);
+
   gap:12px;
 }
+
 
 .intel-grid article,
 .brief-grid article{
-  border:1px solid #999;
+  border:
+    1px solid #999;
+
   background:#f4f4f0;
+
   padding:18px;
 }
 
+
 .intel-grid p{
   white-space:pre-wrap;
+
   line-height:1.6;
 }
 
-/* =========================
-   IDENTITY INTELLIGENCE
-========================= */
 
 .identity-grid{
   display:grid;
-  grid-template-columns:repeat(2,1fr);
+
+  grid-template-columns:
+    repeat(2,1fr);
+
   column-gap:30px;
 }
 
-/* =========================
+
+/* =====================================================
    LODGING
-========================= */
+===================================================== */
 
 .brief-grid{
   display:grid;
-  grid-template-columns:repeat(2,1fr);
+
+  grid-template-columns:
+    repeat(2,1fr);
+
   gap:12px;
+
   margin:28px 0;
 }
 
+
 .brief-grid strong{
   display:block;
+
   font-size:24px;
+
   margin-top:10px;
 }
 
+
 .rooms{
   display:grid;
+
   gap:16px;
 }
 
+
 .rooms article{
   display:grid;
-  grid-template-columns:240px 1fr;
 
-  border:1px solid #999;
+  grid-template-columns:
+    240px 1fr;
+
+  border:
+    1px solid #999;
+
   background:#f3f3ef;
 }
 
+
 .rooms img{
   width:100%;
+
   height:160px;
+
   object-fit:cover;
+
   background:#ddd;
 }
+
 
 .rooms article div{
   padding:20px;
 }
 
-/* =========================
-   TARGET / RED FILE LOCKED
-========================= */
+
+/* =====================================================
+   RESTRICTED
+===================================================== */
 
 .restricted{
   text-align:center;
 }
 
+
 .locked-portrait{
+  display:block;
+
   width:220px;
+
   aspect-ratio:3/4;
+
   object-fit:cover;
 
   filter:
     grayscale(1)
-    brightness(.55);
+    brightness(.50);
 
-  border:1px solid #555;
-  margin:30px auto;
+  border:
+    1px solid #555;
+
+  margin:
+    30px auto;
 }
+
 
 .restricted h1{
   font-size:52px;
 }
 
+
 .bars{
   margin:28px 0;
 
   font-family:monospace;
+
   font-size:20px;
+
   letter-spacing:4px;
 }
 
-/* =========================
+
+/* =====================================================
+   TARGET SCAN
+===================================================== */
+
+.scan-photo{
+  width:220px;
+
+  margin:30px auto;
+
+  position:relative;
+
+  overflow:hidden;
+
+  border:
+    1px solid #555;
+
+  background:#111;
+}
+
+
+.scan-photo .locked-portrait{
+  width:100%;
+
+  margin:0;
+
+  border:0;
+}
+
+
+.scan-line{
+  position:absolute;
+
+  left:0;
+  right:0;
+
+  top:-12%;
+
+  height:3px;
+
+  background:
+    rgba(255,255,255,.75);
+
+  box-shadow:
+    0 0 12px
+    rgba(255,255,255,.45);
+
+  opacity:0;
+}
+
+
+.document-enter
+.scan-line{
+  animation:
+    targetScan 1.35s
+    .25s
+    ease-in-out
+    1;
+}
+
+
+@keyframes targetScan{
+
+  0%{
+    top:-5%;
+    opacity:0;
+  }
+
+  10%{
+    opacity:.75;
+  }
+
+  90%{
+    opacity:.55;
+  }
+
+  100%{
+    top:105%;
+    opacity:0;
+  }
+
+}
+
+
+/* =====================================================
+   RED FILE ALERT
+===================================================== */
+
+.red-locked-file:after{
+  content:"";
+
+  position:absolute;
+
+  inset:0;
+
+  background:
+    rgba(130,0,0,.16);
+
+  pointer-events:none;
+
+  opacity:0;
+}
+
+
+.document-enter
+.red-locked-file:after{
+  animation:
+    redWarning .48s
+    ease-out
+    1;
+}
+
+
+@keyframes redWarning{
+
+  0%{
+    opacity:0;
+  }
+
+  20%{
+    opacity:.8;
+  }
+
+  45%{
+    opacity:.08;
+  }
+
+  70%{
+    opacity:.4;
+  }
+
+  100%{
+    opacity:0;
+  }
+
+}
+
+
+/* =====================================================
+   DECRYPT OVERLAY
+===================================================== */
+
+.decrypt-overlay{
+  position:fixed;
+
+  inset:0;
+
+  z-index:9999;
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:center;
+
+  padding:24px;
+
+  background:
+    rgba(5,7,8,.96);
+
+  color:#e8e8e3;
+}
+
+
+.decrypt-terminal{
+  width:
+    min(520px,100%);
+
+  border:
+    1px solid #5b6063;
+
+  background:#111416;
+
+  padding:
+    32px 30px;
+
+  box-shadow:
+    0 25px 80px
+    rgba(0,0,0,.75);
+}
+
+
+.decrypt-code{
+  color:#81878a;
+
+  font-size:10px;
+
+  font-weight:800;
+
+  letter-spacing:2px;
+
+  margin-bottom:25px;
+}
+
+
+.decrypt-title{
+  font-size:
+    clamp(22px,5vw,34px);
+
+  font-weight:900;
+
+  letter-spacing:1px;
+}
+
+
+.decrypt-status{
+  min-height:20px;
+
+  margin-top:20px;
+
+  color:#b7bbbd;
+
+  font-family:
+    "Courier New",
+    monospace;
+
+  font-size:12px;
+
+  letter-spacing:1px;
+}
+
+
+.decrypt-track{
+  width:100%;
+
+  height:5px;
+
+  margin-top:24px;
+
+  background:#303437;
+
+  overflow:hidden;
+}
+
+
+.decrypt-bar{
+  width:0%;
+
+  height:100%;
+
+  background:#deded8;
+
+  transition:
+    width .35s ease;
+}
+
+
+.decrypt-percent{
+  margin-top:10px;
+
+  text-align:right;
+
+  font-family:
+    "Courier New",
+    monospace;
+
+  font-size:12px;
+
+  color:#8d9295;
+}
+
+
+/* =====================================================
    SNOW
-========================= */
+===================================================== */
 
 .snow{
   position:fixed;
+
   inset:0;
 
   pointer-events:none;
+
   overflow:hidden;
 
   z-index:20;
 }
 
+
 .snow span{
   position:absolute;
+
   top:-20px;
 
   color:#fff7;
@@ -508,74 +1157,98 @@ footer{
     fall linear infinite;
 }
 
+
 @keyframes fall{
 
   to{
-    transform:translateY(110vh);
+    transform:
+      translateY(110vh);
   }
 
 }
 
-/* =========================
+
+/* =====================================================
    MOBILE
-========================= */
+===================================================== */
 
 @media(max-width:700px){
 
-  .page{
-    width:min(100% - 16px,920px);
-    padding:24px 0 55px;
+
+  .standalone-page{
+    width:
+      min(100% - 16px,920px);
+
+    padding:
+      24px 0 55px;
   }
 
-  /* 有導覽列時不要留下黑色縫隙 */
-  .folder-tabs:not(.hidden) + .page:not(.hidden){
-    padding-top:0;
+
+  .file-cabinet{
+    width:
+      calc(100% - 16px);
+
+    margin:
+      14px auto 55px;
   }
 
-  .file{
-    padding:42px 22px;
-  }
-
-  .stamp{
-    right:18px;
-    top:18px;
-    font-size:10px;
-  }
-
-  .meta{
-    margin-bottom:42px;
-  }
 
   .folder-tabs{
-    width:calc(100% - 16px);
     overflow-x:auto;
-
-    margin:14px auto 0;
-    padding:0;
 
     gap:3px;
   }
 
+
   .folder-tabs button{
+    min-height:48px;
+
+    padding:
+      0 13px;
+
     white-space:nowrap;
-    padding:10px 12px;
+
+    font-size:13px;
+
+    flex-shrink:0;
   }
 
-  .folder-tabs button.active{
-    padding-bottom:11px;
-  }
 
   .folder-tabs .logout{
     margin-left:0;
   }
 
+
+  .file{
+    padding:
+      42px 22px;
+  }
+
+
+  .stamp{
+    right:18px;
+
+    top:18px;
+
+    font-size:10px;
+  }
+
+
+  .meta{
+    margin-bottom:42px;
+  }
+
+
   .dossier{
     grid-template-columns:1fr;
   }
 
+
   .portrait-card{
-    width:min(240px,75%);
+    width:
+      min(240px,75%);
   }
+
 
   .intel-grid,
   .brief-grid,
@@ -583,16 +1256,47 @@ footer{
     grid-template-columns:1fr;
   }
 
+
   .rooms article{
     grid-template-columns:1fr;
   }
+
 
   .rooms img{
     height:210px;
   }
 
+
   h1{
     letter-spacing:-2px;
+  }
+
+
+  .restricted h1{
+    font-size:
+      clamp(34px,10vw,52px);
+  }
+
+}
+
+
+/* =====================================================
+   REDUCED MOTION
+===================================================== */
+
+@media(
+  prefers-reduced-motion:
+  reduce
+){
+
+  *,
+  *:before,
+  *:after{
+    animation-duration:.01ms!important;
+
+    animation-iteration-count:1!important;
+
+    transition-duration:.01ms!important;
   }
 
 }
