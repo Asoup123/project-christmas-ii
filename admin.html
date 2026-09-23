@@ -16,7 +16,7 @@
 
   <link
     rel="stylesheet"
-    href="css/admin.css?v=20260923-3"
+    href="css/admin.css?v=20260923-4"
   >
 
   <script src="https://cdn.jsdelivr.net/npm/appwrite@17.0.0"></script>
@@ -762,49 +762,70 @@
          禮物配對
     =================================================== -->
 
-    <main
-      class="admin-page hidden"
-      id="assignmentPage"
-    >
+    <main class="admin-page hidden" id="assignmentPage">
 
-
-      <div class="section-code">
-        05 / 交換禮物配對
-      </div>
-
-
-      <h2>
-        禮物配對
-      </h2>
-
-
-
-      <div class="locked-admin-panel">
-
-
-        <div class="lock-symbol">
-          ×
+      <div class="page-heading">
+        <div>
+          <div class="section-code">05 / 交換禮物配對</div>
+          <h2>禮物配對</h2>
         </div>
 
-
-        <strong>
-          配對系統尚未啟用
-        </strong>
-
-
-        <p>
-          下一階段會在這裡進行交換禮物抽籤。
-        </p>
-
-
-        <p>
-          系統會避免自己抽到自己，
-          並由管理員查看完整配對結果。
-        </p>
-
-
+        <div class="page-actions">
+          <button class="small-button" id="refreshAssignments">重新整理</button>
+        </div>
       </div>
 
+      <div class="stats-grid">
+        <article class="stat-card">
+          <small>參加成員</small>
+          <strong id="assignmentMemberCount">0</strong>
+        </article>
+
+        <article class="stat-card">
+          <small>已建立配對</small>
+          <strong id="assignmentCount">0</strong>
+        </article>
+
+        <article class="stat-card">
+          <small>配對狀態</small>
+          <strong id="assignmentStatus" style="font-size:16px">尚未建立</strong>
+        </article>
+      </div>
+
+      <div class="notice-box">
+        系統會隨機產生交換禮物配對。
+        <strong>每人只會抽到一人、每人只會被抽到一次，而且不會抽到自己。</strong>
+        預覽結果不會寫入資料庫，按下「確認並儲存配對」後才會正式保存。
+      </div>
+
+      <div class="page-actions" style="margin:22px 0;">
+        <button class="primary-button" id="generateAssignments">產生隨機配對</button>
+        <button class="small-button" id="regenerateAssignments" disabled>重新配對</button>
+        <button class="small-button" id="saveAssignments" disabled>確認並儲存配對</button>
+        <button class="red-button" id="clearAssignments" disabled>清除正式配對</button>
+      </div>
+
+      <div class="message" id="assignmentMessage"></div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>送禮者編號</th>
+              <th>送禮者</th>
+              <th>→</th>
+              <th>收禮者編號</th>
+              <th>收禮者</th>
+              <th>狀態</th>
+            </tr>
+          </thead>
+          <tbody id="assignmentTableBody">
+            <tr>
+              <td colspan="6" class="empty-cell">尚未建立交換禮物配對</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
     </main>
 
@@ -926,7 +947,7 @@
 </div>
 
 
-<script src="js/admin.js?v=20260923-3"></script>
+<script src="js/admin.js?v=20260923-4"></script>
 
 
 </body>
