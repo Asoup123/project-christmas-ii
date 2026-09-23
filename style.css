@@ -1266,3 +1266,100 @@ button {
    MEMBER AUTH / RED FILE
 ========================= */
 .auth-switch{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:30px}.auth-tab{height:42px;border:1px solid #8f877a;background:transparent;color:#5e594f;font-weight:900;letter-spacing:1.5px}.auth-tab.active{background:var(--green);border-color:var(--green);color:var(--white)}.form-stack{display:grid;gap:10px}.form-stack #registerOnly{display:grid;gap:10px}.field-label{display:block;margin-top:5px;font-size:12px;font-weight:900;letter-spacing:.6px;color:#4f4a42}.full-button{width:100%;margin-top:8px}.red-file{width:min(100%,680px)}.red-stamp{border-color:var(--red)!important;color:var(--red)!important}.red-form{margin-top:28px}.form-section-title{margin:30px 0 14px;padding-bottom:8px;border-bottom:1px solid #b8ad98;font-family:monospace;font-weight:900;letter-spacing:2px;color:var(--red)}textarea,.red-form select,.mission-select{width:100%;border:1px solid #9f9789;background:rgba(255,255,255,.55);padding:13px 14px;font:inherit;color:#222;outline:none}.red-form textarea{min-height:105px;resize:vertical;margin:8px 0 16px}.choice-field{margin:18px 0}.choice-field>span{display:block;margin-bottom:9px;font-size:13px;font-weight:900;color:#4f4a42}.choice-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.choice-grid button{min-height:43px;padding:8px 10px;border:1px solid #9f9789;background:rgba(255,255,255,.5);color:#4f4a42;font-weight:800}.choice-grid button.selected{background:var(--green);border-color:var(--green);color:#fff}.member-bar{position:fixed;right:14px;top:14px;z-index:20;display:flex;gap:8px}.member-bar button{padding:8px 11px;background:#f3ead7;color:#173c32;border:1px solid rgba(255,255,255,.25);font-size:11px;font-weight:900}@media(max-width:560px){.choice-grid{grid-template-columns:1fr}.auth-switch{grid-template-columns:1fr 1fr}.red-file{padding-left:22px;padding-right:22px}}
+
+
+/* =========================
+   TOP FOLDER TAB SYSTEM
+========================= */
+.folder-tabs{
+  width:min(100% - 28px,920px);
+  margin:34px auto -1px;
+  display:flex;
+  align-items:flex-end;
+  gap:4px;
+  overflow-x:auto;
+  overflow-y:hidden;
+  position:relative;
+  z-index:15;
+  scrollbar-width:none;
+  padding:0 10px;
+}
+.folder-tabs::-webkit-scrollbar{display:none}
+.folder-tabs.hidden{display:none!important}
+.folder-tab{
+  flex:0 0 auto;
+  min-width:118px;
+  height:48px;
+  padding:0 16px;
+  border:1px solid #9b917f;
+  border-bottom:0;
+  border-radius:8px 8px 0 0;
+  background:#c9bea9;
+  color:#4c473e;
+  font-family:monospace;
+  font-size:12px;
+  font-weight:900;
+  letter-spacing:1.1px;
+  transform:translateY(7px);
+  cursor:pointer;
+  box-shadow:0 -3px 8px rgba(0,0,0,.06) inset;
+}
+.folder-tab:hover{transform:translateY(3px)}
+.folder-tab.active{
+  height:55px;
+  transform:translateY(1px);
+  background:#eee4cf;
+  color:#183f34;
+  z-index:3;
+  border-color:#8d8372;
+}
+.folder-tab.locked-tab{position:relative}
+.folder-tab.locked-tab::after{content:"•";margin-left:7px;color:#7f1f20}
+.folder-tab.red-tab{color:#7f1f20}
+.folder-page,.folder-tabs + .page{padding-top:0}
+.folder-sheet,#missionFile,#rsvpFile{
+  border-top-left-radius:2px;
+  border-top-right-radius:2px;
+}
+.file-title-row{display:flex;justify-content:space-between;gap:20px;align-items:flex-end;margin:22px 0}
+.folder-page-title{margin:4px 0 0;font-size:clamp(36px,7vw,72px);line-height:.95;letter-spacing:-2px;color:#28251f}
+.file-number{text-align:right;font-family:monospace;font-size:11px;letter-spacing:1.5px;color:#70695e}
+.file-number strong{font-size:15px;color:#2f2b25}
+.identity-strip{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid #8f8678;border-bottom:1px solid #8f8678;margin:28px 0 36px}
+.identity-strip>div{padding:14px 12px;border-right:1px solid #b6ac9b}
+.identity-strip>div:last-child{border-right:0}
+.identity-strip span,.intel-paper span,.identity-table span{display:block;font-family:monospace;font-size:10px;font-weight:900;letter-spacing:1.5px;color:#756e62;margin-bottom:7px}
+.identity-strip strong{font-size:13px;color:#25221d}
+.intel-paper-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.intel-paper{min-height:150px;padding:16px;border:1px solid #b4aa98;background:rgba(255,255,255,.2);position:relative}
+.intel-paper::before{content:"";position:absolute;left:14px;right:14px;top:39px;border-top:1px dashed #c7bdac}
+.intel-paper p{margin:20px 0 0;white-space:pre-wrap;line-height:1.75;font-size:13px}
+.identity-table{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid #aaa08e}
+.identity-table>div{display:grid;grid-template-columns:1fr 1fr;padding:13px 10px;border-bottom:1px solid #c2b8a7}
+.identity-table>div:nth-child(odd){border-right:1px solid #c2b8a7}
+.identity-table span{margin:0}.identity-table strong{text-align:right;font-size:13px}
+.folder-footer{margin-top:36px;padding-top:12px;border-top:1px solid #aaa08e;font:10px monospace;letter-spacing:1.6px;color:#776f63}
+.restricted-center{text-align:center;padding:90px 20px 120px}
+.restricted-stamp{display:inline-block;border:4px double #7f1f20;color:#7f1f20;padding:9px 18px;margin-bottom:25px;font:900 24px monospace;letter-spacing:4px;transform:rotate(-4deg)}
+.restricted-center p{color:#655f55;margin:22px auto;max-width:460px}
+.classified-bars{display:grid;gap:8px;max-width:380px;margin:34px auto}
+.classified-bars i{display:block;height:13px;background:#292722}.classified-bars i:nth-child(2){width:78%;margin:auto}.classified-bars i:nth-child(3){width:55%;margin:auto}
+.red-restricted .restricted-stamp{font-size:28px}
+body.folder-mode-mission .lodging-only{display:none!important}
+body.folder-mode-lodging .mission-only{display:none!important}
+body.folder-mode-lodging #missionFile .mission-header .mission-code::after{content:" / LODGING ARCHIVE"}
+body.folder-mode-lodging #missionFile .mission-location-label{display:none}
+body.folder-mode-lodging #missionFile .location-name{font-size:clamp(32px,6vw,60px)}
+@media(max-width:700px){
+  .folder-tabs{width:100%;margin-top:18px;padding:0 12px;gap:3px}
+  .folder-tab{min-width:92px;height:44px;padding:0 11px;font-size:10px}
+  .folder-tab.active{height:50px}
+  .identity-strip{grid-template-columns:1fr 1fr}
+  .identity-strip>div:nth-child(2){border-right:0}
+  .identity-strip>div:nth-child(-n+2){border-bottom:1px solid #b6ac9b}
+  .intel-paper-grid{grid-template-columns:1fr}
+  .identity-table{grid-template-columns:1fr}
+  .identity-table>div:nth-child(odd){border-right:0}
+  .folder-page-title{font-size:42px}
+  .restricted-center{padding:65px 8px 85px}
+}
