@@ -1,9 +1,11 @@
 /* =========================
    APPWRITE
 ========================= */
+
 const APPWRITE_ENDPOINT = "https://sgp.cloud.appwrite.io/v1";
 const APPWRITE_PROJECT_ID = "6ab36b1c001036f515ab";
 const DATABASE_ID = "christmas-2026";
+
 const TABLES = {
   members: "members",
   targetFiles: "target_files",
@@ -15,365 +17,819 @@ const TABLES = {
 const client = new Appwrite.Client()
   .setEndpoint(APPWRITE_ENDPOINT)
   .setProject(APPWRITE_PROJECT_ID);
+
 const account = new Appwrite.Account(client);
 const tablesDB = new Appwrite.TablesDB(client);
+
+
+/* =========================
+   STATE
+========================= */
 
 let currentUser = null;
 let currentMemberId = "";
 let authMode = "login";
 let redAnswers = {};
 
-function wait(ms){ return new Promise(resolve => setTimeout(resolve, ms)); }
-function memberEmail(memberId){ return memberId.toLowerCase() + "@christmas.example"; }
-function validMemberId(value){ return /^[A-Za-z0-9_-]{3,20}$/.test(value); }
-function setMessage(id, text, type="error"){
-  const el=document.getElementById(id); if(!el) return;
-  el.className="message " + type; el.innerHTML=text;
-}
-function showOnly(pageId){
-  document.querySelectorAll("main.page").forEach(p=>p.classList.add("hidden"));
-  document.getElementById(pageId)?.classList.remove("hidden");
-  const memberPages=["myFilePage","missionPage","rsvpPage","reviewPage","targetPage","redLockedPage"];
-  document.getElementById("folderTabs")?.classList.toggle("hidden",!memberPages.includes(pageId));
-  window.scrollTo({top:0,behavior:"instant"});
+
+/* =========================
+   BASIC HELPERS
+========================= */
+
+function wait(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function showAuthMode(mode){
-  authMode=mode;
-  document.getElementById("loginTab").classList.toggle("active",mode==="login");
-  document.getElementById("registerTab").classList.toggle("active",mode==="register");
-  document.getElementById("registerOnly").classList.toggle("hidden",mode!=="register");
-  document.getElementById("authTitle").textContent=mode==="register"?"CREATE MEMBER ID":"IDENTITY VERIFICATION";
-  document.getElementById("authDescription").textContent=mode==="register"?"第一次進入請建立 MEMBER ID、密碼並填寫真實姓名。":"輸入你設定的 MEMBER ID 與密碼。";
-  document.getElementById("authButton").textContent=mode==="register"?"建立帳號":"登入系統";
-  document.getElementById("memberPassword").autocomplete=mode==="register"?"new-password":"current-password";
-  document.getElementById("authMessage").className="message";
-  document.getElementById("authMessage").innerHTML="";
+function memberEmail(memberId) {
+  return memberId.toLowerCase() + "@christmas.example";
 }
 
-async function submitAuth(){
-  const memberId=document.getElementById("memberId").value.trim();
-  const password=document.getElementById("memberPassword").value;
-  const realName=document.getElementById("realName").value.trim();
-  const button=document.getElementById("authButton");
-  if(!validMemberId(memberId)) return setMessage("authMessage","<strong>INVALID MEMBER ID</strong><br>請使用 3–20 位英文、數字、_ 或 -。 ");
-  if(password.length<8) return setMessage("authMessage","<strong>INVALID PASSWORD</strong><br>密碼至少需要 8 個字元。");
-  if(authMode==="register" && !realName) return setMessage("authMessage","請輸入真實姓名。");
-  button.disabled=true; button.textContent="CONNECTING...";
-  try{
-    if(authMode==="register"){
-      currentUser=await account.create({userId:Appwrite.ID.unique(),email:memberEmail(memberId),password,name:memberId});
-      await account.createEmailPasswordSession({email:memberEmail(memberId),password});
-      currentUser=await account.get();
+function validMemberId(value) {
+  return /^[A-Za-z0-9_-]{3,20}$/.test(value);
+}
+
+function setMessage(id, text, type = "error") {
+
+  const el = document.getElementById(id);
+
+  if (!el) return;
+
+  el.className = "message " + type;
+  el.innerHTML = text;
+}
+
+
+/* =========================
+   PAGE CONTROL
+========================= */
+
+function showOnly(pageId) {
+
+  document
+    .querySelectorAll("main.page")
+    .forEach(page => {
+      page.classList.add("hidden");
+    });
+
+  const targetPage = document.getElementById(pageId);
+
+  if (targetPage) {
+    targetPage.classList.remove("hidden");
+  }
+
+  /*
+    只有登入後的四個檔案頁
+    才能顯示上方書籤
+  */
+
+  const memberPages = [
+    "myFilePage",
+    "missionPage",
+    "targetPage",
+    "redLockedPage"
+  ];
+
+  const tabs = document.getElementById("folderTabs");
+
+  if (tabs) {
+    tabs.classList.toggle(
+      "hidden",
+      !currentUser || !memberPages.includes(pageId)
+    );
+  }
+
+  window.scrollTo({
+    top: 0,
+    behavior: "instant"
+  });
+}
+
+
+/* =========================
+   LOGIN / REGISTER UI
+========================= */
+
+function showAuthMode(mode) {
+
+  authMode = mode;
+
+  document
+    .getElementById("loginTab")
+    ?.classList.toggle("active", mode === "login");
+
+  document
+    .getElementById("registerTab")
+    ?.classList.toggle("active", mode === "register");
+
+  document
+    .getElementById("registerOnly")
+    ?.classList.toggle("hidden", mode !== "register");
+
+  const title = document.getElementById("authTitle");
+
+  if (title) {
+    title.textContent =
+      mode === "register"
+        ? "CREATE MEMBER ID"
+        : "IDENTITY VERIFICATION";
+  }
+
+  const description =
+    document.getElementById("authDescription");
+
+  if (description) {
+    description.textContent =
+      mode === "register"
+        ? "第一次進入請建立 MEMBER ID、密碼並填寫真實姓名。"
+        : "輸入你設定的 MEMBER ID 與密碼。";
+  }
+
+  const button =
+    document.getElementById("authButton");
+
+  if (button) {
+    button.textContent =
+      mode === "register"
+        ? "建立帳號"
+        : "登入系統";
+  }
+
+  const password =
+    document.getElementById("memberPassword");
+
+  if (password) {
+    password.autocomplete =
+      mode === "register"
+        ? "new-password"
+        : "current-password";
+  }
+
+  const message =
+    document.getElementById("authMessage");
+
+  if (message) {
+    message.className = "message";
+    message.innerHTML = "";
+  }
+}
+
+
+/* =========================
+   LOGIN / REGISTER
+========================= */
+
+async function submitAuth() {
+
+  const memberId =
+    document.getElementById("memberId").value.trim();
+
+  const password =
+    document.getElementById("memberPassword").value;
+
+  const realName =
+    document.getElementById("realName").value.trim();
+
+  const button =
+    document.getElementById("authButton");
+
+  if (!validMemberId(memberId)) {
+
+    return setMessage(
+      "authMessage",
+      "<strong>INVALID MEMBER ID</strong><br>請使用 3–20 位英文、數字、_ 或 -。"
+    );
+  }
+
+  if (password.length < 8) {
+
+    return setMessage(
+      "authMessage",
+      "<strong>INVALID PASSWORD</strong><br>密碼至少需要 8 個字元。"
+    );
+  }
+
+  if (authMode === "register" && !realName) {
+
+    return setMessage(
+      "authMessage",
+      "請輸入真實姓名。"
+    );
+  }
+
+  button.disabled = true;
+  button.textContent = "CONNECTING...";
+
+  try {
+
+    /* =====================
+       CREATE ACCOUNT
+    ===================== */
+
+    if (authMode === "register") {
+
+      currentUser =
+        await account.create({
+          userId: Appwrite.ID.unique(),
+          email: memberEmail(memberId),
+          password: password,
+          name: memberId
+        });
+
+      await account.createEmailPasswordSession({
+        email: memberEmail(memberId),
+        password: password
+      });
+
+      currentUser =
+        await account.get();
+
       await tablesDB.createRow({
-        databaseId:DATABASE_ID,tableId:TABLES.members,rowId:currentUser.$id,
-        data:{username:memberId,real_name:realName,target_file_complete:false},
-        permissions:[
-          Appwrite.Permission.read(Appwrite.Role.user(currentUser.$id)),
-          Appwrite.Permission.update(Appwrite.Role.user(currentUser.$id))
+        databaseId: DATABASE_ID,
+        tableId: TABLES.members,
+        rowId: currentUser.$id,
+
+        data: {
+          username: memberId,
+          real_name: realName,
+          target_file_complete: false
+        },
+
+        permissions: [
+          Appwrite.Permission.read(
+            Appwrite.Role.user(currentUser.$id)
+          ),
+
+          Appwrite.Permission.update(
+            Appwrite.Role.user(currentUser.$id)
+          )
         ]
       });
-      currentMemberId=memberId;
+
+      currentMemberId = memberId;
+
+      /*
+        新帳號第一次一定要填個人檔案
+      */
+
       showOnly("redFilePage");
-    }else{
-      await account.createEmailPasswordSession({email:memberEmail(memberId),password});
-      currentUser=await account.get(); currentMemberId=memberId;
+    }
+
+    /* =====================
+       LOGIN
+    ===================== */
+
+    else {
+
+      await account.createEmailPasswordSession({
+        email: memberEmail(memberId),
+        password: password
+      });
+
+      currentUser =
+        await account.get();
+
+      currentMemberId = memberId;
+
       await routeAfterLogin();
     }
-  }catch(error){
+  }
+
+  catch (error) {
+
     console.error(error);
-    let msg="登入／註冊失敗，請確認資料後再試一次。";
-    if(error.code===409) msg="這個 MEMBER ID 已經被使用，請改用 LOGIN。";
-    if(error.code===401) msg="MEMBER ID 或密碼不正確。";
-    setMessage("authMessage","<strong>ACCESS DENIED</strong><br>"+msg);
-  }finally{
-    button.disabled=false; button.textContent=authMode==="register"?"建立帳號":"登入系統";
+
+    let msg =
+      "登入／註冊失敗，請確認資料後再試一次。";
+
+    if (error.code === 409) {
+      msg =
+        "這個 MEMBER ID 已經被使用，請改用 LOGIN。";
+    }
+
+    if (error.code === 401) {
+      msg =
+        "MEMBER ID 或密碼不正確。";
+    }
+
+    setMessage(
+      "authMessage",
+      "<strong>ACCESS DENIED</strong><br>" + msg
+    );
+  }
+
+  finally {
+
+    button.disabled = false;
+
+    button.textContent =
+      authMode === "register"
+        ? "建立帳號"
+        : "登入系統";
   }
 }
 
-async function routeAfterLogin(){
-  try{
-    const member=await tablesDB.getRow({databaseId:DATABASE_ID,tableId:TABLES.members,rowId:currentUser.$id});
-    currentMemberId=member.username || currentMemberId;
-    if(member.target_file_complete){ await openFileTab("myFile"); }
-    else showOnly("redFilePage");
-  }catch(error){
-    console.error(error); await logoutMember();
-    setMessage("authMessage","會員資料讀取失敗，請聯絡總召。");
+
+/* =========================
+   AFTER LOGIN
+========================= */
+
+async function routeAfterLogin() {
+
+  /*
+    這裡再次確認真的有 Appwrite Session。
+    沒有登入就不准進任何會員頁。
+  */
+
+  if (!currentUser) {
+
+    showOnly("loginPage");
+
+    return;
+  }
+
+  try {
+
+    const member =
+      await tablesDB.getRow({
+        databaseId: DATABASE_ID,
+        tableId: TABLES.members,
+        rowId: currentUser.$id
+      });
+
+    currentMemberId =
+      member.username || currentMemberId;
+
+    /*
+      已填完個人檔案
+      → MY FILE
+
+      尚未完成
+      → 填寫個人情報
+    */
+
+    if (member.target_file_complete) {
+
+      await openFileTab("myFile");
+    }
+
+    else {
+
+      showOnly("redFilePage");
+    }
+  }
+
+  catch (error) {
+
+    console.error(error);
+
+    await logoutMember();
+
+    setMessage(
+      "authMessage",
+      "會員資料讀取失敗，請聯絡總召。"
+    );
   }
 }
 
-async function logoutMember(){
-  try{ await account.deleteSession({sessionId:"current"}); }catch(e){}
-  currentUser=null; currentMemberId=""; document.getElementById("folderTabs")?.classList.add("hidden"); showOnly("loginPage");
+
+/* =========================
+   LOGOUT
+========================= */
+
+async function logoutMember() {
+
+  try {
+
+    await account.deleteSession({
+      sessionId: "current"
+    });
+
+  }
+
+  catch (error) {
+    console.log("No active session.");
+  }
+
+  currentUser = null;
+  currentMemberId = "";
+
+  document
+    .getElementById("folderTabs")
+    ?.classList.add("hidden");
+
+  showOnly("loginPage");
 }
 
-async function submitRedFile(event){
+
+/* =========================
+   CREATE PERSONAL FILE
+========================= */
+
+async function submitRedFile(event) {
+
   event.preventDefault();
-  const required=["gender","smoked","has_pet","alcohol_frequency","lifestyle","sweet_preference"];
-  for(const key of required){ if(!redAnswers[key]) return setMessage("redFileMessage","尚有選擇題未完成。","error"); }
-  const button=document.getElementById("redFileSubmit"); button.disabled=true; button.textContent="TRANSMITTING...";
-  const data={
-    user_id:currentUser.$id,
-    wish:document.getElementById("wish").value.trim(),
-    preference:document.getElementById("preference").value.trim(),
-    message:document.getElementById("giftMessage").value.trim(),
-    gender:redAnswers.gender,
-    birthday_range:document.getElementById("birthdayRange").value,
-    height_range:document.getElementById("heightRange").value,
-    smoked:redAnswers.smoked,
-    has_pet:redAnswers.has_pet,
-    alcohol_frequency:redAnswers.alcohol_frequency,
-    lifestyle:redAnswers.lifestyle,
-    sweet_preference:redAnswers.sweet_preference
+
+  /*
+    沒登入不允許送出
+  */
+
+  if (!currentUser) {
+
+    showOnly("loginPage");
+
+    return;
+  }
+
+  const required = [
+    "gender",
+    "smoked",
+    "has_pet",
+    "alcohol_frequency",
+    "lifestyle",
+    "sweet_preference"
+  ];
+
+  for (const key of required) {
+
+    if (!redAnswers[key]) {
+
+      return setMessage(
+        "redFileMessage",
+        "尚有選擇題未完成。",
+        "error"
+      );
+    }
+  }
+
+  const button =
+    document.getElementById("redFileSubmit");
+
+  button.disabled = true;
+  button.textContent = "TRANSMITTING...";
+
+  const data = {
+
+    user_id: currentUser.$id,
+
+    wish:
+      document.getElementById("wish")
+        .value.trim(),
+
+    preference:
+      document.getElementById("preference")
+        .value.trim(),
+
+    message:
+      document.getElementById("giftMessage")
+        .value.trim(),
+
+    gender:
+      redAnswers.gender,
+
+    birthday_range:
+      document.getElementById("birthdayRange")
+        .value,
+
+    height_range:
+      document.getElementById("heightRange")
+        .value,
+
+    smoked:
+      redAnswers.smoked,
+
+    has_pet:
+      redAnswers.has_pet,
+
+    alcohol_frequency:
+      redAnswers.alcohol_frequency,
+
+    lifestyle:
+      redAnswers.lifestyle,
+
+    sweet_preference:
+      redAnswers.sweet_preference
   };
-  try{
+
+  try {
+
     await tablesDB.createRow({
-      databaseId:DATABASE_ID,tableId:TABLES.targetFiles,rowId:currentUser.$id,data,
-      permissions:[
-        Appwrite.Permission.read(Appwrite.Role.user(currentUser.$id)),
-        Appwrite.Permission.update(Appwrite.Role.user(currentUser.$id))
+
+      databaseId: DATABASE_ID,
+      tableId: TABLES.targetFiles,
+      rowId: currentUser.$id,
+
+      data: data,
+
+      permissions: [
+
+        Appwrite.Permission.read(
+          Appwrite.Role.user(currentUser.$id)
+        ),
+
+        Appwrite.Permission.update(
+          Appwrite.Role.user(currentUser.$id)
+        )
       ]
     });
-    await tablesDB.updateRow({databaseId:DATABASE_ID,tableId:TABLES.members,rowId:currentUser.$id,data:{target_file_complete:true}});
-    setMessage("redFileMessage","<strong>RED FILE ACCEPTED</strong><br>情報檔案已完成。","success");
-    await wait(700); await openFileTab("myFile");
-  }catch(error){
+
+    await tablesDB.updateRow({
+
+      databaseId: DATABASE_ID,
+      tableId: TABLES.members,
+      rowId: currentUser.$id,
+
+      data: {
+        target_file_complete: true
+      }
+    });
+
+    setMessage(
+      "redFileMessage",
+      "<strong>FILE ACCEPTED</strong><br>個人情報檔案已完成。",
+      "success"
+    );
+
+    await wait(700);
+
+    await openFileTab("myFile");
+  }
+
+  catch (error) {
+
     console.error(error);
-    setMessage("redFileMessage","資料傳送失敗。若你已填過 RED FILE，請重新登入。","error");
-  }finally{button.disabled=false;button.textContent="SUBMIT RED FILE";}
+
+    setMessage(
+      "redFileMessage",
+      "資料傳送失敗。若你已填過個人檔案，請重新登入。",
+      "error"
+    );
+  }
+
+  finally {
+
+    button.disabled = false;
+
+    button.textContent =
+      "SUBMIT RED FILE";
+  }
 }
-
-document.addEventListener("click",event=>{
-  const button=event.target.closest(".choice-grid button[data-value]");
-  if(!button) return;
-  const grid=button.closest(".choice-grid");
-  grid.querySelectorAll("button").forEach(b=>b.classList.remove("selected"));
-  button.classList.add("selected"); redAnswers[grid.dataset.field]=button.dataset.value;
-});
-
-document.addEventListener("keydown",event=>{
-  if(event.key==="Enter" && !document.getElementById("loginPage").classList.contains("hidden")) submitAuth();
-});
-
-window.addEventListener("DOMContentLoaded",async()=>{
-  try{
-    currentUser=await account.get();
-    const member=await tablesDB.getRow({databaseId:DATABASE_ID,tableId:TABLES.members,rowId:currentUser.$id});
-    currentMemberId=member.username;
-    if(member.target_file_complete) await openFileTab("myFile"); else showOnly("redFilePage");
-  }catch(e){ showOnly("loginPage"); }
-});
 
 
 /* =========================
-   FOLDER TAB MEMBER SYSTEM
+   CHOICE BUTTONS
 ========================= */
-function setActiveFileTab(tab){
-  document.querySelectorAll(".folder-tab").forEach(button=>{
-    button.classList.toggle("active",button.dataset.fileTab===tab);
-  });
+
+document.addEventListener(
+  "click",
+  event => {
+
+    const button =
+      event.target.closest(
+        ".choice-grid button[data-value]"
+      );
+
+    if (!button) return;
+
+    const grid =
+      button.closest(".choice-grid");
+
+    grid
+      .querySelectorAll("button")
+      .forEach(item => {
+        item.classList.remove("selected");
+      });
+
+    button.classList.add("selected");
+
+    redAnswers[grid.dataset.field] =
+      button.dataset.value;
+  }
+);
+
+
+/* =========================
+   ENTER LOGIN
+========================= */
+
+document.addEventListener(
+  "keydown",
+  event => {
+
+    const loginPage =
+      document.getElementById("loginPage");
+
+    if (
+      event.key === "Enter" &&
+      loginPage &&
+      !loginPage.classList.contains("hidden")
+    ) {
+
+      submitAuth();
+    }
+  }
+);
+
+
+/* =========================
+   FOLDER TABS
+========================= */
+
+function setActiveFileTab(tab) {
+
+  document
+    .querySelectorAll(".folder-tab")
+    .forEach(button => {
+
+      button.classList.toggle(
+        "active",
+        button.dataset.fileTab === tab
+      );
+    });
 }
 
-async function loadMyFile(){
-  const [member,file]=await Promise.all([
-    tablesDB.getRow({databaseId:DATABASE_ID,tableId:TABLES.members,rowId:currentUser.$id}),
-    tablesDB.getRow({databaseId:DATABASE_ID,tableId:TABLES.targetFiles,rowId:currentUser.$id})
-  ]);
-  const values={
-    myFileNo:(member.username||"---").toUpperCase(),
-    myRealName:member.real_name||"---",
-    myMemberId:member.username||"---",
-    myWish:file.wish||"---",
-    myPreference:file.preference||"---",
-    myGiftMessage:file.message||"---",
-    myGender:file.gender||"---",
-    myBirthday:file.birthday_range||"---",
-    myHeight:file.height_range||"---",
-    mySmoked:file.smoked||"---",
-    myPet:file.has_pet||"---",
-    myAlcohol:file.alcohol_frequency||"---",
-    myLifestyle:file.lifestyle||"---",
-    mySweet:file.sweet_preference||"---"
+
+/* =========================
+   LOAD MY FILE
+========================= */
+
+async function loadMyFile() {
+
+  if (!currentUser) {
+
+    showOnly("loginPage");
+
+    return;
+  }
+
+  const [member, file] =
+    await Promise.all([
+
+      tablesDB.getRow({
+        databaseId: DATABASE_ID,
+        tableId: TABLES.members,
+        rowId: currentUser.$id
+      }),
+
+      tablesDB.getRow({
+        databaseId: DATABASE_ID,
+        tableId: TABLES.targetFiles,
+        rowId: currentUser.$id
+      })
+
+    ]);
+
+  const values = {
+
+    myFileNo:
+      (member.username || "---")
+        .toUpperCase(),
+
+    myRealName:
+      member.real_name || "---",
+
+    myMemberId:
+      member.username || "---",
+
+    myWish:
+      file.wish || "---",
+
+    myPreference:
+      file.preference || "---",
+
+    myGiftMessage:
+      file.message || "---",
+
+    myGender:
+      file.gender || "---",
+
+    myBirthday:
+      file.birthday_range || "---",
+
+    myHeight:
+      file.height_range || "---",
+
+    mySmoked:
+      file.smoked || "---",
+
+    myPet:
+      file.has_pet || "---",
+
+    myAlcohol:
+      file.alcohol_frequency || "---",
+
+    myLifestyle:
+      file.lifestyle || "---",
+
+    mySweet:
+      file.sweet_preference || "---"
   };
-  Object.entries(values).forEach(([id,value])=>{
-    const el=document.getElementById(id); if(el) el.textContent=value;
-  });
+
+  Object.entries(values)
+    .forEach(([id, value]) => {
+
+      const el =
+        document.getElementById(id);
+
+      if (el) {
+        el.textContent = value;
+      }
+    });
 }
 
-async function openFileTab(tab){
-  if(!currentUser){ showOnly("loginPage"); return; }
+
+/* =========================
+   OPEN FILE TAB
+========================= */
+
+async function openFileTab(tab) {
+
+  /*
+    最重要：
+    未登入不能透過按鈕或 Console
+    直接開會員頁。
+  */
+
+  if (!currentUser) {
+
+    document
+      .getElementById("folderTabs")
+      ?.classList.add("hidden");
+
+    showOnly("loginPage");
+
+    return;
+  }
+
   setActiveFileTab(tab);
-  document.body.classList.remove("folder-mode-mission","folder-mode-lodging");
 
-  if(tab==="myFile"){
+
+  /* =====================
+     MY FILE
+  ===================== */
+
+  if (tab === "myFile") {
+
     showOnly("myFilePage");
-    try{ await loadMyFile(); }catch(error){ console.error(error); }
+
+    try {
+
+      await loadMyFile();
+
+    }
+
+    catch (error) {
+
+      console.error(error);
+
+      await logoutMember();
+    }
+
     return;
   }
-  if(tab==="mission"){
-    document.body.classList.add("folder-mode-mission");
+
+
+  /* =====================
+     LODGING
+  ===================== */
+
+  if (tab === "lodging") {
+
     showOnly("missionPage");
+
     return;
   }
-  if(tab==="lodging"){
-    document.body.classList.add("folder-mode-lodging");
-    showOnly("missionPage");
+
+
+  /* =====================
+     TARGET
+  ===================== */
+
+  if (tab === "target") {
+
+    showOnly("targetPage");
+
     return;
   }
-  if(tab==="rsvp"){
-    document.getElementById("rsvpAgentCode").textContent=currentMemberId||"---";
-    showOnly("rsvpPage");
+
+
+  /* =====================
+     RED FILE
+  ===================== */
+
+  if (tab === "red") {
+
+    showOnly("redLockedPage");
+
     return;
   }
-  if(tab==="target"){ showOnly("targetPage"); return; }
-  if(tab==="red"){ showOnly("redLockedPage"); return; }
-}
-
-/* =========================
-   ORIGINAL MISSION FLOW
-========================= */
-async function decryptMissionFile() {
-
-  const overlay =
-    document.getElementById("decryptOverlay");
-
-  const status =
-    document.getElementById("decryptStatus");
-
-  const bar =
-    document.getElementById("decryptProgressBar");
-
-  const percent =
-    document.getElementById("decryptPercent");
-
-  overlay.classList.add("active");
-
-  bar.style.width = "0%";
-  percent.textContent = "0%";
-
-  status.textContent =
-    "AUTHORIZATION TOKEN ACCEPTED";
-
-  await wait(350);
-
-  bar.style.width = "22%";
-  percent.textContent = "22%";
-
-  status.textContent =
-    "LOCATING ENCRYPTED MISSION FILE...";
-
-  await wait(350);
-
-  bar.style.width = "47%";
-  percent.textContent = "47%";
-
-  status.textContent =
-    "DECRYPTING LOCATION DATA...";
-
-  await wait(400);
-
-  bar.style.width = "73%";
-  percent.textContent = "73%";
-
-  status.textContent =
-    "RECONSTRUCTING CLASSIFIED DOCUMENT...";
-
-  await wait(400);
-
-  bar.style.width = "100%";
-  percent.textContent = "100%";
-
-  status.textContent =
-    "MISSION FILE DECRYPTED.";
-
-  await wait(550);
-
-  document.querySelectorAll("main.page").forEach(function(page) {
-    page.classList.add("hidden");
-  });
-
-  document.getElementById("missionPage").classList.remove("hidden");
-
-  const missionFile =
-    document.getElementById("missionFile");
-
-  missionFile.classList.remove(
-    "mission-reveal"
-  );
-
-  void missionFile.offsetWidth;
-
-  missionFile.classList.add(
-    "mission-reveal"
-  );
-
-  window.scrollTo({
-    top: 0,
-    behavior: "instant"
-  });
-
-  overlay.classList.remove("active");
-
-}
 
 
-/* =========================
-   FINAL CONFIRMATION
-========================= */
+  /*
+    任何不存在的書籤
+    一律回 MY FILE
+  */
 
-function startFinalConfirmation() {
-
-  document
-    .getElementById("missionPage")
-    .classList.add("hidden");
-
-  document
-    .getElementById("rsvpPage")
-    .classList.remove("hidden");
-
-  document
-    .getElementById("rsvpAgentCode")
-    .textContent =
-      currentMemberId;
-
-  populateRoommateOptions();
-
-  window.scrollTo({
-    top: 0,
-    behavior: "instant"
-  });
-
-}
-
-
-
-
-/* =========================
-   DECLINE MISSION
-========================= */
-
-function declineMission() {
-
-  const confirmed = confirm(
-    "確定無法參與 PROJECT : CHRISTMAS II？"
-  );
-
-  if (!confirmed) return;
-
-  document
-    .getElementById("missionPage")
-    .classList.add("hidden");
-
-  document
-    .getElementById("declinedPage")
-    .classList.remove("hidden");
-
-  window.scrollTo({
-    top: 0,
-    behavior: "instant"
-  });
-
+  await openFileTab("myFile");
 }
 
 
@@ -381,320 +837,122 @@ function declineMission() {
    SNOW
 ========================= */
 
-const snow =
-  document.getElementById("snow");
+function createSnow() {
 
-for (let i = 0; i < 28; i++) {
+  const snow =
+    document.getElementById("snow");
 
-  const flake =
-    document.createElement("span");
+  if (!snow) return;
 
-  flake.textContent = "•";
+  snow.innerHTML = "";
 
-  flake.style.left =
-    Math.random() * 100 + "%";
+  for (let i = 0; i < 28; i++) {
 
-  flake.style.fontSize =
-    (Math.random() * 14 + 7) + "px";
+    const flake =
+      document.createElement("span");
 
-  flake.style.animationDuration =
-    (Math.random() * 8 + 8) + "s";
+    flake.textContent = "•";
 
-  flake.style.animationDelay =
-    (Math.random() * -15) + "s";
+    flake.style.left =
+      Math.random() * 100 + "%";
 
-  snow.appendChild(flake);
+    flake.style.fontSize =
+      (Math.random() * 14 + 7) + "px";
 
+    flake.style.animationDuration =
+      (Math.random() * 8 + 8) + "s";
+
+    flake.style.animationDelay =
+      (Math.random() * -15) + "s";
+
+    snow.appendChild(flake);
+  }
 }
 
-/* =========================
-   RSVP STATE
-========================= */
-
-const missionResponse = {
-  transport: "",
-  seats: "",
-  lodging: "",
-  roommate: "",
-  notes: ""
-};
-
 
 /* =========================
-   RSVP CHOICES
+   INITIALIZE
 ========================= */
 
-document.addEventListener("click", function(event) {
+window.addEventListener(
+  "DOMContentLoaded",
+  async () => {
 
-  const button = event.target.closest(".choice-button");
+    createSnow();
 
-  if (!button) return;
+    /*
+      網站剛開啟時，
+      先全部鎖回 LOGIN。
 
-  const group = button.dataset.group;
-  const value = button.dataset.value;
+      等 Appwrite 確認 Session 後，
+      才決定是否放行。
+    */
 
-  document
-    .querySelectorAll(
-      '.choice-button[data-group="' + group + '"]'
-    )
-    .forEach(function(item) {
-      item.classList.remove("selected");
-    });
+    currentUser = null;
+    currentMemberId = "";
 
-  button.classList.add("selected");
+    document
+      .getElementById("folderTabs")
+      ?.classList.add("hidden");
 
-  if (group === "transport") {
+    showOnly("loginPage");
 
-    missionResponse.transport = value;
+    try {
 
-    const seatsBox =
-      document.getElementById("driverSeatsBox");
+      /*
+        Appwrite 有有效 Session
+      */
 
-    if (value === "自己開車") {
-      seatsBox.classList.remove("hidden");
+      currentUser =
+        await account.get();
+
+      const member =
+        await tablesDB.getRow({
+
+          databaseId: DATABASE_ID,
+          tableId: TABLES.members,
+          rowId: currentUser.$id
+        });
+
+      currentMemberId =
+        member.username || "";
+
+      /*
+        個人檔案已完成
+        → 登入後首頁 MY FILE
+      */
+
+      if (member.target_file_complete) {
+
+        await openFileTab("myFile");
+      }
+
+      /*
+        尚未完成
+        → 繼續填個人檔案
+      */
+
+      else {
+
+        showOnly("redFilePage");
+      }
     }
-    else {
-      seatsBox.classList.add("hidden");
-      document.getElementById("driverSeats").value = "";
-      missionResponse.seats = "";
-    }
 
-  }
+    catch (error) {
 
-  if (group === "lodging") {
+      /*
+        沒 Session 是正常狀況。
+        一律停留 LOGIN。
+      */
 
-    missionResponse.lodging = value;
+      currentUser = null;
+      currentMemberId = "";
 
-    const roommateBox =
-      document.getElementById("roommateBox");
+      document
+        .getElementById("folderTabs")
+        ?.classList.add("hidden");
 
-    if (value === "希望睡雙人床") {
-      roommateBox.classList.remove("hidden");
-    }
-    else {
-      roommateBox.classList.add("hidden");
-      document.getElementById("roommateCode").value = "";
-      missionResponse.roommate = "";
-    }
-
-  }
-
-});
-
-
-/* =========================
-   ROOMMATE OPTIONS
-========================= */
-
-function populateRoommateOptions() {
-  const input = document.getElementById("roommateCode");
-  if (input) input.value = "";
-}
-
-
-/* =========================
-   REVIEW RESPONSE
-========================= */
-
-function reviewMissionResponse() {
-
-  const message =
-    document.getElementById("rsvpMessage");
-
-  missionResponse.seats =
-    document.getElementById("driverSeats").value;
-
-  missionResponse.roommate =
-    document.getElementById("roommateCode").value;
-
-  missionResponse.notes =
-    document.getElementById("notes").value.trim();
-
-  if (!missionResponse.transport) {
-    showRsvpError("請先選擇交通方式。");
-    return;
-  }
-
-  if (
-    missionResponse.transport === "自己開車" &&
-    missionResponse.seats === ""
-  ) {
-    showRsvpError("請選擇你可以額外載幾位。");
-    return;
-  }
-
-  if (!missionResponse.lodging) {
-    showRsvpError("請先選擇住宿偏好。");
-    return;
-  }
-
-  if (
-    missionResponse.lodging === "希望睡雙人床" &&
-    !missionResponse.roommate
-  ) {
-    showRsvpError("請選擇希望共用雙人床的行動成員。");
-    return;
-  }
-
-  message.classList.add("hidden");
-
-  const agent =
-    currentMemberId;
-
-  document.getElementById("reviewAgent")
-    .textContent = agent;
-
-  document.getElementById("reviewTransport")
-    .textContent = missionResponse.transport;
-
-  const seatsRow =
-    document.getElementById("reviewSeatsRow");
-
-  if (missionResponse.transport === "自己開車") {
-    seatsRow.classList.remove("hidden");
-    document.getElementById("reviewSeats")
-      .textContent =
-        missionResponse.seats === "5"
-          ? "5 位以上"
-          : missionResponse.seats + " 位";
-  }
-  else {
-    seatsRow.classList.add("hidden");
-  }
-
-  document.getElementById("reviewLodging")
-    .textContent = missionResponse.lodging;
-
-  const roommateRow =
-    document.getElementById("reviewRoommateRow");
-
-  if (missionResponse.lodging === "希望睡雙人床") {
-    roommateRow.classList.remove("hidden");
-    document.getElementById("reviewRoommate")
-      .textContent = missionResponse.roommate;
-  }
-  else {
-    roommateRow.classList.add("hidden");
-  }
-
-  document.getElementById("reviewNotes")
-    .textContent =
-      missionResponse.notes || "無";
-
-  document.getElementById("rsvpPage")
-    .classList.add("hidden");
-
-  document.getElementById("reviewPage")
-    .classList.remove("hidden");
-
-  window.scrollTo({
-    top: 0,
-    behavior: "instant"
-  });
-
-}
-
-
-function showRsvpError(text) {
-
-  const message =
-    document.getElementById("rsvpMessage");
-
-  message.textContent = text;
-  message.classList.remove("hidden");
-
-  message.scrollIntoView({
-    behavior: "smooth",
-    block: "center"
-  });
-
-}
-
-
-/* =========================
-   BACK TO RSVP
-========================= */
-
-function backToRsvp() {
-
-  document.getElementById("reviewPage")
-    .classList.add("hidden");
-
-  document.getElementById("rsvpPage")
-    .classList.remove("hidden");
-
-  window.scrollTo({
-    top: 0,
-    behavior: "instant"
-  });
-
-}
-
-
-/* =========================
-   SUBMIT RESPONSE
-========================= */
-
-let submittingMissionResponse = false;
-
-async function submitMissionResponse() {
-  if (submittingMissionResponse) return;
-
-  const agent = currentMemberId;
-  const submitButton = document.querySelector(
-    '#reviewPage button[onclick="submitMissionResponse()"]'
-  );
-
-  submittingMissionResponse = true;
-
-  if (submitButton) {
-    submitButton.disabled = true;
-    submitButton.dataset.originalText = submitButton.textContent;
-    submitButton.textContent = "TRANSMITTING...";
-  }
-
-  const payload = {
-    name: agent,
-    travel: missionResponse.transport,
-    people: missionResponse.transport === "自己開車"
-      ? Number(missionResponse.seats)
-      : null,
-    stay_pref: missionResponse.lodging,
-    roommate: missionResponse.lodging === "希望睡雙人床"
-      ? missionResponse.roommate
-      : null,
-    note: missionResponse.notes || null
-  };
-
-  try {
-    await tablesDB.createRow({
-      databaseId: DATABASE_ID,
-      tableId: TABLES.rsvp,
-      rowId: Appwrite.ID.unique(),
-      data: payload,
-      permissions: [
-        Appwrite.Permission.read(Appwrite.Role.user(currentUser.$id)),
-        Appwrite.Permission.update(Appwrite.Role.user(currentUser.$id))
-      ]
-    });
-
-    document.getElementById("successAgent").textContent = agent;
-    document.getElementById("reviewPage").classList.add("hidden");
-    document.getElementById("successPage").classList.remove("hidden");
-
-    window.scrollTo({ top: 0, behavior: "instant" });
-  }
-  catch (error) {
-    console.error("RSVP submission failed:", error);
-    alert("資料傳送失敗，請確認網路連線後再試一次。");
-  }
-  finally {
-    submittingMissionResponse = false;
-
-    if (submitButton) {
-      submitButton.disabled = false;
-      submitButton.textContent =
-        submitButton.dataset.originalText || "確認提交";
+      showOnly("loginPage");
     }
   }
-}
+);
