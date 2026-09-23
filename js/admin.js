@@ -98,6 +98,9 @@ let targetFiles =
 let rsvpRows =
   [];
 
+let assignments = [];
+let assignmentPreview = [];
+
 
 /* =========================================================
    DOM
@@ -490,6 +493,9 @@ async function adminLogout() {
   rsvpRows =
     [];
 
+  assignments = [];
+  assignmentPreview = [];
+
 
   $("adminEmail")
     .value =
@@ -585,6 +591,16 @@ function openAdminPage(page) {
 
     renderSubjects();
   }
+
+  if (
+    page === "assignment"
+  ) {
+
+    renderAssignments(
+      assignmentPreview.length ? assignmentPreview : assignments,
+      assignmentPreview.length > 0
+    );
+  }
 }
 
 
@@ -671,6 +687,21 @@ async function loadDatabase() {
       targetResponse.documents;
 
 
+    const assignmentResponse =
+      await databases.listDocuments(
+        DATABASE_ID,
+        COLLECTIONS.assignments,
+        [Appwrite.Query.limit(100)]
+      );
+
+    assignments =
+      assignmentResponse.documents.filter(
+        row => row.active !== false
+      );
+
+    assignmentPreview = [];
+
+
     $("databaseStatus")
       .textContent =
       "資料庫連線正常";
@@ -681,6 +712,7 @@ async function loadDatabase() {
     renderMembers();
 
     renderSubjects();
+    renderAssignments(assignments, false);
 
 
   } catch (error) {
@@ -1789,6 +1821,298 @@ function openIntelligence(
 }
 
 
+
+/* =========================================================
+   禮物配對
+========================================================= */
+
+function getAssignmentMember(userId) {
+  return members.find(member => member.$id === userId);
+}
+
+function shuffleArray(array) {
+  const result = [...array];
+
+  for (let i = result.length - 1; i > 0; i--) {
+    const random = Math.floor(Math.random() * (i + 1));
+    [result[i], result[random]] = [result[random], result[i]];
+  }
+
+  return result;
+}
+
+function createRandomAssignments() {
+  if (members.length < 2) {
+    showMessage("assignmentMessage", "至少需要 2 位成員才能進行配對。");
+    return;
+  }
+
+  const shuffled = shuffleArray(members);
+
+  assignmentPreview = shuffled.map((member, index) => {
+    const target = shuffled[(index + 1) % shuffled.length];
+
+    return {
+      agent_id: member.$id,
+      target_id: target.$id,
+      active: true
+    };
+  });
+
+  renderAssignments(assignmentPreview, true);
+
+  $("regenerateAssignments").disabled = false;
+  $("saveAssignments").disabled = false;
+
+  showMessage(
+    "assignmentMessage",
+    "已產生配對預覽，目前尚未寫入資料庫。",
+    true
+  );
+}
+
+function renderAssignments(rows = assignments, preview = false) {
+  const body = $("assignmentTableBody");
+
+  if (!body) return;
+
+  $("assignmentMemberCount").textContent = members.length;
+
+  if (!rows || !rows.length) {
+    body.innerHTML = `
+      <tr>
+        <td colspan="6" class="empty-cell">
+          尚未建立交換禮物配對
+        </td>
+      </tr>
+    `;
+
+    $("assignmentCount").textContent = "0";
+    $("assignmentStatus").textContent = "尚未建立";
+    $("regenerateAssignments").disabled = false;
+    $("saveAssignments").disabled = true;
+    $("clearAssignments").disabled = true;
+    return;
+  }
+
+  body.innerHTML = rows.map(row => {
+    const agent = getAssignmentMember(row.agent_id);
+    const target = getAssignmentMember(row.target_id);
+
+    const agentName = agent
+      ? (agent.real_name || agent.username || "未知成員")
+      : "未知成員";
+
+    const targetName = target
+      ? (target.real_name || target.username || "未知成員")
+      : "未知成員";
+
+    return `
+      <tr>
+        <td class="file-number">
+          ${agent ? fileNumber(agent.file_no) : "--"}
+        </td>
+
+        <td class="member-name">
+          ${escapeHTML(agentName)}
+        </td>
+
+        <td style="text-align:center;font-weight:700;">→</td>
+
+        <td class="file-number">
+          ${target ? fileNumber(target.file_no) : "--"}
+        </td>
+
+        <td class="member-name">
+          ${escapeHTML(targetName)}
+        </td>
+
+        <td class="${preview ? "status-pending" : "status-complete"}">
+          ${preview ? "預覽" : "已確認"}
+        </td>
+      </tr>
+    `;
+  }).join("");
+
+  $("assignmentCount").textContent = rows.length;
+  $("assignmentStatus").textContent = preview ? "預覽中" : "已完成";
+  $("clearAssignments").disabled = preview || !assignments.length;
+}
+
+async function loadAssignments() {
+  try {
+    const response = await databases.listDocuments(
+      DATABASE_ID,
+      COLLECTIONS.assignments,
+      [Appwrite.Query.limit(100)]
+    );
+
+    assignments = response.documents.filter(
+      row => row.active !== false
+    );
+
+    assignmentPreview = [];
+
+    renderAssignments(assignments, false);
+
+    $("saveAssignments").disabled = true;
+    $("clearAssignments").disabled = assignments.length === 0;
+
+    showMessage(
+      "assignmentMessage",
+      assignments.length
+        ? `已讀取 ${assignments.length} 筆正式配對。`
+        : "目前尚未建立正式配對。",
+      assignments.length > 0
+    );
+  } catch (error) {
+    console.error("讀取配對失敗：", error);
+    showMessage(
+      "assignmentMessage",
+      "無法讀取配對資料，請確認 Assignments 權限。"
+    );
+  }
+}
+
+async function saveAssignments() {
+  if (!assignmentPreview.length) {
+    showMessage(
+      "assignmentMessage",
+      "目前沒有可以儲存的配對預覽。"
+    );
+    return;
+  }
+
+  const confirmed = confirm(
+    "確定要將目前的配對正式儲存嗎？\n\n儲存後會寫入 Assignments 資料表。"
+  );
+
+  if (!confirmed) return;
+
+  const button = $("saveAssignments");
+  button.disabled = true;
+  button.textContent = "儲存中...";
+
+  try {
+    const agents = new Set(
+      assignmentPreview.map(row => row.agent_id)
+    );
+
+    const targets = new Set(
+      assignmentPreview.map(row => row.target_id)
+    );
+
+    const hasSelfAssignment = assignmentPreview.some(
+      row => row.agent_id === row.target_id
+    );
+
+    if (
+      agents.size !== members.length ||
+      targets.size !== members.length ||
+      hasSelfAssignment
+    ) {
+      throw new Error("配對完整性檢查失敗");
+    }
+
+    const oldResponse = await databases.listDocuments(
+      DATABASE_ID,
+      COLLECTIONS.assignments,
+      [Appwrite.Query.limit(100)]
+    );
+
+    for (const oldRow of oldResponse.documents) {
+      await databases.deleteDocument(
+        DATABASE_ID,
+        COLLECTIONS.assignments,
+        oldRow.$id
+      );
+    }
+
+    for (const row of assignmentPreview) {
+      await databases.createDocument(
+        DATABASE_ID,
+        COLLECTIONS.assignments,
+        Appwrite.ID.unique(),
+        {
+          agent_id: row.agent_id,
+          target_id: row.target_id,
+          active: true
+        }
+      );
+    }
+
+    assignmentPreview = [];
+
+    showMessage(
+      "assignmentMessage",
+      "交換禮物配對已正式儲存。",
+      true
+    );
+
+    await loadAssignments();
+  } catch (error) {
+    console.error("儲存配對失敗：", error);
+    showMessage(
+      "assignmentMessage",
+      "配對儲存失敗，請重新整理後確認資料。"
+    );
+  } finally {
+    button.disabled = false;
+    button.textContent = "確認並儲存配對";
+  }
+}
+
+async function clearAssignments() {
+  if (!assignments.length) return;
+
+  if (!confirm("確定要清除目前的正式配對嗎？")) return;
+
+  if (!confirm(
+    "再次確認：清除後，所有人的交換禮物配對都會被刪除。"
+  )) return;
+
+  const button = $("clearAssignments");
+  button.disabled = true;
+  button.textContent = "清除中...";
+
+  try {
+    const response = await databases.listDocuments(
+      DATABASE_ID,
+      COLLECTIONS.assignments,
+      [Appwrite.Query.limit(100)]
+    );
+
+    for (const row of response.documents) {
+      await databases.deleteDocument(
+        DATABASE_ID,
+        COLLECTIONS.assignments,
+        row.$id
+      );
+    }
+
+    assignments = [];
+    assignmentPreview = [];
+
+    renderAssignments([], false);
+
+    showMessage(
+      "assignmentMessage",
+      "正式配對已清除。",
+      true
+    );
+  } catch (error) {
+    console.error("清除配對失敗：", error);
+    showMessage(
+      "assignmentMessage",
+      "清除配對失敗，請確認管理員刪除權限。"
+    );
+  } finally {
+    button.disabled = assignments.length === 0;
+    button.textContent = "清除正式配對";
+  }
+}
+
+
 /* =========================================================
    EVENT
 ========================================================= */
@@ -1874,6 +2198,31 @@ $("renumberMembers")
     "click",
     renumberMembers
   );
+
+$("generateAssignments").addEventListener(
+  "click",
+  createRandomAssignments
+);
+
+$("regenerateAssignments").addEventListener(
+  "click",
+  createRandomAssignments
+);
+
+$("saveAssignments").addEventListener(
+  "click",
+  saveAssignments
+);
+
+$("clearAssignments").addEventListener(
+  "click",
+  clearAssignments
+);
+
+$("refreshAssignments").addEventListener(
+  "click",
+  loadAssignments
+);
 
 
 document
@@ -1965,6 +2314,9 @@ window
 
       rsvpRows =
         [];
+
+      assignments = [];
+      assignmentPreview = [];
 
 
       showAdminLogin();
