@@ -133,6 +133,92 @@
 </section>
 </main>
 
+
+<!-- =========================
+     MEMBER FILE SYSTEM
+========================= -->
+<nav class="folder-tabs hidden" id="folderTabs" aria-label="Member file navigation">
+  <button class="folder-tab" data-file-tab="myFile" onclick="openFileTab('myFile')">MY FILE</button>
+  <button class="folder-tab" data-file-tab="mission" onclick="openFileTab('mission')">MISSION</button>
+  <button class="folder-tab" data-file-tab="lodging" onclick="openFileTab('lodging')">LODGING</button>
+  <button class="folder-tab" data-file-tab="rsvp" onclick="openFileTab('rsvp')">RSVP</button>
+  <button class="folder-tab locked-tab" data-file-tab="target" onclick="openFileTab('target')">TARGET</button>
+  <button class="folder-tab locked-tab red-tab" data-file-tab="red" onclick="openFileTab('red')">RED FILE</button>
+</nav>
+
+<main class="page hidden folder-page" id="myFilePage">
+<section class="file mission-file folder-sheet">
+  <div class="christmas-mark">✦</div>
+  <div class="top-secret">CLASSIFIED</div>
+  <div class="mission-code">PERSONNEL FILE / PROJECT : CHRISTMAS II</div>
+  <div class="file-title-row">
+    <div>
+      <div class="eyebrow">AUTHORIZED MEMBER RECORD</div>
+      <h1 class="folder-page-title">MY FILE</h1>
+    </div>
+    <div class="file-number">FILE NO.<br><strong id="myFileNo">---</strong></div>
+  </div>
+  <div class="identity-strip">
+    <div><span>AGENT</span><strong id="myRealName">---</strong></div>
+    <div><span>MEMBER ID</span><strong id="myMemberId">---</strong></div>
+    <div><span>STATUS</span><strong>ACTIVE</strong></div>
+    <div><span>FILE</span><strong>COMPLETE</strong></div>
+  </div>
+
+  <div class="section-title">GIFT INTELLIGENCE</div>
+  <div class="intel-paper-grid">
+    <article class="intel-paper"><span>WISH</span><p id="myWish">---</p></article>
+    <article class="intel-paper"><span>PREFERENCE</span><p id="myPreference">---</p></article>
+    <article class="intel-paper"><span>MESSAGE</span><p id="myGiftMessage">---</p></article>
+  </div>
+
+  <div class="section-title">IDENTITY INTELLIGENCE</div>
+  <div class="identity-table">
+    <div><span>性別</span><strong id="myGender">---</strong></div>
+    <div><span>生日月份</span><strong id="myBirthday">---</strong></div>
+    <div><span>身高區間</span><strong id="myHeight">---</strong></div>
+    <div><span>是否抽過菸</span><strong id="mySmoked">---</strong></div>
+    <div><span>目前有沒有養寵物</span><strong id="myPet">---</strong></div>
+    <div><span>喝酒頻率</span><strong id="myAlcohol">---</strong></div>
+    <div><span>平常比較喜歡</span><strong id="myLifestyle">---</strong></div>
+    <div><span>甜食接受度</span><strong id="mySweet">---</strong></div>
+  </div>
+  <div class="folder-footer">AUTHORIZED PERSONNEL ONLY // PROJECT : CHRISTMAS II</div>
+</section>
+</main>
+
+<main class="page hidden folder-page" id="targetPage">
+<section class="file mission-file folder-sheet restricted-sheet">
+  <div class="christmas-mark">✦</div>
+  <div class="top-secret">RESTRICTED</div>
+  <div class="mission-code">TARGET ASSIGNMENT / CONTROLLED INTELLIGENCE</div>
+  <div class="restricted-center">
+    <div class="restricted-stamp">SEALED</div>
+    <div class="eyebrow">TARGET ASSIGNMENT</div>
+    <h1 class="folder-page-title">AWAITING AUTHORIZATION</h1>
+    <p>COMMAND CENTER 尚未發布 TARGET 任務。</p>
+    <div class="classified-bars"><i></i><i></i><i></i></div>
+    <small>STATUS // PENDING</small>
+  </div>
+</section>
+</main>
+
+<main class="page hidden folder-page" id="redLockedPage">
+<section class="file mission-file folder-sheet restricted-sheet red-restricted">
+  <div class="christmas-mark">✦</div>
+  <div class="top-secret">RED FILE</div>
+  <div class="mission-code">IDENTITY INTELLIGENCE / ACCESS CONTROL</div>
+  <div class="restricted-center">
+    <div class="restricted-stamp">LOCKED</div>
+    <div class="eyebrow">IDENTITY VERIFICATION FILE</div>
+    <h1 class="folder-page-title">ACCESS DENIED</h1>
+    <p>此檔案尚未解除封存。</p>
+    <div class="classified-bars"><i></i><i></i><i></i></div>
+    <small>CLEARANCE // NOT AUTHORIZED</small>
+  </div>
+</section>
+</main>
+
 <!-- =========================
      PAGE 2
 ========================= -->
@@ -173,7 +259,7 @@
 
   </div>
 
-  <div class="address-box">
+  <div class="address-box mission-only">
 
     <div class="info-label">
       TARGET ADDRESS
@@ -186,11 +272,11 @@
 
   </div>
 
-  <div class="section-title">
+  <div class="section-title lodging-only">
     ACCOMMODATION DATA
   </div>
 
-  <div class="room-grid">
+  <div class="room-grid lodging-only">
 
     <div class="room-card">
 
@@ -302,11 +388,11 @@
 
   </div>
 
-  <div class="section-title">
+  <div class="section-title mission-only">
     MISSION REQUIREMENTS
   </div>
 
-  <div class="brief-grid">
+  <div class="brief-grid mission-only">
 
     <div class="brief-card">
 
@@ -379,7 +465,7 @@
 
   </div>
 
-<div class="action-wrap">
+<div class="action-wrap mission-only">
 
     <button
       class="action-button"
@@ -401,7 +487,7 @@
 
   </div>
 
-  <div class="bottom">
+  <div class="bottom mission-only">
 
     <div>
       STATUS<br>
