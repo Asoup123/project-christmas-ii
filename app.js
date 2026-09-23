@@ -786,6 +786,164 @@ async function loadMyFile(){
 
 
 /* =====================================================
+   TARGET MISSION
+===================================================== */
+
+function escapeTargetHTML(value){
+  return String(value ?? "---")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+function renderTargetLocked(){
+  const page = document.getElementById("targetPage");
+  if(!page) return;
+
+  page.innerHTML = `
+    <section class="file mission-file folder-sheet restricted-sheet">
+      <div class="christmas-mark">✦</div>
+      <div class="top-secret">RESTRICTED</div>
+      <div class="mission-code">TARGET ASSIGNMENT / CONTROLLED INTELLIGENCE</div>
+      <div class="restricted-center">
+        <div class="restricted-stamp">SEALED</div>
+        <div class="eyebrow">TARGET ASSIGNMENT</div>
+        <h1 class="folder-page-title">AWAITING AUTHORIZATION</h1>
+        <p>COMMAND CENTER 尚未發布 TARGET 任務。</p>
+        <div class="classified-bars"><i></i><i></i><i></i></div>
+        <small>STATUS // PENDING</small>
+      </div>
+    </section>`;
+}
+
+function renderTargetError(message){
+  const page = document.getElementById("targetPage");
+  if(!page) return;
+
+  page.innerHTML = `
+    <section class="file mission-file folder-sheet restricted-sheet">
+      <div class="christmas-mark">✦</div>
+      <div class="top-secret">TARGET</div>
+      <div class="mission-code">TARGET ASSIGNMENT / CONTROLLED INTELLIGENCE</div>
+      <div class="restricted-center">
+        <div class="restricted-stamp">HOLD</div>
+        <div class="eyebrow">TARGET ASSIGNMENT</div>
+        <h1 class="folder-page-title">FILE NOT AVAILABLE</h1>
+        <p>${escapeTargetHTML(message)}</p>
+        <small>STATUS // CONTACT COMMAND CENTER</small>
+      </div>
+    </section>`;
+}
+
+function renderTargetFile(member,file){
+  const page = document.getElementById("targetPage");
+  if(!page) return;
+
+  const fileNumber =
+    member.file_no !== null && member.file_no !== undefined
+      ? String(member.file_no).padStart(2,"0")
+      : "--";
+
+  const rows = [
+    ["願望 / 想收到的東西", file.wish],
+    ["偏好 / 喜歡的類型", file.preference],
+    ["給送禮者的訊息", file.message],
+    ["性別", file.gender],
+    ["生日區間", file.birthday_range],
+    ["身高區間", file.height_range],
+    ["是否抽過菸", file.smoked],
+    ["目前有沒有養寵物", file.has_pet],
+    ["喝酒頻率", file.alcohol_frequency],
+    ["平常比較喜歡", file.lifestyle],
+    ["甜食接受度", file.sweet_preference]
+  ];
+
+  page.innerHTML = `
+    <section class="file folder-sheet">
+      <div class="christmas-mark">✦</div>
+      <div class="top-secret">DECLASSIFIED</div>
+      <div class="mission-code">TARGET ASSIGNMENT / EYES ONLY</div>
+
+      <div class="eyebrow">ASSIGNED TARGET</div>
+      <h1 class="folder-page-title">TARGET FILE // ${escapeTargetHTML(fileNumber)}</h1>
+
+      <div class="identity-grid">
+        <div><span>檔案編號</span><strong>${escapeTargetHTML(fileNumber)}</strong></div>
+        <div><span>姓名</span><strong>${escapeTargetHTML(member.real_name || "---")}</strong></div>
+      </div>
+
+      <div class="identity-grid">
+        ${rows.map(([label,value]) => `
+          <div>
+            <span>${escapeTargetHTML(label)}</span>
+            <strong>${escapeTargetHTML(value || "---")}</strong>
+          </div>`).join("")}
+      </div>
+
+      <div class="folder-footer">EYES ONLY // DO NOT DISCLOSE TARGET // PROJECT : CHRISTMAS II</div>
+    </section>`;
+}
+
+async function loadTargetMission(){
+  try{
+    const settings = await tablesDB.getRow({
+      databaseId:DATABASE_ID,
+      tableId:TABLES.settings,
+      rowId:"main"
+    });
+
+    if(settings.target_mission_active !== true){
+      renderTargetLocked();
+      return;
+    }
+
+    const assignmentResponse = await tablesDB.listRows({
+      databaseId:DATABASE_ID,
+      tableId:TABLES.assignments,
+      queries:[
+        Appwrite.Query.equal("agent_id", currentUser.$id),
+        Appwrite.Query.equal("active", true),
+        Appwrite.Query.limit(1)
+      ]
+    });
+
+    const assignment = assignmentResponse.rows?.[0];
+
+    if(!assignment){
+      renderTargetError("尚未找到你的 TARGET 配對，請聯絡總召。");
+      return;
+    }
+
+    const [targetMember,targetFile] = await Promise.all([
+      tablesDB.getRow({
+        databaseId:DATABASE_ID,
+        tableId:TABLES.members,
+        rowId:assignment.target_id
+      }),
+      tablesDB.getRow({
+        databaseId:DATABASE_ID,
+        tableId:TABLES.targetFiles,
+        rowId:assignment.target_id
+      })
+    ]);
+
+    renderTargetFile(targetMember,targetFile);
+
+  }catch(error){
+    console.error("TARGET 讀取失敗：",error);
+
+    if(error.code === 401 || error.code === 403){
+      renderTargetError("TARGET 權限尚未完成設定，請聯絡總召。");
+    }else{
+      renderTargetError("TARGET 情報讀取失敗，請稍後再試。");
+    }
+  }
+}
+
+
+/* =====================================================
    ACTIVE TAB
 ===================================================== */
 
@@ -860,6 +1018,8 @@ async function openFileTab(
 
     pageId =
       "targetPage";
+
+    await loadTargetMission();
 
   }else if(tab === "red"){
 
