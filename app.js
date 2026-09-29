@@ -946,32 +946,65 @@ function renderRedLocked(){
 function renderRedFile(file){
   const page = document.getElementById("redLockedPage");
   if(!page) return;
+
   const rows = [
-    ["性別",file.gender], ["生日區間",file.birthday_range],
-    ["身高區間",file.height_range], ["是否抽菸",file.smoked],
-    ["是否有養寵物",file.has_pet], ["喝酒頻率",file.alcohol_frequency],
-    ["生活型態",file.lifestyle], ["甜食接受度",file.sweet_preference]
+    ["GENDER","性別",file.gender],
+    ["BIRTH MONTH","生日區間",file.birthday_range],
+    ["HEIGHT","身高區間",file.height_range],
+    ["SMOKING","是否抽菸",file.smoked],
+    ["PET","是否有養寵物",file.has_pet],
+    ["ALCOHOL","喝酒頻率",file.alcohol_frequency],
+    ["LIFESTYLE","生活型態",file.lifestyle],
+    ["SWEET","甜食接受度",file.sweet_preference]
   ];
+
   page.innerHTML = `
     <section class="file folder-sheet red-file-open damaged-file">
-      <div class="christmas-mark">✦</div>
-      <div class="top-secret red-secret">RED FILE</div>
-      <div class="mission-code">IDENTITY INTELLIGENCE / PARTIALLY RECOVERED</div>
-      <div class="red-file-head">
-        <div class="red-silhouette"><img src="images/agent-unknown.webp" alt=""></div>
+      <header class="red-dossier-header">
         <div>
-          <div class="eyebrow">CLASSIFIED TARGET RECORD</div>
-          <h1 class="folder-page-title">RED <span>FILE</span></h1>
-          <p class="damage-line">SUBJECT // █████████ &nbsp; MEMBER ID // ███████</p>
-          <p>檔案部分修復完成。真實身分仍維持封存。</p>
+          <p class="red-kicker">CLASSIFIED TARGET RECORD</p>
+          <h1 class="red-main-title">RED <span>FILE</span></h1>
+        </div>
+        <div class="red-classified-stamp">CLASSIFIED</div>
+      </header>
+
+      <div class="red-profile-block">
+        <figure class="red-silhouette-card">
+          <img src="images/agent-unknown.webp" alt="匿名目標剪影">
+          <figcaption>IDENTITY // WITHHELD</figcaption>
+        </figure>
+
+        <div class="red-profile-copy">
+          <p class="red-section-code">PARTIALLY RECOVERED RECORD</p>
+          <div class="red-redacted-row">
+            <span>SUBJECT</span><b aria-label="身分已遮蔽">████████</b>
+          </div>
+          <div class="red-redacted-row">
+            <span>MEMBER ID</span><b aria-label="身分已遮蔽">████████</b>
+          </div>
+          <p class="red-recovery-note">檔案部分修復完成。真實身分仍維持封存。</p>
         </div>
       </div>
-      <div class="red-intel-title">IDENTITY INTELLIGENCE</div>
-      <div class="red-intel-grid">
-        ${rows.map(([label,value],i)=>`<article><small>${String(i+1).padStart(2,"0")} / ${escapeTargetHTML(label)}</small><strong>${escapeTargetHTML(value || "---")}</strong></article>`).join("")}
+
+      <section class="red-intel-section">
+        <div class="red-intel-title">IDENTITY INTELLIGENCE</div>
+        <div class="red-intel-grid">
+          ${rows.map(([en,label,value],i)=>`
+            <article>
+              <small>${String(i+1).padStart(2,"0")} / ${escapeTargetHTML(en)}</small>
+              <span>${escapeTargetHTML(label)}</span>
+              <strong>${escapeTargetHTML(value || "---")}</strong>
+            </article>`).join("")}
+        </div>
+      </section>
+
+      <div class="red-recovery">
+        <div class="red-recovery-label"><span>DATA RECOVERY</span><b>73%</b></div>
+        <div class="red-recovery-track"><i></i></div>
+        <small>IDENTITY WITHHELD // DAMAGED RECORD</small>
       </div>
-      <div class="corrupt-strip">DATA RECOVERY // ████ 73% ███████ // IDENTITY WITHHELD</div>
-      <div class="folder-footer">RED FILE // DO NOT DISCLOSE // PROJECT : CHRISTMAS II</div>
+
+      <div class="folder-footer red-footer">RED FILE // DO NOT DISCLOSE // PROJECT : CHRISTMAS II</div>
     </section>`;
 }
 
