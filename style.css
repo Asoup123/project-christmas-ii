@@ -1353,3 +1353,9 @@ footer{
 /* AGENT PORTRAIT PICKER */
 .avatar-picker-wrap{margin:20px 0 4px}.avatar-picker-note{margin:5px 0 12px;font-size:12px;color:#6b6e70}.avatar-groups{display:grid;gap:16px}.avatar-groups>section>small{display:block;margin-bottom:7px;font-size:9px;font-weight:900;letter-spacing:1.5px;color:#666}.avatar-picker{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:7px}.avatar-picker button{position:relative;padding:0;border:2px solid transparent;background:#111;cursor:pointer;overflow:hidden;transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease}.avatar-picker button:hover{transform:translateY(-2px)}.avatar-picker button.selected{border-color:#a10f18;box-shadow:0 0 0 2px rgba(161,15,24,.18)}.avatar-picker button.selected::after{content:"SELECTED";position:absolute;left:0;right:0;bottom:0;padding:4px 2px;background:#a10f18;color:#fff;font:700 7px/1 monospace;letter-spacing:.7px}.avatar-picker img{display:block;width:100%;aspect-ratio:3/4;object-fit:cover;filter:grayscale(.15)}
 @media(max-width:640px){.avatar-picker{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.avatar-picker-wrap{margin-top:16px}.avatar-groups{gap:18px}}
+
+/* REGISTER AGENT PORTRAIT - V2 */
+.avatar-picker-wrap > label::after{content:"  * REQUIRED";color:#a10f18;font-size:9px;letter-spacing:1px}
+.avatar-picker button{border-radius:2px}
+.avatar-picker button.selected{border:3px solid #a10f18;box-shadow:0 0 0 3px rgba(161,15,24,.18)}
+@media(max-width:640px){.avatar-picker img{aspect-ratio:3/4}.avatar-picker button.selected::after{font-size:8px;padding:5px 2px}}
