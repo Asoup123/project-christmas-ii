@@ -166,6 +166,11 @@ function showAuthMode(mode){
     mode !== "register"
   );
 
+  document.getElementById("avatarPickerWrap")?.classList.toggle(
+    "hidden",
+    mode !== "register"
+  );
+
   if(authTitle){
     authTitle.textContent =
       mode === "register"
@@ -264,6 +269,13 @@ async function submitAuth(){
     return;
   }
 
+  const selectedAvatar = document.getElementById("selectedAvatar")?.value || "";
+
+  if(authMode === "register" && !selectedAvatar){
+    setMessage("authMessage","請先選擇一張特務檔案照片。");
+    return;
+  }
+
   button.disabled = true;
   button.textContent = "VERIFYING...";
 
@@ -296,6 +308,7 @@ async function submitAuth(){
         data:{
           username:id,
           real_name:realName,
+          avatar_id:selectedAvatar,
           target_file_complete:false
         },
 
@@ -768,6 +781,13 @@ async function loadMyFile(){
   };
 
 
+  const myPortrait = document.getElementById("myAgentPortrait");
+  if(myPortrait){
+    myPortrait.src = member.avatar_id
+      ? `images/agents/${member.avatar_id}.webp`
+      : "images/agent-unknown.webp";
+  }
+
   Object
     .entries(values)
     .forEach(
@@ -965,7 +985,7 @@ function redHintOrder(targetId){
   return keys;
 }
 
-function renderRedFile(file,phase=0,targetId=""){
+function renderRedFile(file,phase=0,targetId="",targetMember=null){
   const page = document.getElementById("redLockedPage");
   if(!page) return;
   phase=Math.max(0,Math.min(3,Number(phase)||0));
@@ -983,6 +1003,13 @@ function renderRedFile(file,phase=0,targetId=""){
   const order=redHintOrder(targetId);
   const visible=new Set(order.slice(0,counts[phase]));
   const pct=[0,37,75,100][phase];
+  const genderRevealed = visible.has("gender");
+  const targetAvatar = genderRevealed && targetMember?.avatar_id
+    ? `images/agents/${targetMember.avatar_id}.webp`
+    : "images/agent-unknown.webp";
+  const portraitCaption = genderRevealed && targetMember?.avatar_id
+    ? "AGENT PORTRAIT // RECOVERED"
+    : "IDENTITY // WITHHELD";
 
   page.innerHTML = `
     <section class="file folder-sheet red-file-open damaged-file">
@@ -991,7 +1018,7 @@ function renderRedFile(file,phase=0,targetId=""){
         <div class="red-classified-stamp">CLASSIFIED</div>
       </header>
       <div class="red-profile-block">
-        <figure class="red-silhouette-card"><img src="images/agent-unknown.webp" alt="匿名目標剪影"><figcaption>IDENTITY // WITHHELD</figcaption></figure>
+        <figure class="red-silhouette-card"><img src="${targetAvatar}" alt="匿名目標檔案照片"><figcaption>${portraitCaption}</figcaption></figure>
         <div class="red-profile-copy">
           <p class="red-section-code">PARTIALLY RECOVERED RECORD</p>
           <div class="red-phase-badge">DECRYPTION <b>PHASE 0${phase}</b></div>
@@ -1029,8 +1056,11 @@ async function loadRedFile(){
     });
     const assignment=assignmentResponse.rows?.[0];
     if(!assignment){ renderRedLocked(); return; }
-    const file=await tablesDB.getRow({databaseId:DATABASE_ID,tableId:TABLES.targetFiles,rowId:assignment.target_id});
-    renderRedFile(file,phase,assignment.target_id);
+    const [file,targetMember]=await Promise.all([
+      tablesDB.getRow({databaseId:DATABASE_ID,tableId:TABLES.targetFiles,rowId:assignment.target_id}),
+      tablesDB.getRow({databaseId:DATABASE_ID,tableId:TABLES.members,rowId:assignment.target_id})
+    ]);
+    renderRedFile(file,phase,assignment.target_id,targetMember);
   }catch(error){ console.error("RED FILE 讀取失敗：",error); renderRedLocked(); }
 }
 
@@ -1412,6 +1442,15 @@ function createSnow(){
 /* =====================================================
    INITIALIZE
 ===================================================== */
+
+document.addEventListener("click",(event)=>{
+  const button=event.target.closest(".avatar-picker button[data-avatar]");
+  if(!button) return;
+  document.querySelectorAll(".avatar-picker button[data-avatar]").forEach(el=>el.classList.remove("selected"));
+  button.classList.add("selected");
+  const input=document.getElementById("selectedAvatar");
+  if(input) input.value=button.dataset.avatar || "";
+});
 
 window.addEventListener(
   "DOMContentLoaded",

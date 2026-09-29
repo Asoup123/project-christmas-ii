@@ -182,6 +182,30 @@
       </div>
 
 
+      <div id="avatarPickerWrap" class="avatar-picker-wrap hidden">
+        <label>AGENT PORTRAIT</label>
+        <p class="avatar-picker-note">選擇你的特務檔案照片</p>
+        <div class="avatar-groups">
+          <section><small>MALE AGENTS</small><div class="avatar-picker">
+            <button type="button" data-avatar="male-01"><img src="images/agents/male-01.webp" alt="Male agent 01"></button>
+            <button type="button" data-avatar="male-02"><img src="images/agents/male-02.webp" alt="Male agent 02"></button>
+            <button type="button" data-avatar="male-03"><img src="images/agents/male-03.webp" alt="Male agent 03"></button>
+            <button type="button" data-avatar="male-04"><img src="images/agents/male-04.webp" alt="Male agent 04"></button>
+            <button type="button" data-avatar="male-05"><img src="images/agents/male-05.webp" alt="Male agent 05"></button>
+            <button type="button" data-avatar="male-06"><img src="images/agents/male-06.webp" alt="Male agent 06"></button>
+          </div></section>
+          <section><small>FEMALE AGENTS</small><div class="avatar-picker">
+            <button type="button" data-avatar="female-01"><img src="images/agents/female-01.webp" alt="Female agent 01"></button>
+            <button type="button" data-avatar="female-02"><img src="images/agents/female-02.webp" alt="Female agent 02"></button>
+            <button type="button" data-avatar="female-03"><img src="images/agents/female-03.webp" alt="Female agent 03"></button>
+            <button type="button" data-avatar="female-04"><img src="images/agents/female-04.webp" alt="Female agent 04"></button>
+            <button type="button" data-avatar="female-05"><img src="images/agents/female-05.webp" alt="Female agent 05"></button>
+          </div></section>
+        </div>
+        <input type="hidden" id="selectedAvatar" value="">
+      </div>
+
+
       <label>
         PASSWORD
       </label>
@@ -682,8 +706,9 @@
           <div class="portrait-card">
 
             <img
+              id="myAgentPortrait"
               src="images/agent-unknown.webp"
-              alt="Anonymous agent silhouette"
+              alt="Agent portrait"
             >
 
             <span>

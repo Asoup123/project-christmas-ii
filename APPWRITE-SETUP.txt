@@ -1,0 +1,12 @@
+PROJECT : CHRISTMAS II
+
+Members table add column:
+avatar_id / Varchar(String) / size 30 / Required OFF / Default NULL
+
+Settings table:
+red_file_phase / Integer / min 0 / max 3 / default 0
+
+RED FILE behavior:
+- Gender not decrypted: agent-unknown.webp
+- Gender decrypted: target member selected portrait
+- MY FILE: always uses member selected portrait
