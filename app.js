@@ -841,48 +841,29 @@ function renderTargetFile(member,file){
   const page = document.getElementById("targetPage");
   if(!page) return;
 
-  const fileNumber =
-    member.file_no !== null && member.file_no !== undefined
-      ? String(member.file_no).padStart(2,"0")
-      : "--";
-
   const rows = [
-    ["願望 / 想收到的東西", file.wish],
-    ["偏好 / 喜歡的類型", file.preference],
-    ["給送禮者的訊息", file.message],
-    ["性別", file.gender],
-    ["生日區間", file.birthday_range],
-    ["身高區間", file.height_range],
-    ["是否抽過菸", file.smoked],
-    ["目前有沒有養寵物", file.has_pet],
-    ["喝酒頻率", file.alcohol_frequency],
-    ["平常比較喜歡", file.lifestyle],
-    ["甜食接受度", file.sweet_preference]
+    ["01 / WISH", "願望 / 想收到的東西", file.wish],
+    ["02 / PREFERENCE", "偏好 / 喜歡的類型", file.preference],
+    ["03 / MESSAGE", "給送禮者的訊息", file.message]
   ];
 
   page.innerHTML = `
-    <section class="file folder-sheet">
+    <section class="file folder-sheet anonymous-target-file">
       <div class="christmas-mark">✦</div>
-      <div class="top-secret">DECLASSIFIED</div>
-      <div class="mission-code">TARGET ASSIGNMENT / EYES ONLY</div>
-
+      <div class="top-secret">EYES ONLY</div>
+      <div class="mission-code">TARGET ASSIGNMENT / ANONYMOUS INTELLIGENCE</div>
       <div class="eyebrow">ASSIGNED TARGET</div>
-      <h1 class="folder-page-title">TARGET FILE // ${escapeTargetHTML(fileNumber)}</h1>
-
-      <div class="identity-grid">
-        <div><span>檔案編號</span><strong>${escapeTargetHTML(fileNumber)}</strong></div>
-        <div><span>姓名</span><strong>${escapeTargetHTML(member.real_name || "---")}</strong></div>
-      </div>
-
-      <div class="identity-grid">
-        ${rows.map(([label,value]) => `
-          <div>
+      <h1 class="folder-page-title">TARGET FILE</h1>
+      <p class="anonymous-note">身分資料已封存。請僅依照以下情報準備禮物。</p>
+      <div class="target-hint-grid">
+        ${rows.map(([code,label,value]) => `
+          <article>
+            <small>${escapeTargetHTML(code)}</small>
             <span>${escapeTargetHTML(label)}</span>
             <strong>${escapeTargetHTML(value || "---")}</strong>
-          </div>`).join("")}
+          </article>`).join("")}
       </div>
-
-      <div class="folder-footer">EYES ONLY // DO NOT DISCLOSE TARGET // PROJECT : CHRISTMAS II</div>
+      <div class="folder-footer">EYES ONLY // IDENTITY SEALED // PROJECT : CHRISTMAS II</div>
     </section>`;
 }
 
@@ -942,6 +923,72 @@ async function loadTargetMission(){
   }
 }
 
+
+/* =====================================================
+   RED FILE
+===================================================== */
+
+function renderRedLocked(){
+  const page = document.getElementById("redLockedPage");
+  if(!page) return;
+  page.innerHTML = `
+    <section class="file restricted red-locked-file">
+      <div class="stamp red">RED FILE</div>
+      <img class="locked-portrait" src="images/agent-unknown.webp" alt="">
+      <p class="eyebrow">IDENTITY VERIFICATION FILE</p>
+      <h1>FILE <span>CORRUPTED</span></h1>
+      <p>身分情報仍在封存。等待 COMMAND CENTER 解密。</p>
+      <div class="bars">██████ ███ █████</div>
+      <small>CLEARANCE // NOT AUTHORIZED</small>
+    </section>`;
+}
+
+function renderRedFile(file){
+  const page = document.getElementById("redLockedPage");
+  if(!page) return;
+  const rows = [
+    ["性別",file.gender], ["生日區間",file.birthday_range],
+    ["身高區間",file.height_range], ["是否抽菸",file.smoked],
+    ["是否有養寵物",file.has_pet], ["喝酒頻率",file.alcohol_frequency],
+    ["生活型態",file.lifestyle], ["甜食接受度",file.sweet_preference]
+  ];
+  page.innerHTML = `
+    <section class="file folder-sheet red-file-open damaged-file">
+      <div class="christmas-mark">✦</div>
+      <div class="top-secret red-secret">RED FILE</div>
+      <div class="mission-code">IDENTITY INTELLIGENCE / PARTIALLY RECOVERED</div>
+      <div class="red-file-head">
+        <div class="red-silhouette"><img src="images/agent-unknown.webp" alt=""></div>
+        <div>
+          <div class="eyebrow">CLASSIFIED TARGET RECORD</div>
+          <h1 class="folder-page-title">RED <span>FILE</span></h1>
+          <p class="damage-line">SUBJECT // █████████ &nbsp; MEMBER ID // ███████</p>
+          <p>檔案部分修復完成。真實身分仍維持封存。</p>
+        </div>
+      </div>
+      <div class="red-intel-title">IDENTITY INTELLIGENCE</div>
+      <div class="red-intel-grid">
+        ${rows.map(([label,value],i)=>`<article><small>${String(i+1).padStart(2,"0")} / ${escapeTargetHTML(label)}</small><strong>${escapeTargetHTML(value || "---")}</strong></article>`).join("")}
+      </div>
+      <div class="corrupt-strip">DATA RECOVERY // ████ 73% ███████ // IDENTITY WITHHELD</div>
+      <div class="folder-footer">RED FILE // DO NOT DISCLOSE // PROJECT : CHRISTMAS II</div>
+    </section>`;
+}
+
+async function loadRedFile(){
+  try{
+    const settings = await tablesDB.getRow({databaseId:DATABASE_ID,tableId:TABLES.settings,rowId:"main"});
+    if(settings.red_file_active !== true){ renderRedLocked(); return; }
+    const assignmentResponse = await tablesDB.listRows({
+      databaseId:DATABASE_ID, tableId:TABLES.assignments,
+      queries:[Appwrite.Query.equal("agent_id",currentUser.$id),Appwrite.Query.equal("active",true),Appwrite.Query.limit(1)]
+    });
+    const assignment=assignmentResponse.rows?.[0];
+    if(!assignment){ renderRedLocked(); return; }
+    const file=await tablesDB.getRow({databaseId:DATABASE_ID,tableId:TABLES.targetFiles,rowId:assignment.target_id});
+    renderRedFile(file);
+  }catch(error){ console.error("RED FILE 讀取失敗：",error); renderRedLocked(); }
+}
 
 /* =====================================================
    ACTIVE TAB
@@ -1025,6 +1072,8 @@ async function openFileTab(
 
     pageId =
       "redLockedPage";
+
+    await loadRedFile();
   }
 
 
