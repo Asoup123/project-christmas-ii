@@ -1359,3 +1359,27 @@ footer{
 .avatar-picker button{border-radius:2px}
 .avatar-picker button.selected{border:3px solid #a10f18;box-shadow:0 0 0 3px rgba(161,15,24,.18)}
 @media(max-width:640px){.avatar-picker img{aspect-ratio:3/4}.avatar-picker button.selected::after{font-size:8px;padding:5px 2px}}
+
+
+/* MY FILE / RED FILE V4 - mobile layout + full-color recovered portraits */
+.my-mobile-file-heading{display:none}
+#myFilePage .portrait-card img{filter:none}
+.red-silhouette-card img{filter:none}
+.avatar-picker img{filter:none}
+@media(max-width:700px){
+  .my-mobile-file-heading{display:block;margin:4px 0 18px;padding-bottom:12px;border-bottom:2px solid #222}
+  .my-mobile-file-heading .eyebrow{margin:0 0 5px;font-size:9px;letter-spacing:1.2px}
+  .my-mobile-file-heading h1{margin:0;font-size:48px;line-height:.92;letter-spacing:-3px}
+  .my-mobile-file-heading h1 span{color:#a10f18}
+  .my-dossier{grid-template-columns:118px minmax(0,1fr);gap:17px;align-items:start}
+  .my-dossier .subject>.eyebrow,.my-dossier .subject>h1{display:none}
+  .my-dossier .portrait-card{padding:6px}
+  .my-dossier .portrait-card img{aspect-ratio:3/4;filter:none}
+  .my-facts{border-top:0;grid-template-columns:1fr 1fr;column-gap:10px}
+  .my-facts>div{padding:8px 0;border-top:1px solid #aaa}
+  .my-facts>div:nth-child(1),.my-facts>div:nth-child(2){grid-column:1/-1}
+  .my-facts>div:nth-child(1){border-top:0;padding-top:0}
+  .my-facts strong{font-size:13px}
+  .red-silhouette-card img{filter:none;aspect-ratio:3/4}
+}
+@media(max-width:390px){.my-dossier{grid-template-columns:105px minmax(0,1fr);gap:14px}.my-mobile-file-heading h1{font-size:44px}}

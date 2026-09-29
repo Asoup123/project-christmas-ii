@@ -300,6 +300,8 @@ async function submitAuth(){
       currentUser =
         await account.get();
 
+      const nextFileNo = await getNextFileNo();
+
       await tablesDB.createRow({
         databaseId:DATABASE_ID,
         tableId:TABLES.members,
@@ -309,6 +311,7 @@ async function submitAuth(){
           username:id,
           real_name:realName,
           avatar_id:selectedAvatar,
+          file_no:nextFileNo,
           target_file_complete:false
         },
 
@@ -383,6 +386,25 @@ async function submitAuth(){
   }
 }
 
+
+
+async function getNextFileNo(){
+  try{
+    const response = await tablesDB.listRows({
+      databaseId:DATABASE_ID,
+      tableId:TABLES.members,
+      queries:[
+        Appwrite.Query.orderDesc("file_no"),
+        Appwrite.Query.limit(1)
+      ]
+    });
+    const highest = Number(response.rows?.[0]?.file_no) || 0;
+    return highest + 1;
+  }catch(error){
+    console.error("FILE NO. generation failed:", error);
+    throw error;
+  }
+}
 
 /* =====================================================
    ROUTE AFTER LOGIN
@@ -1459,26 +1481,15 @@ window.addEventListener(
     createSnow();
 
 
-    /*
-      每次重新整理網站
-      都要求重新登入。
-    */
-
+    /* 保留 Appwrite Session：重新整理或再次開啟網站時自動登入。 */
     try{
-
-      await account.deleteSession({
-        sessionId:"current"
-      });
-
+      currentUser = await account.get();
+      await routeAfterLogin();
+      return;
     }catch(error){
-      /*
-        沒有登入狀態時忽略。
-      */
+      currentUser = null;
+      currentMemberId = "";
     }
-
-
-    currentUser = null;
-    currentMemberId = "";
 
 
     document
