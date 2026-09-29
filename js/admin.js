@@ -101,7 +101,6 @@ let rsvpRows =
 let assignments = [];
 let assignmentPreview = [];
 let targetMissionActive = false;
-let redFileActive = false;
 
 
 /* =========================================================
@@ -708,7 +707,6 @@ async function loadDatabase() {
     );
 
     targetMissionActive = settingsDocument.target_mission_active === true;
-    redFileActive = settingsDocument.red_file_active === true;
 
     assignmentPreview = [];
 
@@ -725,7 +723,6 @@ async function loadDatabase() {
     renderSubjects();
     renderAssignments(assignments, false);
     renderTargetMissionControl();
-    renderRedFileControl();
 
 
   } catch (error) {
@@ -2266,8 +2263,10 @@ $("refreshAssignments").addEventListener(
   loadAssignments
 );
 
-$("toggleTargetMission")?.addEventListener("click",toggleTargetMission);
-$("toggleRedFile")?.addEventListener("click",toggleRedFile);
+$("toggleTargetMission")?.addEventListener(
+  "click",
+  toggleTargetMission
+);
 
 
 document
@@ -2364,31 +2363,6 @@ async function toggleTargetMission() {
   } finally {
     if (button) button.disabled = false;
   }
-}
-
-
-function renderRedFileControl(){
-  const status=$("redControlStatus");
-  const button=$("toggleRedFile");
-  if(status){
-    status.textContent=redFileActive ? "已開放" : "尚未開放";
-    status.classList.toggle("locked",!redFileActive);
-    status.classList.toggle("active",redFileActive);
-  }
-  if(button) button.textContent=redFileActive ? "關閉 RED FILE" : "開放 RED FILE";
-}
-
-async function toggleRedFile(){
-  const nextValue=!redFileActive;
-  if(!confirm(`確定要${nextValue ? "開放" : "關閉"} RED FILE 嗎？`)) return;
-  const button=$("toggleRedFile");
-  if(button){button.disabled=true;button.textContent="更新中...";}
-  try{
-    await databases.updateDocument(DATABASE_ID,COLLECTIONS.settings,"main",{red_file_active:nextValue});
-    redFileActive=nextValue;
-    renderRedFileControl();
-  }catch(error){console.error("RED FILE 狀態更新失敗：",error);alert("RED FILE 狀態更新失敗，請確認 Settings 權限。");}
-  finally{if(button) button.disabled=false;}
 }
 
 /* =========================================================
