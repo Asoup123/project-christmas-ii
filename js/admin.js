@@ -101,6 +101,8 @@ let rsvpRows =
 let assignments = [];
 let assignmentPreview = [];
 let targetMissionActive = false;
+let redFileActive = false;
+let redFilePhase = 0;
 
 
 /* =========================================================
@@ -707,6 +709,8 @@ async function loadDatabase() {
     );
 
     targetMissionActive = settingsDocument.target_mission_active === true;
+    redFileActive = settingsDocument.red_file_active === true;
+    redFilePhase = Math.max(0, Math.min(3, Number(settingsDocument.red_file_phase) || 0));
 
     assignmentPreview = [];
 
@@ -723,6 +727,7 @@ async function loadDatabase() {
     renderSubjects();
     renderAssignments(assignments, false);
     renderTargetMissionControl();
+    renderRedFileControl();
 
 
   } catch (error) {
@@ -2263,10 +2268,11 @@ $("refreshAssignments").addEventListener(
   loadAssignments
 );
 
-$("toggleTargetMission")?.addEventListener(
-  "click",
-  toggleTargetMission
-);
+$("toggleTargetMission")?.addEventListener("click",toggleTargetMission);
+$("redPhase1")?.addEventListener("click",()=>setRedFilePhase(1));
+$("redPhase2")?.addEventListener("click",()=>setRedFilePhase(2));
+$("redPhase3")?.addEventListener("click",()=>setRedFilePhase(3));
+$("redPhaseReset")?.addEventListener("click",()=>setRedFilePhase(0));
 
 
 document
@@ -2362,6 +2368,41 @@ async function toggleTargetMission() {
     alert("TARGET 狀態更新失敗，請確認 Settings 權限。");
   } finally {
     if (button) button.disabled = false;
+  }
+}
+
+
+function renderRedFileControl(){
+  const status=$("redControlStatus");
+  if(status){
+    const labels=["尚未解密","PHASE 01｜3 / 8 已解密","PHASE 02｜6 / 8 已解密","PHASE 03｜8 / 8 完成"];
+    status.textContent=labels[redFilePhase] || labels[0];
+    status.classList.toggle("locked",redFilePhase===0);
+    status.classList.toggle("active",redFilePhase>0);
+  }
+  [1,2,3].forEach(n=>{ const b=$("redPhase"+n); if(b) b.disabled=redFilePhase===n; });
+}
+
+async function setRedFilePhase(phase){
+  phase=Math.max(0,Math.min(3,Number(phase)||0));
+  const label=phase===0 ? "重新封存 RED FILE" : `開放 RED FILE PHASE 0${phase}`;
+  if(!confirm(`確定要${label}嗎？`)) return;
+  const ids=["redPhase1","redPhase2","redPhase3","redPhaseReset"];
+  ids.forEach(id=>{const b=$(id);if(b)b.disabled=true;});
+  try{
+    await databases.updateDocument(DATABASE_ID,COLLECTIONS.settings,"main",{
+      red_file_active:phase>0,
+      red_file_phase:phase
+    });
+    redFilePhase=phase;
+    redFileActive=phase>0;
+    renderRedFileControl();
+  }catch(error){
+    console.error("RED FILE 階段更新失敗：",error);
+    alert("RED FILE 階段更新失敗，請確認已新增 red_file_phase 欄位與 Settings 權限。");
+  }finally{
+    ids.forEach(id=>{const b=$(id);if(b)b.disabled=false;});
+    renderRedFileControl();
   }
 }
 

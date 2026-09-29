@@ -918,11 +918,13 @@
           </div>
 
 
-          <div
-            class="control-status locked"
-            id="redControlStatus"
-          >
-            尚未開放
+          <div class="control-status locked" id="redControlStatus">尚未解密</div>
+
+          <div style="display:grid;gap:8px;margin-top:14px;">
+            <button type="button" class="primary-btn" id="redPhase1">開放 PHASE 01</button>
+            <button type="button" class="primary-btn" id="redPhase2">開放 PHASE 02</button>
+            <button type="button" class="primary-btn" id="redPhase3">完成 PHASE 03</button>
+            <button type="button" class="secondary-btn" id="redPhaseReset">重新封存 RED FILE</button>
           </div>
 
 
@@ -958,7 +960,7 @@
 </div>
 
 
-<script src="js/admin.js?v=20260923-4"></script>
+<script src="js/admin.js?v=20260929-7"></script>
 
 
 </body>
