@@ -923,18 +923,28 @@ function renderTargetFile(member,file){
 }
 
 async function loadTargetMission(){
+  // TARGET 採 fail-closed：只有明確讀到 true 才公布任務。
+  // settings 無法讀取、欄位不存在、尚未開啟時，都顯示 MISSION PENDING，避免誤顯示系統錯誤。
+  let settings;
   try{
-    const settings = await tablesDB.getRow({
+    settings = await tablesDB.getRow({
       databaseId:DATABASE_ID,
       tableId:TABLES.settings,
       rowId:"main"
     });
+  }catch(error){
+    console.warn("TARGET settings 尚不可用，維持封存狀態：", error);
+    renderTargetLocked();
+    return;
+  }
 
-    if(settings.target_mission_active !== true){
-      renderTargetLocked();
-      return;
-    }
+  const missionActive = settings?.target_mission_active === true || settings?.target_mission_active === "true" || settings?.target_mission_active === 1;
+  if(!missionActive){
+    renderTargetLocked();
+    return;
+  }
 
+  try{
     const assignmentResponse = await tablesDB.listRows({
       databaseId:DATABASE_ID,
       tableId:TABLES.assignments,
@@ -946,30 +956,18 @@ async function loadTargetMission(){
     });
 
     const assignment = assignmentResponse.rows?.[0];
-
     if(!assignment){
       renderTargetError("尚未找到你的 TARGET 配對，請聯絡總召。");
       return;
     }
 
     const [targetMember,targetFile] = await Promise.all([
-      tablesDB.getRow({
-        databaseId:DATABASE_ID,
-        tableId:TABLES.members,
-        rowId:assignment.target_id
-      }),
-      tablesDB.getRow({
-        databaseId:DATABASE_ID,
-        tableId:TABLES.targetFiles,
-        rowId:assignment.target_id
-      })
+      tablesDB.getRow({databaseId:DATABASE_ID,tableId:TABLES.members,rowId:assignment.target_id}),
+      tablesDB.getRow({databaseId:DATABASE_ID,tableId:TABLES.targetFiles,rowId:assignment.target_id})
     ]);
-
     renderTargetFile(targetMember,targetFile);
-
   }catch(error){
-    console.error("TARGET 讀取失敗：",error);
-
+    console.error("TARGET 任務資料讀取失敗：",error);
     if(error.code === 401 || error.code === 403){
       renderTargetError("TARGET 權限尚未完成設定，請聯絡總召。");
     }else{
