@@ -845,18 +845,31 @@ function renderTargetLocked(){
   if(!page) return;
 
   page.innerHTML = `
-    <section class="file mission-file folder-sheet restricted-sheet">
+    <section class="file mission-file folder-sheet target-pending-sheet">
       <div class="christmas-mark">✦</div>
-      <div class="top-secret">RESTRICTED</div>
-      <div class="mission-code">TARGET ASSIGNMENT / CONTROLLED INTELLIGENCE</div>
-      <div class="restricted-center">
-        <div class="restricted-stamp">SEALED</div>
+      <div class="top-secret">STANDBY</div>
+      <div class="mission-code">TARGET ASSIGNMENT / COMMAND CENTER</div>
+
+      <div class="target-pending-head">
         <div class="eyebrow">TARGET ASSIGNMENT</div>
-        <h1 class="folder-page-title">AWAITING AUTHORIZATION</h1>
-        <p>COMMAND CENTER 尚未發布 TARGET 任務。</p>
-        <div class="classified-bars"><i></i><i></i><i></i></div>
-        <small>STATUS // PENDING</small>
+        <h1 class="folder-page-title">MISSION<br>PENDING</h1>
+        <p class="target-pending-sub">TARGET FILE // SEALED</p>
       </div>
+
+      <div class="target-sealed-card">
+        <div class="target-lock-mark">⌾</div>
+        <div class="target-standby-dot"><i></i> STANDBY</div>
+        <strong>ASSIGNMENT PENDING</strong>
+        <span>你的任務尚未發布</span>
+        <p>TARGET 身分與相關情報目前處於封存狀態。<br>請等待 COMMAND CENTER 發布任務指令。</p>
+        <div class="target-seal-stamp">SEALED</div>
+      </div>
+
+      <div class="target-pending-status">
+        <small>STATUS</small>
+        <b>AWAITING MISSION AUTHORIZATION</b>
+      </div>
+      <div class="folder-footer">STANDBY // TARGET FILE SEALED // PROJECT : CHRISTMAS II</div>
     </section>`;
 }
 
