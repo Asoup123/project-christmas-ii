@@ -174,17 +174,30 @@
   let elapsed=0,last=0,frame=0,textElapsed=0,textStarted=false,characters=[],typed=0,charTimes=[],typingDuration=0;
   let sound=true,audioContext=null,keyBuffer=null,resumeFocus=null;
   const preloaded=new Set();
-  let soundBlocked=false;
+  let soundBlocked=false,musicBlocked=false,musicFailed=false,music=null,musicRequest=0;
   let accepting=false,sealOpened=false,accepted=false,acceptHeld=null,acceptElapsed=0,acceptedElapsed=0;
   const key=(book=bookId,id=currentUser)=>book==='prologue'?`christmas-prologue-v2:${id}`:`christmas-${book}-v2:${id}`;
   function hasRead(book=bookId,id=currentUser){if(seen.has(`${book}:${id}`))return true;try{return localStorage.getItem(key(book,id))==='read';}catch{return false;}}
   function preload(){if(preloaded.has(bookId)||!window.Image)return;preloaded.add(bookId);scenes.forEach(data=>{const image=new window.Image();image.src=`assets/prologue-${data.image}.png`;});}
+  // One shared soundtrack for every chapter, scene and acceptance screen.
+  function pauseMusic(reset=false){
+    musicRequest++;music?.pause();if(reset&&music){try{music.currentTime=0;}catch{}}
+  }
+  function playMusic(){
+    if(!showing||!started||paused||!sound||!window.Audio)return;
+    if(!music){music=new window.Audio('assets/christmas-tis-the-season.mp3');music.loop=true;music.preload='auto';music.volume=.22;}
+    const request=++musicRequest;
+    const ready=()=>{if(request!==musicRequest){if(!showing||paused||!sound)music.pause();return;}musicBlocked=false;musicFailed=false;status();};
+    const failed=error=>{if(request!==musicRequest||error.name==='AbortError')return;musicBlocked=error.name==='NotAllowedError';musicFailed=!musicBlocked;status();};
+    try{const result=music.play();if(result?.then)result.then(ready).catch(failed);else ready();}catch(error){failed(error);}
+  }
   function unlockAudio(){
     if(!showing||!started||!sound||paused)return;
     try{const Audio=window.AudioContext||window.webkitAudioContext;if(Audio&&!audioContext)audioContext=new Audio();
       if(audioContext?.state==='suspended')soundBlocked=true;
       audioContext?.resume()?.then(()=>{if(showing)status();}).catch(()=>status());
     }catch{}
+    playMusic();
   }
   function flip(){
     if(!sound||paused||!audioContext||audioContext.state!=='running')return;
@@ -210,15 +223,15 @@
     }catch{}
   }
   function status(){
-    soundBlocked=!!(audioContext&&audioContext.state==='suspended'&&!paused);
+    soundBlocked=!!(musicBlocked||(audioContext&&audioContext.state==='suspended'&&!paused));
     el('prologuePlayback').textContent=!started?'等待開啟':accepting?'等待接取任務':paused?'已暫停':'檔案閱覽中';
     el('prologue').dataset.paused=String(paused);el('prologue').dataset.sound=String(sound);
     el('prologuePause').textContent=manualPause?'繼續播放':'暫停播放';el('prologuePause').setAttribute('aria-pressed',String(manualPause));el('prologuePause').disabled=!started||accepting;
-    el('prologueSound').textContent=!sound?'聲音：關':soundBlocked&&!paused?'開啟聲音':'聲音：開';el('prologueSound').setAttribute('aria-pressed',String(sound));
+    el('prologueSound').textContent=!sound?'聲音：關':soundBlocked&&!paused?'開啟聲音':musicFailed?'重試聲音':'聲音：開';el('prologueSound').setAttribute('aria-pressed',String(sound));
   }
   function syncPause(){
     const value=manualPause||document.hidden||!started;
-    if(paused!==value){paused=value;try{if(paused){audioContext?.suspend()?.catch(()=>{});}else if(sound)unlockAudio();}catch{}}
+    if(paused!==value){paused=value;try{if(paused){pauseMusic();audioContext?.suspend()?.catch(()=>{});}else if(sound)unlockAudio();}catch{}}
     status();
   }
   function prepareText(data){
@@ -294,7 +307,7 @@
     el('prologue').hidden=false;el('operationContent').hidden=true;document.body.classList.add('prologue-playing');
     el('prologueSkip').textContent='跳過故事';syncPause();scene(-1);unlockAudio();el('prologuePause').focus({preventScroll:true});frame=requestAnimationFrame(tick);
   }
-  function close(){showing=false;started=false;acceptHeld=null;cancelAnimationFrame(frame);try{audioContext?.suspend()?.catch(()=>{});}catch{}document.body.classList.remove('prologue-playing');el('prologue').hidden=true;el('operationContent').hidden=false;}
+  function close(){showing=false;started=false;pauseMusic();acceptHeld=null;cancelAnimationFrame(frame);try{audioContext?.suspend()?.catch(()=>{});}catch{}document.body.classList.remove('prologue-playing');el('prologue').hidden=true;el('operationContent').hidden=false;}
   function finish(){
     const completedBook=bookId;seen.add(`${completedBook}:${currentUser}`);try{localStorage.setItem(key(completedBook),'read');}catch{}close();
     // Accepting a story unlocks its presentation only. No gift draw or selection is made.
@@ -310,8 +323,8 @@
   el('prologuePrev').addEventListener('click',()=>{if(page>0&&!accepting)scene(page-1,true);});
   el('prologueNext').addEventListener('click',()=>{if(started&&!accepting){if(page<scenes.length-1)scene(page+1,true);else showAcceptance();}});
   el('prologueSound').addEventListener('click',()=>{
-    if(sound&&soundBlocked&&!paused){unlockAudio();return;}
-    sound=!sound;if(sound)unlockAudio();else{audioContext?.suspend()?.catch(()=>{});}status();
+    if(sound&&(soundBlocked||musicFailed)&&!paused){unlockAudio();return;}
+    sound=!sound;if(sound)unlockAudio();else{pauseMusic();audioContext?.suspend()?.catch(()=>{});}status();
   });
   // Autoplay policies can block sound, but never block the opening animation.
   // Retry only after an actual gesture; background clicks no longer pause playback.
@@ -346,7 +359,7 @@
     hasThirdInstruction:id=>hasRead('chapter3',id),
     hasFourthInstruction:id=>hasRead('chapter4',id),
     update(user,state,acceptedCallback){
-      const changed=currentUser!==user.$id;if(changed){close();currentUser=user.$id;}
+      const changed=currentUser!==user.$id;if(changed){close();pauseMusic(true);currentUser=user.$id;}
       latestState=state;onAccepted=acceptedCallback;
       if(showing){el('prologue').hidden=false;el('operationContent').hidden=true;return;}
       if(state.choice&&!hasRead('chapter4'))open('chapter4');

@@ -62,8 +62,7 @@ function render(fillForms=false){
   $('drawButton').disabled=phase!=='drawing'||!!state.draw||!state.ownGift;
   $('drawButton').textContent=state.draw?'密令已配發 · 內容封存':'抽取密令 · 保持封存';
   $('galleryTitle').textContent=published?(state.choice?'匿名禮物情報庫':'選一份禮物，接下秘密任務。'):'匿名禮物，等待公開。';
-  $('heroMissionTitle').textContent=state.choice?'你的秘密任務，已送達。':stage===0?'先準備你的交接物資。':stage===1?'下一項指令，等你接收。':'你的秘密任務，等待揭曉。';
-  $('galleryNote').textContent=published?(state.choice?'你已鎖定禮物。仍可瀏覽照片與提示詞，但無法更換選擇。':'根據照片與三個提示詞，挑選你喜歡的禮物。不能選自己的禮物，同一份可被多人選擇；確認鎖定後，才會揭曉任務，且不能更換。'):'禮物情報尚未公開。等指揮官開放後，就能查看大家的照片與三個提示詞，挑選你喜歡的禮物。';
+  $('galleryNote').textContent=published?(state.choice?'你已鎖定禮物。仍可瀏覽照片與提示詞，但無法更換選擇。':'根據照片與三個提示詞，挑選你喜歡的禮物。不能選自己的禮物；確認鎖定後，才會揭曉任務，且不能更換。'):'禮物情報尚未公開。等指揮官開放後，就能查看大家的照片與三個提示詞，挑選你喜歡的禮物。';
   $('gifts').replaceChildren(...state.gifts.map(g=>card(g)));
   const fourthAccepted=window.Prologue?.hasFourthInstruction?.(user.$id)??true;
   $('replayChapterFour').hidden=!state.choice;
