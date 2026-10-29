@@ -137,3 +137,5 @@ body.prologue-playing{overflow:hidden}
 @media(prefers-reduced-motion:reduce){.cinema #prologueText p.subtitleFull.typing::after{animation:none!important}}
 
 #assignmentDescription,#assignmentNote{white-space:pre-line}#replayChapterTwo{font-size:12px}
+
+#replayChapterThree{font-size:12px}

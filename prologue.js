@@ -46,9 +46,46 @@
     ]
   }
 ];
+  const thirdScenes=[
+  {
+    "chapter": "CHAPTER III / THE SEALED NUMBER",
+    "title": "編號已落定",
+    "image": "chapter3-tag",
+    "alt": "戴著手套的手，將空白標籤繫在匿名聖誕禮物旁",
+    "text": [
+      "抽取結束，轉動的編號緩緩停下。",
+      "密令 {code}。",
+      "編號下方的文件，仍被雪花封蠟牢牢封住。畫面上浮現一張標籤，與一句提醒：",
+      "「把這個編號留在禮物上。內容，留給收下它的人。」"
+    ]
+  },
+  {
+    "chapter": "CHAPTER III / BEFORE THE RENDEZVOUS",
+    "title": "下一位接收者，就是你",
+    "image": "chapter3-rendezvous",
+    "alt": "聖誕樹與壁爐照亮新的秘密據點，長桌等待特務抵達",
+    "text": [
+      "你將視線移回螢幕，一張據點照片取代了文件。暖黃燈光從窗內透出，聖誕樹旁的長桌，還留著等待填滿的位置。",
+      "「你的準備已完成。接下來，換你成為接收者。」",
+      "聚會那天，你會以朋友的身分入席。但在交換祝福之前，另一份禮物正帶著尚未揭曉的密令，等待你的選擇。"
+    ]
+  },
+  {
+    "chapter": "CHAPTER III / CROSSING CLUES",
+    "title": "讓你停下來的線索",
+    "image": "chapter3-clues",
+    "alt": "匿名禮物照片與三張線索紙條，讓特務的手停在其中一份檔案上",
+    "text": [
+      "終端機上的雪花徽記，再次亮起。最後一段訊息，緩緩浮現。",
+      "「你留下的三個提示詞，會引來某個人的目光。」",
+      "「而另一名特務留下的線索，也會讓你停下來。」"
+    ]
+  }
+];
   const books={
     prologue:{scenes:prologueScenes,label:'序章',title:'重新集結',tagline:'一封邀請，讓沉寂的行動再次啟動。',ordinal:'第一',number:'01',missionTitle:'準備你的交接物資',description:'準備一份包裝完成的禮物，\n上傳照片，並留下三個提示詞。',note:'別留下你的身分線索。\n完成提交後，等待下一項指令。',target:'giftForm'},
-    chapter2:{scenes:secondScenes,label:'第二章',title:'封存密令',tagline:'情報已入庫。最後一道封印，等待你親手完成。',ordinal:'第二',number:'02',missionTitle:'替禮物封存密令',description:'抽取一個密令編號，\n將編號寫在或貼在自己的禮物包裝上。',note:'你只會看到編號，不會看到密令內容。\n別拆封，也別留下自己的名字。',target:'drawTaskPanel'}
+    chapter2:{scenes:secondScenes,label:'第二章',title:'封存密令',tagline:'情報已入庫。最後一道封印，等待你親手完成。',ordinal:'第二',number:'02',missionTitle:'替禮物封存密令',description:'抽取一個密令編號，\n將編號寫在或貼在自己的禮物包裝上。',note:'你只會看到編號，不會看到密令內容。\n別拆封，也別留下自己的名字。',target:'drawTaskPanel'},
+    chapter3:{scenes:thirdScenes,label:'第三章',title:'交接前夜',tagline:'禮物已封存。下一個秘密，正等著交到你手上。',ordinal:'第三',number:'03',missionTitle:'選定你的交接目標',description:'匿名情報庫公開後，\n根據照片與三個提示詞，選擇一份禮物並確認接收。',note:'不能選擇自己的禮物。\n確認接收後，密令才會解封，且不能更換目標。',target:'giftGallery'}
   };
   let bookId='prologue',scenes=books.prologue.scenes,latestState=null,onAccepted=null;
   const INTRO_DURATION=6500, TRANSITION=1400, CHARACTER_MS=125, ACCEPT_MS=1800;
@@ -56,12 +93,13 @@
   const seen=new Set();
   let currentUser=null,page=-1,showing=false,started=false,manualPause=false,paused=false;
   let elapsed=0,last=0,frame=0,textElapsed=0,textStarted=false,characters=[],typed=0,charTimes=[],typingDuration=0;
-  let sound=true,audioContext=null,keyBuffer=null,resumeFocus=null,preloaded=false;
+  let sound=true,audioContext=null,keyBuffer=null,resumeFocus=null;
+  const preloaded=new Set();
   let music=null,musicRequest=0,soundBlocked=false,musicBlocked=false,musicFailed=false;
   let accepting=false,sealOpened=false,accepted=false,acceptHeld=null,acceptElapsed=0,acceptedElapsed=0;
-  const key=(book=bookId,id=currentUser)=>book==='prologue'?`christmas-prologue-v1:${id}`:`christmas-chapter2-v1:${id}`;
+  const key=(book=bookId,id=currentUser)=>book==='prologue'?`christmas-prologue-v1:${id}`:`christmas-${book}-v1:${id}`;
   function hasRead(book=bookId,id=currentUser){if(seen.has(`${book}:${id}`))return true;try{return localStorage.getItem(key(book,id))==='read';}catch{return false;}}
-  function preload(){if(preloaded||!window.Image)return;preloaded=true;[...prologueScenes,...secondScenes].forEach(data=>{const image=new window.Image();image.src=`assets/prologue-${data.image}.png`;});}
+  function preload(){if(preloaded.has(bookId)||!window.Image)return;preloaded.add(bookId);scenes.forEach(data=>{const image=new window.Image();image.src=`assets/prologue-${data.image}.png`;});}
   function ensureMusic(){
     if(music||!window.Audio)return;
     music=new window.Audio('assets/prologue-christmas.wav');music.loop=true;music.preload='auto';music.volume=.28;
@@ -137,9 +175,9 @@
     el('prologueAccept').hidden=true;el('prologueIntro').hidden=index>=0;el('prologueStory').hidden=index<0;
     el('prologuePrev').disabled=index<=0;el('prologueNext').hidden=false;el('prologueNext').disabled=false;
     el('prologueNext').textContent=index<0?'開始閱覽':index===scenes.length-1?`拆閱${books[bookId].ordinal}項指令`:'下一幕';
-    el('prologuePage').textContent=index<0?`${bookId==='prologue'?'PROLOGUE':'CHAPTER II'} / ${books[bookId].label}`:`${String(index+1).padStart(2,'0')} / ${String(scenes.length).padStart(2,'0')}`;el('prologueProgress').style.width='0%';
+    el('prologuePage').textContent=index<0?`${bookId==='prologue'?'PROLOGUE':bookId==='chapter2'?'CHAPTER II':'CHAPTER III'} / ${books[bookId].label}`:`${String(index+1).padStart(2,'0')} / ${String(scenes.length).padStart(2,'0')}`;el('prologueProgress').style.width='0%';
     if(index>=0){
-      flip();const data=scenes[index],previous=el('prologueImagePrevious'),image=el('prologueImage');previous.src=image.getAttribute('src')||`assets/prologue-${data.image}.png`;image.src=`assets/prologue-${data.image}.png`;image.alt=data.alt;
+      flip();const source=scenes[index],data={...source,text:source.text.map(text=>text.replaceAll('{code}',String(latestState?.draw??'').padStart(2,'0')))},previous=el('prologueImagePrevious'),image=el('prologueImage');previous.src=image.getAttribute('src')||`assets/prologue-${data.image}.png`;image.src=`assets/prologue-${data.image}.png`;image.alt=data.alt;
       el('prologueChapter').textContent=data.chapter;el('prologueTitle').textContent=data.title;prepareText(data);el('prologueAccessibleText').textContent=data.text.join('\n');el('prologueStory').scrollTop=0;
       shell.classList.remove('sceneEntering');void shell.offsetWidth;shell.classList.add('sceneEntering');if(focus)el('prologueTitle').focus({preventScroll:true});
     }else{shell.classList.remove('introEntering');void shell.offsetWidth;shell.classList.add('introEntering');}
@@ -201,7 +239,8 @@
     el('memberTab').click();const target=el(books[completedBook].target);target?.scrollIntoView({behavior:'auto',block:'start'});
     if(completedBook==='chapter2'){
       const button=el('drawButton');if(!button.disabled)button.focus({preventScroll:true});else el('drawTaskHeading').focus({preventScroll:true});
-    }else document.querySelector('#giftForm input:not(:disabled)')?.focus({preventScroll:true});
+    }else if(completedBook==='chapter3')el('galleryTitle').focus({preventScroll:true});
+    else document.querySelector('#giftForm input:not(:disabled)')?.focus({preventScroll:true});
   }
   el('prologuePause').addEventListener('click',()=>{if(!started||accepting)return;manualPause=!manualPause;syncPause();});
   el('prologuePrev').addEventListener('click',()=>{if(page>0&&!accepting)scene(page-1,true);});
@@ -216,6 +255,7 @@
   el('prologueSkip').addEventListener('click',()=>{if(accepting){open(bookId);return;}unlockAudio();showAcceptance();});
   el('replayPrologue').addEventListener('click',()=>open('prologue'));
   el('replayChapterTwo').addEventListener('click',()=>{if(latestState?.ownGift)open('chapter2');});
+  el('replayChapterThree').addEventListener('click',()=>{if(latestState?.draw)open('chapter3');});
   el('acceptSeal').addEventListener('click',openSeal);
   el('acceptHold').addEventListener('pointerdown',event=>{
     if(!accepting||!sealOpened||accepted||event.isPrimary===false||(event.pointerType==='mouse'&&event.button!==0))return;
@@ -238,11 +278,13 @@
   });
   window.Prologue={
     hasSecondInstruction:id=>hasRead('chapter2',id),
+    hasThirdInstruction:id=>hasRead('chapter3',id),
     update(user,state,acceptedCallback){
       const changed=currentUser!==user.$id;if(changed){close();currentUser=user.$id;}
       latestState=state;onAccepted=acceptedCallback;
       if(showing){el('prologue').hidden=false;el('operationContent').hidden=true;return;}
-      if(state.ownGift&&!state.draw&&!state.choice&&!hasRead('chapter2'))open('chapter2');
+      if(state.draw&&!state.choice&&!hasRead('chapter3'))open('chapter3');
+      else if(state.ownGift&&!state.draw&&!state.choice&&!hasRead('chapter2'))open('chapter2');
       else if(changed&&!state.ownGift&&!hasRead('prologue'))open('prologue');
     }
   };

@@ -49,9 +49,11 @@ function render(fillForms=false){
   const secondAccepted=stage>=2||(window.Prologue?.hasSecondInstruction(user.$id)??true);
   $('drawTaskPanel').hidden=stage<1||!secondAccepted;
   $('replayChapterTwo').hidden=!state.ownGift;
-  $('giftGallery').hidden=stage<2;
+  const thirdAccepted=!!state.choice||(window.Prologue?.hasThirdInstruction?.(user.$id)??true);
+  $('giftGallery').hidden=stage<2||!thirdAccepted;
+  $('replayChapterThree').hidden=!state.draw;
   $('phaseText').textContent=stage===0?'第一項指令｜準備包裝完成的禮物，上傳照片並留下三個提示詞。':stage===1?(prepare?'情報已提交｜下一項指令已送達，等待指揮官開放密令抽取。':'第二項指令｜抽取禮物專屬密令，將編號放在自己的禮物上。'):published?'匿名情報已解封｜選定禮物並確認接收，揭曉你的秘密任務。':'密令已配發｜保持身分隱密，等待指揮官公開匿名情報。';
-  ['step1','step2','step3'].forEach((id,i)=>{const visibleStage=stage===1&&!secondAccepted?0:stage;$(id).hidden=i>visibleStage;$(id).classList.toggle('active',i===visibleStage);});
+  ['step1','step2','step3'].forEach((id,i)=>{const visibleStage=stage===1&&!secondAccepted?0:stage===2&&!thirdAccepted?1:stage;$(id).hidden=i>visibleStage;$(id).classList.toggle('active',i===visibleStage);});
   $('ownPreview').replaceChildren();if(state.ownGift)$('ownPreview').append(image(state.ownGift,'ownImage'));
   for(const input of $('giftForm').elements)input.disabled=!prepare;
   $('giftNote').textContent=prepare?'抽取開放前可修訂情報。按下提交才會儲存，目前僅本人與指揮官可查閱。':'密令抽取已開放，禮物情報已封存，不能再修改。';
