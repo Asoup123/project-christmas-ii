@@ -71,8 +71,6 @@
     el('prologue').dataset.paused=String(paused);el('prologue').dataset.sound=String(sound);
     el('prologuePause').textContent=manualPause?'繼續播放':'暫停播放';el('prologuePause').setAttribute('aria-pressed',String(manualPause));el('prologuePause').disabled=!started||accepting;
     el('prologueSound').textContent=!sound?'聲音：關':soundBlocked&&!paused?'開啟聲音':'聲音：開';el('prologueSound').setAttribute('aria-pressed',String(sound));
-    el('prologueInteraction').textContent=accepting?'拆開封蠟，接收第一項指令':paused?'已暫停 · 按「繼續播放」繼續':'可按「暫停播放」停留閱讀';
-    el('prologueSoundNote').textContent=!sound?'音樂與音效已關閉':soundBlocked?'按任一操作按鈕啟動聲音':musicFailed?'背景樂暫未載入 · 敲擊音效保留':'聖誕背景樂 · 打字機音效';
   }
   function syncPause(){
     const value=manualPause||document.hidden||!started;
@@ -107,7 +105,7 @@
     accepting=true;started=true;manualPause=false;sealOpened=false;accepted=false;acceptHeld=null;acceptElapsed=0;acceptedElapsed=0;
     el('prologue').dataset.mode='accept';el('prologue').dataset.accept='sealed';
     for(const id of ['prologueIntro','prologueStory'])el(id).hidden=true;
-    el('prologueAccept').hidden=false;el('acceptDetails').hidden=true;el('acceptSeal').hidden=false;el('acceptHold').disabled=false;el('acceptClickConfirm').hidden=true;el('acceptAlternative').hidden=false;
+    el('prologueAccept').hidden=false;el('acceptDetails').hidden=true;el('acceptSeal').hidden=false;el('acceptHold').disabled=false;
     el('acceptLabel').textContent='長按指紋 · 接受任務';el('acceptStatus').textContent='僅限本人閱覽 · 點擊封蠟拆封';el('acceptHold').style.setProperty('--accept-progress','0deg');
     el('prologuePrev').disabled=true;el('prologueNext').hidden=true;el('prologuePage').textContent='MISSION 01 / 待接收';el('prologueProgress').style.width='100%';
     el('prologueSkip').textContent='重看故事';syncPause();el('acceptSeal').focus({preventScroll:true});
@@ -117,7 +115,7 @@
   }
   function cancelHold(){if(accepted)return;acceptHeld=null;acceptElapsed=0;el('acceptHold').style.setProperty('--accept-progress','0deg');el('acceptLabel').textContent='長按指紋 · 接受任務';}
   function completeAcceptance(){
-    if(!accepting||!sealOpened||accepted)return;accepted=true;acceptHeld=null;acceptedElapsed=0;flip();el('prologue').dataset.accept='accepted';el('acceptLabel').textContent='身分確認 · 任務已接收';el('acceptStatus').textContent='授權完成。正在開啟你的行動檔案。';el('acceptHold').disabled=true;el('acceptAlternative').hidden=true;el('acceptClickConfirm').hidden=true;el('acceptHold').style.setProperty('--accept-progress','360deg');
+    if(!accepting||!sealOpened||accepted)return;accepted=true;acceptHeld=null;acceptedElapsed=0;flip();el('prologue').dataset.accept='accepted';el('acceptLabel').textContent='身分確認 · 任務已接收';el('acceptStatus').textContent='授權完成。正在開啟你的行動檔案。';el('acceptHold').disabled=true;el('acceptHold').style.setProperty('--accept-progress','360deg');
   }
   function tick(now){
     if(!showing)return;const delta=last?Math.min(now-last,100):0;last=now;
@@ -175,8 +173,6 @@
   el('acceptHold').addEventListener('keyup',event=>{if((event.key===' '||event.key==='Enter')&&acceptHeld==='keyboard'){event.preventDefault();cancelHold();}});
   el('acceptHold').addEventListener('blur',cancelHold);
   el('acceptHold').addEventListener('contextmenu',event=>event.preventDefault());
-  el('acceptAlternative').addEventListener('click',()=>{cancelHold();el('acceptClickConfirm').hidden=false;el('acceptAlternative').hidden=true;el('acceptClickConfirm').focus({preventScroll:true});});
-  el('acceptClickConfirm').addEventListener('click',completeAcceptance);
   document.addEventListener('visibilitychange',()=>{if(showing){if(document.hidden)cancelHold();syncPause();}});
   window.addEventListener('blur',cancelHold);
   el('prologue').addEventListener('keydown',event=>{

@@ -44,8 +44,12 @@ function render(fillForms=false){
   $('login').hidden=true;$('game').hidden=false;$('session').hidden=false;
   $('who').textContent=`${user.name||'活動成員'}${state.isAdmin?' · 管理員':''}`;
   const phase=state.phase,prepare=phase==='prepare',published=phase==='published';
-  $('phaseText').textContent={prepare:'情報收集中｜提交照片與三個提示詞，等待指揮官開放密令抽取。',drawing:'密令配發中｜抽取後只顯示編號。保持身分隱密，等待指揮官公開匿名情報。',published:'匿名情報已解封｜根據照片與提示詞選定禮物。確認鎖定後，才可接收對應的任務。'}[phase];
-  ['step1','step2','step3'].forEach((id,i)=>$(id).classList.toggle('active',i===({prepare:0,drawing:1,published:2}[phase])));
+  // Reveal each dossier only after this member finishes its prerequisite.
+  const stage=state.choice||state.draw?2:state.ownGift?1:0;
+  $('drawTaskPanel').hidden=stage<1;
+  $('giftGallery').hidden=stage<2;
+  $('phaseText').textContent=stage===0?'第一項指令｜準備包裝完成的禮物，上傳照片並留下三個提示詞。':stage===1?(prepare?'情報已提交｜下一項指令已送達，等待指揮官開放密令抽取。':'第二項指令｜抽取禮物專屬密令，將編號放在自己的禮物上。'):published?'匿名情報已解封｜選定禮物並確認接收，揭曉你的秘密任務。':'密令已配發｜保持身分隱密，等待指揮官公開匿名情報。';
+  ['step1','step2','step3'].forEach((id,i)=>{$(id).hidden=i>stage;$(id).classList.toggle('active',i===stage);});
   $('ownPreview').replaceChildren();if(state.ownGift)$('ownPreview').append(image(state.ownGift,'ownImage'));
   for(const input of $('giftForm').elements)input.disabled=!prepare;
   $('giftNote').textContent=prepare?'抽取開放前可修訂情報。按下提交才會儲存，目前僅本人與指揮官可查閱。':'密令抽取已開放，禮物情報已封存，不能再修改。';
@@ -54,7 +58,7 @@ function render(fillForms=false){
   $('drawButton').disabled=phase!=='drawing'||!!state.draw||!state.ownGift;
   $('drawButton').textContent=state.draw?'密令已配發 · 內容封存':'抽取密令 · 保持封存';
   $('galleryTitle').textContent=published?(state.choice?'匿名禮物情報庫':'選一份禮物，接下秘密任務。'):'匿名禮物，等待公開。';
-  $('heroMissionTitle').textContent=state.choice?'你的秘密任務，已送達。':'你的秘密任務，等待揭曉。';
+  $('heroMissionTitle').textContent=state.choice?'你的秘密任務，已送達。':stage===0?'先準備你的交接物資。':stage===1?'下一項指令，等你接收。':'你的秘密任務，等待揭曉。';
   $('galleryNote').textContent=published?(state.choice?'你已鎖定禮物。仍可瀏覽照片與提示詞，但無法更換選擇。':'根據照片與三個提示詞，挑選你喜歡的禮物。不能選自己的禮物，同一份可被多人選擇；確認鎖定後，才會揭曉任務，且不能更換。'):'禮物情報尚未公開。等指揮官開放後，就能查看大家的照片與三個提示詞，挑選你喜歡的禮物。';
   $('gifts').replaceChildren(...state.gifts.map(g=>card(g)));
   $('locked').hidden=!state.choice;
