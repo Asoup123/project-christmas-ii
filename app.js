@@ -33,10 +33,10 @@ async function loadPhoto(img,path){
 function image(gift,className=''){const img=document.createElement('img');img.alt='包裝好的匿名禮物照片';img.className=className;loadPhoto(img,gift.image);return img;}
 function node(tag,text,className){const e=document.createElement(tag);if(text!==undefined)e.textContent=text;if(className)e.className=className;return e;}
 function card(gift,{admin=false}={}){
-  const article=node('article',undefined,'card');const fileTag=node('div','SEALED GIFT / '+gift.id.slice(-4).toUpperCase(),'giftFileTag');article.append(fileTag,image(gift));const body=node('div',undefined,'cardBody');
+  const article=node('article',undefined,'card');const fileTag=node('div','CLASSIFIED FILE / '+gift.id.slice(-4).toUpperCase(),'giftFileTag');article.append(fileTag,image(gift));const body=node('div',undefined,'cardBody');
   if(admin)body.append(node('p',`提供者：${gift.owner}`, 'small'));
   const chips=node('div',undefined,'chips');gift.hints.forEach(h=>chips.append(node('span',h,'chip')));body.append(chips);
-  if(!admin){const button=node('button',gift.isOwn?'這是我的禮物':state.choice?(state.choice.giftId===gift.id?'已鎖定這份禮物':'已鎖定其他禮物'):'選擇這份禮物');button.disabled=gift.isOwn||!!state.choice;button.addEventListener('click',()=>confirmGift(gift.id));body.append(button);}
+  if(!admin){const button=node('button',gift.isOwn?'本人提交 · 不可選取':state.choice?(state.choice.giftId===gift.id?'目標已鎖定 · 密令已接收':'已接收其他目標'):'選定目標 · 確認接收');button.disabled=gift.isOwn||!!state.choice;button.addEventListener('click',()=>confirmGift(gift.id));body.append(button);}
   article.append(body);return article;
 }
 function view(admin){$('adminView').hidden=!admin;$('memberView').hidden=admin;$('adminTab').classList.toggle('quiet',!admin);$('memberTab').classList.toggle('quiet',admin);}
@@ -44,26 +44,26 @@ function render(fillForms=false){
   $('login').hidden=true;$('game').hidden=false;$('session').hidden=false;
   $('who').textContent=`${user.name||'活動成員'}${state.isAdmin?' · 管理員':''}`;
   const phase=state.phase,prepare=phase==='prepare',published=phase==='published';
-  $('phaseText').textContent={prepare:'活動準備中｜完成照片與三個提示詞，等待管理員開放抽任務。',drawing:'抽任務進行中｜抽取後只顯示編號，等待管理員公開禮物。',published:'禮物已公開｜選定並確認鎖定，才會揭曉你的任務。'}[phase];
+  $('phaseText').textContent={prepare:'情報收集中｜提交照片與三個提示詞，等待指揮官開放密令抽取。',drawing:'密令配發中｜抽取後只顯示編號。保持身分隱密，等待指揮官公開匿名情報。',published:'匿名情報已解封｜根據照片與提示詞選定禮物。確認鎖定後，才可接收對應的任務。'}[phase];
   ['step1','step2','step3'].forEach((id,i)=>$(id).classList.toggle('active',i===({prepare:0,drawing:1,published:2}[phase])));
   $('ownPreview').replaceChildren();if(state.ownGift)$('ownPreview').append(image(state.ownGift,'ownImage'));
   for(const input of $('giftForm').elements)input.disabled=!prepare;
-  $('giftNote').textContent=prepare?'可在開放抽任務前修改。請按儲存才會送出；目前其他成員看不到。':'抽任務已開放，禮物資料已凍結。';
+  $('giftNote').textContent=prepare?'抽取開放前可修訂情報。按下提交才會儲存，目前僅本人與指揮官可查閱。':'密令抽取已開放，禮物情報已封存，不能再修改。';
   if(fillForms&&state.ownGift)state.ownGift.hints.forEach((h,i)=>$(`hint${i+1}`).value=h);
-  $('drawStatus').textContent=state.draw?`任務 ${state.draw} · 內容封存中`:'尚未抽取';
+  $('drawStatus').textContent=state.draw?`任務 ${state.draw} · 密令封存中`:'密令尚未配發';
   $('drawButton').disabled=phase!=='drawing'||!!state.draw||!state.ownGift;
-  $('drawButton').textContent=state.draw?'已完成抽取':'抽取任務';
-  $('galleryNote').textContent=published?'只公開照片與提示詞。不能選自己的；同一份可被多人選擇。鎖定後不能更換。':'管理員公開後，這裡才會顯示大家的禮物照片與提示詞。';
+  $('drawButton').textContent=state.draw?'密令已配發 · 內容封存':'抽取密令 · 保持封存';
+  $('galleryNote').textContent=published?'此情報庫僅公開禮物照片與三個提示詞。不能選自己提交的禮物；同份可被多人選擇。確認鎖定後無法更換。':'情報庫仍在封鎖中。等待指揮官解除封鎖後，才可查閱匿名照片與三個提示詞。';
   $('gifts').replaceChildren(...state.gifts.map(g=>card(g)));
   $('locked').hidden=!state.choice;
-  if(state.choice){$('missionNumber').textContent=`任務 ${state.choice.number}`;$('missionContent').textContent=state.choice.content;$('lockedGift').replaceChildren(card(state.gifts.find(g=>g.id===state.choice.giftId)));}
+  if(state.choice){$('missionNumber').textContent=`密令 ${state.choice.number} / 行動內容`;$('missionContent').textContent=state.choice.content;$('lockedGift').replaceChildren(card(state.gifts.find(g=>g.id===state.choice.giftId)));}
   $('adminTab').hidden=!state.isAdmin;
   if(!state.isAdmin){$('adminView').hidden=true;return;}
   const a=state.admin,submitted=a.members.filter(m=>m.giftId).length,drawn=a.members.filter(m=>m.draw).length,locked=a.members.filter(m=>m.choice).length;
   $('counts').replaceChildren(...[`成員 ${a.members.length}/12`,`禮物 ${submitted}/12`,`任務 ${drawn}/12`,`鎖定 ${locked}/12`].map(t=>node('span',t)));
   $('openDraw').disabled=!prepare||a.members.length!==12||submitted!==12||a.tasks.length!==12;
   $('publish').disabled=phase!=='drawing'||drawn!==12;
-  if(!$('taskInputs').children.length){for(let i=1;i<=12;i++){const label=node('label',`任務 ${i}`),area=node('textarea');area.id=`task${i}`;area.required=true;area.maxLength=2000;label.append(area);$('taskInputs').append(label);}}
+  if(!$('taskInputs').children.length){for(let i=1;i<=12;i++){const label=node('label',`密令 ${String(i).padStart(2,'0')}`),area=node('textarea');area.id=`task${i}`;area.required=true;area.maxLength=2000;label.append(area);$('taskInputs').append(label);}}
   for(let i=1;i<=12;i++){const field=$(`task${i}`);field.disabled=!prepare;if(fillForms)field.value=a.tasks.find(t=>t.number===i)?.content??'';}$('saveTasks').disabled=!prepare;
   const giftMap=new Map(a.gifts.map((g,i)=>[g.id,`禮物 ${i+1}（${g.owner}）`]));
   $('members').replaceChildren(...a.members.map(m=>{const tr=node('tr');[m.account?`${m.label||m.id}（${m.account}）`:m.label||m.id,m.giftId?'已登錄':'未登錄',m.draw?`任務 ${m.draw}`:'未抽取',m.choice?giftMap.get(m.choice):'未鎖定'].forEach(t=>tr.append(node('td',t)));return tr;}));
@@ -73,10 +73,10 @@ async function refresh(fill=false){state=await api('state');render(fill);}
 async function confirmGift(giftId){
   if(busy||state.choice)return;
   const dialog=$('confirmLock');dialog.returnValue='';dialog.showModal();
-  dialog.addEventListener('close',()=>{if(dialog.returnValue==='lock')action(async()=>{await api('lock',{giftId});await refresh();notice('禮物已鎖定，請查看你的任務。');$('locked').scrollIntoView({behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});window.AgentFX?.reveal('MISSION UNSEALED','鎖定完成 · 任務已解密');});},{once:true});
+  dialog.addEventListener('close',()=>{if(dialog.returnValue==='lock')action(async()=>{await api('lock',{giftId});await refresh();notice('目標已鎖定。密令已交付，請詳閱行動內容。');$('locked').scrollIntoView({behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});window.AgentFX?.reveal('MISSION UNSEALED','接收確認 · 密令交付完成');});},{once:true});
 }
 $('memberTab').addEventListener('click',()=>view(false));$('adminTab').addEventListener('click',()=>view(true));
-$('refresh').addEventListener('click',()=>action(async()=>{clearImages();if(!state)await enterActivity();else await refresh();notice('活動狀態已更新。');}));
+$('refresh').addEventListener('click',()=>action(async()=>{clearImages();if(!state)await enterActivity();else await refresh();notice('情報同步完成。');}));
 function showAuth(register){
   if(busy)return;
   $('loginForm').hidden=register;$('registerForm').hidden=!register;
@@ -117,7 +117,7 @@ $('registerForm').addEventListener('submit',e=>{e.preventDefault();action(async(
     if(active){user=active;showSignedInRecovery();throw new Error('目前已有登入的帳號，請先登出再建立新帳號。');}
     await account.create({userId:Appwrite.ID.unique(),email,password,name:nickname});created=true;
     await account.createEmailPasswordSession({email,password});user=await account.get();
-    await enterActivity();notice('帳號建立完成，已加入活動。請登錄你的禮物。');
+    await enterActivity();notice('特務檔案建立完成。歡迎加入行動，請提交你的禮物情報。');
   }catch(error){
     if(created){
       clearPasswords();$('username').value=name;
@@ -144,12 +144,12 @@ $('photo').addEventListener('change',()=>action(async()=>{
 }));
 $('giftForm').addEventListener('submit',e=>{e.preventDefault();action(async()=>{
   if(!photoData&&!state.ownGift)throw new Error('請先選擇包裝好的禮物照片');
-  await api('gift',{...(photoData?{image:photoData}:{}),hints:[1,2,3].map(i=>$(`hint${i}`).value.trim())});photoData=null;$('photo').value='';clearImages();await refresh();notice('禮物照片與提示詞已儲存。');
+  await api('gift',{...(photoData?{image:photoData}:{}),hints:[1,2,3].map(i=>$(`hint${i}`).value.trim())});photoData=null;$('photo').value='';clearImages();await refresh();notice('情報提交成功。影像與三個線索已封存。');
 });});
-$('drawButton').addEventListener('click',()=>action(async()=>{await api('draw',{});await refresh();notice('任務抽取完成，內容持續封存。');window.AgentFX?.reveal('MISSION ASSIGNED','抽取完成 · 任務內容持續封存');}));
-$('tasksForm').addEventListener('submit',e=>{e.preventDefault();action(async()=>{await api('admin/tasks',{tasks:Array.from({length:12},(_,i)=>$(`task${i+1}`).value.trim())});await refresh();notice('12 個任務已儲存。');});});
-$('openDraw').addEventListener('click',()=>{if(confirm('確定開放抽任務？開放後，禮物資料與任務內容將不能修改。'))action(async()=>{await api('admin/open',{});await refresh();notice('已開放抽任務。');});});
-$('publish').addEventListener('click',()=>{if(confirm('確定公開全部禮物的照片與提示詞，並開放鎖定選擇？'))action(async()=>{await api('admin/publish',{});await refresh();notice('禮物已匿名公開。');});});
+$('drawButton').addEventListener('click',()=>action(async()=>{await api('draw',{});await refresh();notice('密令抽取完成。請保守祕密，內容持續封存。');window.AgentFX?.reveal('MISSION ASSIGNED','密令配發完畢 · 內容保持機密');}));
+$('tasksForm').addEventListener('submit',e=>{e.preventDefault();action(async()=>{await api('admin/tasks',{tasks:Array.from({length:12},(_,i)=>$(`task${i+1}`).value.trim())});await refresh();notice('十二道密令已封存，等待指揮官下達抽取指令。');});});
+$('openDraw').addEventListener('click',()=>{if(confirm('確定開放抽任務？開放後，禮物資料與任務內容將不能修改。'))action(async()=>{await api('admin/open',{});await refresh();notice('指令已下達，特務可以開始抽取密令。');});});
+$('publish').addEventListener('click',()=>{if(confirm('確定公開全部禮物的照片與提示詞，並開放鎖定選擇？'))action(async()=>{await api('admin/publish',{});await refresh();notice('封鎖已解除，匿名情報庫開放查閱。');});});
 async function init(){
   try{
     const config=window.CHRISTMAS_CONFIG;

@@ -1,28 +1,26 @@
 /* Presentation only: no API calls, hidden-task access, or gameplay state. */
 'use strict';
 (()=>{
-  const button=document.getElementById('effectsToggle');
   const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)');
-  let enabled=!reduced?.matches,accessShown=false,overlay=null,overlayTimer=null;
-  try{const preference=localStorage.getItem('christmas-agent-effects');if(preference!==null)enabled=preference==='on'&&!reduced?.matches;}catch{}
-  const active=()=>enabled&&!reduced?.matches;
+  let accessShown=false,overlay=null,overlayTimer=null,codeTimer=null;
+  // Always on. Only the device's accessibility preference suppresses motion.
+  const active=()=>!reduced?.matches;
   function sync(){
     document.body.classList.toggle('effects-on',active());
-    if(button){button.textContent=active()?'特效：開':'特效：關';button.setAttribute('aria-pressed',String(active()));}
-    if(!active()){overlay?.remove();overlay=null;clearTimeout(overlayTimer);document.querySelectorAll('.fxEnter').forEach(el=>el.classList.remove('fxEnter'));}
+    if(!active()){overlay?.remove();overlay=null;clearTimeout(overlayTimer);clearTimeout(codeTimer);}
   }
-  button?.addEventListener('click',()=>{enabled=!active();try{localStorage.setItem('christmas-agent-effects',enabled?'on':'off');}catch{}sync();});
   reduced?.addEventListener?.('change',sync);
   function reveal(code,caption){
     if(!active())return;
-    overlay?.remove();clearTimeout(overlayTimer);
+    overlay?.remove();clearTimeout(overlayTimer);clearTimeout(codeTimer);
     overlay=document.createElement('div');overlay.className='fxReveal';overlay.setAttribute('aria-hidden','true');
-    const title=document.createElement('div');title.className='fxCode';title.textContent=code;
+    const title=document.createElement('div');title.className='fxCode';title.textContent='DECRYPTING TRANSMISSION';
     const text=document.createElement('div');text.className='fxCaption';text.textContent=caption;
-    const bar=document.createElement('div');bar.className='fxProgress';overlay.append(title,text,bar);document.body.append(overlay);
-    overlayTimer=setTimeout(()=>{overlay?.remove();overlay=null;},1000);
+    const bar=document.createElement('div');bar.className='fxProgress';const seal=document.createElement('div');seal.className='fxSeal';seal.textContent='CLASSIFIED / EYES ONLY';overlay.append(seal,title,text,bar);document.body.append(overlay);
+    codeTimer=setTimeout(()=>{if(overlay)title.textContent=code;},650);
+    overlayTimer=setTimeout(()=>{overlay?.remove();overlay=null;},1700);
   }
-  window.AgentFX={reveal,access(){if(!accessShown){accessShown=true;reveal('ACCESS GRANTED','特務身分確認 · 歡迎進入任務中心');}}};
+  window.AgentFX={reveal,access(){if(!accessShown){accessShown=true;reveal('ACCESS GRANTED','身分驗證通過 · 安全通道已建立');}}};
   sync();
   // Only watch section containers, never create per-card scroll listeners.
   if('IntersectionObserver' in window){
