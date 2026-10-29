@@ -11,13 +11,37 @@
   const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const seen=new Set();
   let currentUser=null,page=-1,showing=false,started=false,manualPause=false,paused=false;
-  let elapsed=0,last=0,frame=0,cues=[],cueIndex=-1,cueElapsed=0,characters=[],typed=0,charTimes=[],typingDuration=0;
+  let elapsed=0,last=0,frame=0,textElapsed=0,textStarted=false,characters=[],typed=0,charTimes=[],typingDuration=0;
   let sound=true,audioContext=null,keyBuffer=null,resumeFocus=null,preloaded=false;
+  let music=null,musicRequest=0,soundBlocked=false,musicBlocked=false,musicFailed=false;
   let accepting=false,sealOpened=false,accepted=false,acceptHeld=null,acceptElapsed=0,acceptedElapsed=0;
   const key=()=>`christmas-prologue-v1:${currentUser}`;
   function hasRead(){if(seen.has(currentUser))return true;try{return localStorage.getItem(key())==='read';}catch{return false;}}
   function preload(){if(preloaded||!window.Image)return;preloaded=true;scenes.forEach(data=>{const image=new window.Image();image.src=`assets/prologue-${data.image}.png`;});}
-  function unlockAudio(){try{const Audio=window.AudioContext||window.webkitAudioContext;if(Audio&&!audioContext)audioContext=new Audio();audioContext?.resume()?.catch(()=>{});}catch{}}
+  function ensureMusic(){
+    if(music||!window.Audio)return;
+    music=new window.Audio('assets/prologue-christmas.wav');music.loop=true;music.preload='auto';music.volume=.28;
+  }
+  function pauseMusic(reset=false){musicRequest++;music?.pause();if(reset&&music)try{music.currentTime=0;}catch{}}
+  function playMusic(){
+    if(!showing||!started||paused||!sound)return;ensureMusic();if(!music)return;
+    const request=++musicRequest;
+    try{
+      const playing=music.play();
+      playing?.then(()=>{if(request!==musicRequest)return;musicBlocked=false;musicFailed=false;status();}).catch(error=>{
+        if(request!==musicRequest||error.name==='AbortError')return;
+        if(error.name==='NotAllowedError')musicBlocked=true;else musicFailed=true;status();
+      });
+    }catch{musicFailed=true;status();}
+  }
+  function unlockAudio(){
+    if(!showing||!started||!sound||paused)return;
+    try{const Audio=window.AudioContext||window.webkitAudioContext;if(Audio&&!audioContext)audioContext=new Audio();
+      if(audioContext?.state==='suspended')soundBlocked=true;
+      audioContext?.resume()?.then(()=>{if(showing)status();}).catch(()=>status());
+    }catch{}
+    playMusic();
+  }
   function flip(){
     if(!sound||paused||!audioContext||audioContext.state!=='running')return;
     try{
@@ -42,53 +66,39 @@
     }catch{}
   }
   function status(){
+    soundBlocked=!!(musicBlocked||(audioContext&&audioContext.state==='suspended'&&!paused));
     el('prologuePlayback').textContent=!started?'等待開啟':accepting?'等待接取任務':paused?'已暫停':'檔案閱覽中';
     el('prologue').dataset.paused=String(paused);el('prologue').dataset.sound=String(sound);
     el('prologuePause').textContent=manualPause?'繼續播放':'暫停播放';el('prologuePause').setAttribute('aria-pressed',String(manualPause));el('prologuePause').disabled=!started||accepting;
-    el('prologueSound').textContent=sound?'音效：開':'音效：關';el('prologueSound').setAttribute('aria-pressed',String(sound));
+    el('prologueSound').textContent=!sound?'聲音：關':soundBlocked&&!paused?'開啟聲音':'聲音：開';el('prologueSound').setAttribute('aria-pressed',String(sound));
     el('prologueInteraction').textContent=accepting?'拆開封蠟，接收第一項指令':paused?'已暫停 · 按「繼續播放」繼續':'可按「暫停播放」停留閱讀';
-    el('prologueSoundNote').textContent=sound?'打字機敲擊 · 翻頁音效':'音效已關閉';
+    el('prologueSoundNote').textContent=!sound?'音樂與音效已關閉':soundBlocked?'按任一操作按鈕啟動聲音':musicFailed?'背景樂暫未載入 · 敲擊音效保留':'聖誕背景樂 · 打字機音效';
   }
   function syncPause(){
     const value=manualPause||document.hidden||!started;
-    if(paused!==value){paused=value;try{if(paused)audioContext?.suspend()?.catch(()=>{});else if(sound)audioContext?.resume()?.catch(()=>{});}catch{}}
+    if(paused!==value){paused=value;try{if(paused){audioContext?.suspend()?.catch(()=>{});pauseMusic();}else if(sound)unlockAudio();}catch{}}
     status();
   }
-  function lines(text){
-    // Short phrases keep the slower typewriter readable on mobile.
-    const output=[];
-    for(const paragraph of text){
-      const clauses=paragraph.match(/[^，。！？；：]+[，。！？；：」』]?|[」』]/gu)||[paragraph];
-      let pending='';
-      for(const clause of clauses){
-        if(pending&&Array.from(pending+clause).length>24){output.push(pending);pending='';}
-        pending+=clause;
-        while(Array.from(pending).length>28){const chars=Array.from(pending);output.push(chars.slice(0,24).join(''));pending=chars.slice(24).join('');}
-        if(/[。！？：][」』]?$/.test(pending)){output.push(pending);pending='';}
-      }
-      if(pending)output.push(pending);
-    }
-    return output;
-  }
-  function cue(index){
-    cueIndex=index;cueElapsed=0;typed=0;characters=Array.from(cues[index]);charTimes=[];let time=100;
+  function prepareText(data){
+    textElapsed=0;typed=0;textStarted=false;characters=Array.from(data.text.join('\n\n'));charTimes=[];let time=100;
     for(const char of characters){time+=CHARACTER_MS+(/[，、：；]/u.test(char)?180:/[。！？]/u.test(char)?360:0);charTimes.push(time);}typingDuration=time;
-    const nodes=[];
-    if(index>0){const previous=document.createElement('p');previous.textContent=cues[index-1];previous.className='subtitlePrevious';nodes.push(previous);}
-    const current=document.createElement('p');current.className='subtitleCurrent typing';current.textContent=reduced?cues[index]:'';nodes.push(current);
-    if(reduced){typed=characters.length;typingDuration=0;current.classList.remove('typing');}
-    el('prologueText').replaceChildren(...nodes);
+    const current=document.createElement('p');current.className='subtitleFull';current.textContent='';el('prologueText').replaceChildren(current);
+  }
+  function paintText(count){
+    const story=el('prologueStory'),follow=story.scrollHeight-story.scrollTop-story.clientHeight<45;
+    const current=el('prologueText').lastElementChild;current.textContent=characters.slice(0,count).join('');current.classList.toggle('typing',count<characters.length);
+    if(follow)story.scrollTop=story.scrollHeight;
   }
   function scene(index,focus=false){
-    accepting=false;page=index;elapsed=0;cueElapsed=0;cueIndex=-1;
+    accepting=false;page=index;elapsed=0;textElapsed=0;textStarted=false;
     const shell=el('prologue');shell.dataset.mode=index<0?'intro':'story';
-    el('prologueReady').hidden=true;el('prologueAccept').hidden=true;el('prologueIntro').hidden=index>=0;el('prologueStory').hidden=index<0;
+    el('prologueAccept').hidden=true;el('prologueIntro').hidden=index>=0;el('prologueStory').hidden=index<0;
     el('prologuePrev').disabled=index<=0;el('prologueNext').hidden=false;el('prologueNext').disabled=false;
     el('prologueNext').textContent=index<0?'開始閱覽':index===3?'拆閱第一項指令':'下一幕';
     el('prologuePage').textContent=index<0?'PROLOGUE / 序章':`${String(index+1).padStart(2,'0')} / 04`;el('prologueProgress').style.width='0%';
     if(index>=0){
       flip();const data=scenes[index],previous=el('prologueImagePrevious'),image=el('prologueImage');previous.src=image.getAttribute('src')||`assets/prologue-${data.image}.png`;image.src=`assets/prologue-${data.image}.png`;image.alt=data.alt;
-      el('prologueChapter').textContent=data.chapter;el('prologueTitle').textContent=data.title;cues=lines(data.text);el('prologueText').replaceChildren();el('prologueAccessibleText').textContent=data.text.join('\n');el('prologueStory').scrollTop=0;
+      el('prologueChapter').textContent=data.chapter;el('prologueTitle').textContent=data.title;prepareText(data);el('prologueAccessibleText').textContent=data.text.join('\n');el('prologueStory').scrollTop=0;
       shell.classList.remove('sceneEntering');void shell.offsetWidth;shell.classList.add('sceneEntering');if(focus)el('prologueTitle').focus({preventScroll:true});
     }else{shell.classList.remove('introEntering');void shell.offsetWidth;shell.classList.add('introEntering');}
     status();
@@ -96,7 +106,7 @@
   function showAcceptance(){
     accepting=true;started=true;manualPause=false;sealOpened=false;accepted=false;acceptHeld=null;acceptElapsed=0;acceptedElapsed=0;
     el('prologue').dataset.mode='accept';el('prologue').dataset.accept='sealed';
-    for(const id of ['prologueReady','prologueIntro','prologueStory'])el(id).hidden=true;
+    for(const id of ['prologueIntro','prologueStory'])el(id).hidden=true;
     el('prologueAccept').hidden=false;el('acceptDetails').hidden=true;el('acceptSeal').hidden=false;el('acceptHold').disabled=false;el('acceptClickConfirm').hidden=true;el('acceptAlternative').hidden=false;
     el('acceptLabel').textContent='長按指紋 · 接受任務';el('acceptStatus').textContent='僅限本人閱覽 · 點擊封蠟拆封';el('acceptHold').style.setProperty('--accept-progress','0deg');
     el('prologuePrev').disabled=true;el('prologueNext').hidden=true;el('prologuePage').textContent='MISSION 01 / 待接收';el('prologueProgress').style.width='100%';
@@ -116,42 +126,43 @@
         if(accepted){acceptedElapsed+=delta;if(acceptedElapsed>=1400)finish();}
         else if(acceptHeld!==null){acceptElapsed+=delta;el('acceptHold').style.setProperty('--accept-progress',`${Math.min(360,acceptElapsed/ACCEPT_MS*360)}deg`);if(acceptElapsed>=ACCEPT_MS)completeAcceptance();}
       }else{
-        elapsed+=delta;cueElapsed+=delta;
+        elapsed+=delta;
         if(page<0){el('prologueProgress').style.width=`${Math.min(100,elapsed/INTRO_DURATION*100)}%`;if(elapsed>=INTRO_DURATION)scene(0);}
-        else if(cueIndex<0){if(elapsed>=TRANSITION)cue(0);}
-        else{
-          let next=typed;while(next<characters.length&&cueElapsed>=charTimes[next])next++;
+        else if(elapsed>=TRANSITION){
+          if(!textStarted){textStarted=true;if(reduced){typed=characters.length;typingDuration=0;paintText(typed);}}
+          textElapsed+=delta;let next=typed;while(next<characters.length&&textElapsed>=charTimes[next])next++;
           if(!reduced&&next!==typed){
-            const current=el('prologueText').lastElementChild;current.textContent=characters.slice(0,next).join('');current.classList.toggle('typing',next<characters.length);
-            if(characters.slice(typed,next).some(char=>/[\p{L}\p{N}]/u.test(char)))typeKey();typed=next;
+            paintText(next);if(characters.slice(typed,next).some(char=>/[\p{L}\p{N}]/u.test(char)))typeKey();typed=next;
           }
-          const hold=cueIndex===cues.length-1?3500:2400,total=typingDuration+hold;
-          el('prologueProgress').style.width=`${(cueIndex+Math.min(1,cueElapsed/total))/cues.length*100}%`;
-          if(cueElapsed>=total){if(cueIndex<cues.length-1)cue(cueIndex+1);else if(page<3)scene(page+1);else showAcceptance();}
+          const total=typingDuration+(page===3?7500:6500);
+          el('prologueProgress').style.width=`${Math.min(100,textElapsed/total*100)}%`;
+          if(textElapsed>=total){if(page<3)scene(page+1);else showAcceptance();}
         }
       }
     }
     if(showing)frame=requestAnimationFrame(tick);
   }
-  function begin(){if(started)return;started=true;manualPause=false;unlockAudio();syncPause();scene(-1);el('prologuePause').focus({preventScroll:true});}
   function open(){
-    preload();cancelAnimationFrame(frame);resumeFocus=document.activeElement;showing=true;started=false;manualPause=false;paused=false;accepting=false;last=0;acceptHeld=null;
-    el('prologue').hidden=false;el('operationContent').hidden=true;document.body.classList.add('prologue-playing');el('prologue').dataset.mode='ready';el('prologueReady').hidden=false;
-    for(const id of ['prologueIntro','prologueStory','prologueAccept'])el(id).hidden=true;
-    el('prologuePrev').disabled=true;el('prologueNext').hidden=false;el('prologueNext').disabled=true;el('prologueSkip').textContent='跳過故事';el('prologuePage').textContent='INCOMING / 機密檔案';el('prologueProgress').style.width='0%';
-    syncPause();el('prologueStart').focus({preventScroll:true});frame=requestAnimationFrame(tick);
+    preload();cancelAnimationFrame(frame);pauseMusic(true);resumeFocus=document.activeElement;showing=true;started=true;manualPause=false;paused=false;accepting=false;last=0;acceptHeld=null;
+    el('prologue').hidden=false;el('operationContent').hidden=true;document.body.classList.add('prologue-playing');
+    el('prologueSkip').textContent='跳過故事';syncPause();scene(-1);unlockAudio();el('prologuePause').focus({preventScroll:true});frame=requestAnimationFrame(tick);
   }
-  function close(){showing=false;started=false;acceptHeld=null;cancelAnimationFrame(frame);try{audioContext?.suspend()?.catch(()=>{});}catch{}document.body.classList.remove('prologue-playing');el('prologue').hidden=true;el('operationContent').hidden=false;}
+  function close(){showing=false;started=false;acceptHeld=null;cancelAnimationFrame(frame);pauseMusic(true);try{audioContext?.suspend()?.catch(()=>{});}catch{}document.body.classList.remove('prologue-playing');el('prologue').hidden=true;el('operationContent').hidden=false;}
   function finish(){
     seen.add(currentUser);try{localStorage.setItem(key(),'read');}catch{}close();
     // Accepting the story never draws a secret mission or changes game data.
     const input=document.querySelector('#giftForm input:not(:disabled)');if(input){el('memberTab').click();el('giftForm').scrollIntoView({behavior:'auto',block:'start'});input.focus({preventScroll:true});}else if(resumeFocus?.isConnected)resumeFocus.focus({preventScroll:true});
   }
-  el('prologueStart').addEventListener('click',begin);
   el('prologuePause').addEventListener('click',()=>{if(!started||accepting)return;manualPause=!manualPause;syncPause();});
   el('prologuePrev').addEventListener('click',()=>{if(page>0&&!accepting)scene(page-1,true);});
   el('prologueNext').addEventListener('click',()=>{if(started&&!accepting){if(page<3)scene(page+1,true);else showAcceptance();}});
-  el('prologueSound').addEventListener('click',()=>{sound=!sound;if(sound&&started){unlockAudio();if(paused)audioContext?.suspend()?.catch(()=>{});}else if(!sound)audioContext?.suspend()?.catch(()=>{});status();});
+  el('prologueSound').addEventListener('click',()=>{
+    if(sound&&soundBlocked&&!paused){unlockAudio();return;}
+    sound=!sound;if(sound)unlockAudio();else{pauseMusic();audioContext?.suspend()?.catch(()=>{});}status();
+  });
+  // Autoplay policies can block sound, but never block the opening animation.
+  // Retry only after an actual gesture; background clicks no longer pause playback.
+  el('prologue').addEventListener('pointerdown',event=>{if(sound&&soundBlocked&&!event.target.closest('#prologueSound'))unlockAudio();});
   el('prologueSkip').addEventListener('click',()=>{if(accepting){open();return;}unlockAudio();showAcceptance();});
   el('replayPrologue').addEventListener('click',open);
   el('acceptSeal').addEventListener('click',openSeal);
@@ -169,6 +180,7 @@
   document.addEventListener('visibilitychange',()=>{if(showing){if(document.hidden)cancelHold();syncPause();}});
   window.addEventListener('blur',cancelHold);
   el('prologue').addEventListener('keydown',event=>{
+    if(sound&&soundBlocked&&event.key!=='Escape'&&event.key!=='Tab')unlockAudio();
     if(event.key==='Escape'){event.preventDefault();close();if(resumeFocus?.isConnected)resumeFocus.focus({preventScroll:true});return;}
     if(event.key==='Tab'){
       const buttons=Array.from(el('prologue').querySelectorAll('button:not(:disabled)')).filter(button=>!button.closest('[hidden]'));const first=buttons[0],lastButton=buttons[buttons.length-1];
