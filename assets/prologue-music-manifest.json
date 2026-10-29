@@ -144,6 +144,51 @@
       "mood": "ceremony",
       "seconds": 27.429,
       "sha256": "a8e1451df25b11d90d37cbc332e8f66d853283ea8fb1b53b6723bf55638b4688"
+    },
+    {
+      "id": "intro-4",
+      "title": "秘密的接收者・開場",
+      "file": "prologue-music-intro-4.mp3",
+      "bpm": 68,
+      "mood": "mystery",
+      "seconds": 28.235,
+      "sha256": "1544f151ac70d22a6cac948c92c4811dda03504bf3eab9db41752bab34f61908"
+    },
+    {
+      "id": "c401",
+      "title": "午間密函・交接確認",
+      "file": "prologue-music-c401.mp3",
+      "bpm": 72,
+      "mood": "signal",
+      "seconds": 26.667,
+      "sha256": "eb76b487f354884902edefb15b847a75318a6c7a76038d3772299230f472b74a"
+    },
+    {
+      "id": "c402",
+      "title": "拆封密令・行動開始",
+      "file": "prologue-music-c402.mp3",
+      "bpm": 66,
+      "mood": "sealed",
+      "seconds": 29.091,
+      "sha256": "da7877ec852f98e4dd17fd579ee11666e2e4ad63634dd02e9040fc96ae6a1976"
+    },
+    {
+      "id": "c403",
+      "title": "暗中行動・巧合與安排",
+      "file": "prologue-music-c403.mp3",
+      "bpm": 78,
+      "mood": "mystery",
+      "seconds": 24.615,
+      "sha256": "013efee53624ba8e0603d4f27b6041141ce3524b948ba2b34575b9bc7e1d6277"
+    },
+    {
+      "id": "accept-4",
+      "title": "接取第四項指令",
+      "file": "prologue-music-accept-4.mp3",
+      "bpm": 70,
+      "mood": "ceremony",
+      "seconds": 27.429,
+      "sha256": "3ec9352a84cf1f2479e7cd0d542163935ab7a0cf9e7ff5844ad82ddbb4f1dd2a"
     }
   ]
 }

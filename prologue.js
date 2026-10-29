@@ -82,12 +82,54 @@
     ]
   }
 ];
+  const fourthScenes=[
+  {
+    "chapter": "CHAPTER IV / HANDOVER CONFIRMED",
+    "title": "秘密的接收者",
+    "image": "chapter4-reception-v2",
+    "alt": "昏暗終端機旁，戴著手套的手交付雪花封蠟密函",
+    "text": [
+      "你按下確認，螢幕上的禮物照片緩緩收進一份檔案。",
+      "「交接目標已確認。」",
+      "午間的喧鬧聲還在身旁，終端機卻悄悄送來一封信。",
+      "紅色封蠟、雪花徽記，還有一個密令編號。",
+      "不久前，你也曾替自己的禮物留下這樣的編號。那時，你不知道誰會選中它。",
+      "而現在，另一名特務留下的秘密，來到了你手上。"
+    ]
+  },
+  {
+    "chapter": "CHAPTER IV / EYES ONLY",
+    "title": "從這一刻開始",
+    "image": "chapter4-unsealed-v2",
+    "alt": "裂開的紅色雪花封蠟與剛剛抽出的機密信紙",
+    "text": [
+      "你揭開封蠟。信紙上，除了密令，還附著一段留言：",
+      "「從你接收這份密令起，行動正式開始。」",
+      "「直到今晚拆開禮物之前，你都有時間完成它。請照常聊天、吃飯，享受這場聖誕聚會——也替你的任務尋找機會。」"
+    ]
+  },
+  {
+    "chapter": "CHAPTER IV / UNDERCOVER",
+    "title": "巧合，還是早有安排",
+    "image": "chapter4-undercover-v2",
+    "alt": "特務站在門邊陰影裡藏起密函，遠處的聚會仍在進行",
+    "text": [
+      "你正準備收起信件，卻發現背面還有一行紅字。",
+      "「但請記住：別讓任何人猜出你的任務。」",
+      "「一旦密令內容被識破，等待你的，將是情報局安排的懲罰。」",
+      "你抬起頭，看向身旁的人。有人正在說笑，有人低頭看著手機，也有人恰好朝你走來。",
+      "行動已經開始。",
+      "沒有人會知道——你不經意的一個舉動，究竟只是巧合，還是早有安排。"
+    ]
+  }
+];
   const books={
     prologue:{scenes:prologueScenes,label:'序章',title:'重新集結',tagline:'一封邀請，讓沉寂的行動再次啟動。',ordinal:'第一',number:'01',missionTitle:'準備你的交接物資',description:'準備一份包裝完成的禮物，\n上傳照片，並留下三個提示詞。',note:'別留下你的身分線索。\n完成提交後，等待下一項指令。',target:'giftForm'},
     chapter2:{scenes:secondScenes,label:'第二章',title:'封存密令',tagline:'情報已入庫。最後一道封印，等待你親手完成。',ordinal:'第二',number:'02',missionTitle:'替禮物封存密令',description:'抽取一個密令編號，\n將編號寫在或貼在自己的禮物包裝上。',note:'你只會看到編號，不會看到密令內容。\n別拆封，也別留下自己的名字。',target:'drawTaskPanel'},
-    chapter3:{scenes:thirdScenes,label:'第三章',title:'交接前夜',tagline:'禮物已封存。下一個秘密，正等著交到你手上。',ordinal:'第三',number:'03',missionTitle:'選定你的交接目標',description:'匿名情報庫公開後，\n根據照片與三個提示詞，選擇一份禮物並確認接收。',note:'不能選擇自己的禮物。\n確認接收後，密令才會解封，且不能更換目標。',target:'giftGallery'}
+    chapter3:{scenes:thirdScenes,label:'第三章',title:'交接前夜',tagline:'禮物已封存。下一個秘密，正等著交到你手上。',ordinal:'第三',number:'03',missionTitle:'選定你的交接目標',description:'匿名情報庫公開後，\n根據照片與三個提示詞，選擇一份禮物並確認接收。',note:'不能選擇自己的禮物。\n確認接收後，密令才會解封，且不能更換目標。',target:'giftGallery'},
+    chapter4:{scenes:fourthScenes,label:'第四章',title:'秘密的接收者',tagline:'交接已確認。從這一刻起，你的行動正式開始。',ordinal:'第四',number:'04',missionTitle:'拆閱你的秘密任務',description:'密令已交付，僅限本人閱覽。\n行動時間：現在起，直到今晚拆禮物之前。',note:'把握機會完成任務，保持自然。\n若被猜出任務內容，將接受情報局安排的懲罰。',target:'locked'}
   };
-  const sceneMusic={prologue:['p01','p02','p03','p04'],chapter2:['c201','c202','c203'],chapter3:['c301','c302','c303']};
+  const sceneMusic={prologue:['p01','p02','p03','p04'],chapter2:['c201','c202','c203'],chapter3:['c301','c302','c303'],chapter4:['c401','c402','c403']};
   Object.entries(books).forEach(([id,book],index)=>{
     book.introMusic=`assets/prologue-music-intro-${index+1}.mp3`;book.acceptMusic=`assets/prologue-music-accept-${index+1}.mp3`;
     book.scenes.forEach((scene,i)=>{scene.music=`assets/prologue-music-${sceneMusic[id][i]}.mp3`;});
@@ -204,7 +246,7 @@
     el('prologueAccept').hidden=true;el('prologueIntro').hidden=index>=0;el('prologueStory').hidden=index<0;
     el('prologuePrev').disabled=index<=0;el('prologueNext').hidden=false;el('prologueNext').disabled=false;
     el('prologueNext').textContent=index<0?'開始閱覽':index===scenes.length-1?`拆閱${books[bookId].ordinal}項指令`:'下一幕';
-    el('prologuePage').textContent=index<0?`${bookId==='prologue'?'PROLOGUE':bookId==='chapter2'?'CHAPTER II':'CHAPTER III'} / ${books[bookId].label}`:`${String(index+1).padStart(2,'0')} / ${String(scenes.length).padStart(2,'0')}`;el('prologueProgress').style.width='0%';
+    el('prologuePage').textContent=index<0?`${bookId==='prologue'?'PROLOGUE':bookId==='chapter2'?'CHAPTER II':bookId==='chapter3'?'CHAPTER III':'CHAPTER IV'} / ${books[bookId].label}`:`${String(index+1).padStart(2,'0')} / ${String(scenes.length).padStart(2,'0')}`;el('prologueProgress').style.width='0%';
     if(index>=0){
       flip();const source=scenes[index],data={...source,text:source.text.map(text=>text.replaceAll('{code}',String(latestState?.draw??'').padStart(2,'0')))},previous=el('prologueImagePrevious'),image=el('prologueImage');previous.src=image.getAttribute('src')||`assets/prologue-${data.image}.png`;image.src=`assets/prologue-${data.image}.png`;image.alt=data.alt;
       el('prologueChapter').textContent=data.chapter;el('prologueTitle').textContent=data.title;prepareText(data);el('prologueAccessibleText').textContent=data.text.join('\n');el('prologueStory').scrollTop=0;
@@ -256,6 +298,7 @@
     bookId=typeof id==='string'&&books[id]?id:'prologue';scenes=books[bookId].scenes;const book=books[bookId];
     el('storyIntroLabel').textContent=book.label;el('storyIntroTitle').textContent=book.title;el('storyIntroTagline').textContent=book.tagline;
     el('prologue').setAttribute('aria-label',`${book.label}：${book.title}`);
+    el('acceptSeal').setAttribute('aria-label',`點擊封蠟，拆閱${book.ordinal}項指令`);
     el('assignmentEyebrow').textContent=`MISSION ASSIGNMENT / ${book.ordinal}項指令`;el('assignmentNumber').textContent=book.number;el('assignmentTitle').textContent=book.missionTitle;el('assignmentDescription').textContent=book.description;el('assignmentNote').textContent=book.note;
     preload();cancelAnimationFrame(frame);pauseMusic(true);resumeFocus=document.activeElement;showing=true;started=true;manualPause=false;paused=false;accepting=false;last=0;acceptHeld=null;
     el('prologue').hidden=false;el('operationContent').hidden=true;document.body.classList.add('prologue-playing');
@@ -270,6 +313,7 @@
     if(completedBook==='chapter2'){
       const button=el('drawButton');if(!button.disabled)button.focus({preventScroll:true});else el('drawTaskHeading').focus({preventScroll:true});
     }else if(completedBook==='chapter3')el('galleryTitle').focus({preventScroll:true});
+    else if(completedBook==='chapter4')el('missionNumber').focus({preventScroll:true});
     else document.querySelector('#giftForm input:not(:disabled)')?.focus({preventScroll:true});
   }
   el('prologuePause').addEventListener('click',()=>{if(!started||accepting)return;manualPause=!manualPause;syncPause();});
@@ -286,6 +330,7 @@
   el('replayPrologue').addEventListener('click',()=>open('prologue'));
   el('replayChapterTwo').addEventListener('click',()=>{if(latestState?.ownGift)open('chapter2');});
   el('replayChapterThree').addEventListener('click',()=>{if(latestState?.draw)open('chapter3');});
+  el('replayChapterFour').addEventListener('click',()=>{if(latestState?.choice)open('chapter4');});
   el('acceptSeal').addEventListener('click',openSeal);
   el('acceptHold').addEventListener('pointerdown',event=>{
     if(!accepting||!sealOpened||accepted||event.isPrimary===false||(event.pointerType==='mouse'&&event.button!==0))return;
@@ -309,11 +354,13 @@
   window.Prologue={
     hasSecondInstruction:id=>hasRead('chapter2',id),
     hasThirdInstruction:id=>hasRead('chapter3',id),
+    hasFourthInstruction:id=>hasRead('chapter4',id),
     update(user,state,acceptedCallback){
       const changed=currentUser!==user.$id;if(changed){close();currentUser=user.$id;}
       latestState=state;onAccepted=acceptedCallback;
       if(showing){el('prologue').hidden=false;el('operationContent').hidden=true;return;}
-      if(state.draw&&!state.choice&&!hasRead('chapter3'))open('chapter3');
+      if(state.choice&&!hasRead('chapter4'))open('chapter4');
+      else if(state.draw&&!state.choice&&!hasRead('chapter3'))open('chapter3');
       else if(state.ownGift&&!state.draw&&!state.choice&&!hasRead('chapter2'))open('chapter2');
       else if(changed&&!state.ownGift&&!hasRead('prologue'))open('prologue');
     }

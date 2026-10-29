@@ -65,8 +65,11 @@ function render(fillForms=false){
   $('heroMissionTitle').textContent=state.choice?'你的秘密任務，已送達。':stage===0?'先準備你的交接物資。':stage===1?'下一項指令，等你接收。':'你的秘密任務，等待揭曉。';
   $('galleryNote').textContent=published?(state.choice?'你已鎖定禮物。仍可瀏覽照片與提示詞，但無法更換選擇。':'根據照片與三個提示詞，挑選你喜歡的禮物。不能選自己的禮物，同一份可被多人選擇；確認鎖定後，才會揭曉任務，且不能更換。'):'禮物情報尚未公開。等指揮官開放後，就能查看大家的照片與三個提示詞，挑選你喜歡的禮物。';
   $('gifts').replaceChildren(...state.gifts.map(g=>card(g)));
-  $('locked').hidden=!state.choice;
-  if(state.choice){$('missionNumber').textContent=`密令 ${state.choice.number} / 行動內容`;$('missionContent').textContent=state.choice.content;$('lockedGift').replaceChildren(card(state.gifts.find(g=>g.id===state.choice.giftId)));}
+  const fourthAccepted=window.Prologue?.hasFourthInstruction?.(user.$id)??true;
+  $('replayChapterFour').hidden=!state.choice;
+  $('locked').hidden=!state.choice||!fourthAccepted;
+  if(state.choice&&fourthAccepted){$('missionNumber').textContent=`密令 ${state.choice.number} / 行動內容`;$('missionContent').textContent=state.choice.content;$('lockedGift').replaceChildren(card(state.gifts.find(g=>g.id===state.choice.giftId)));}
+  if(!state.choice||!fourthAccepted){$('missionNumber').textContent='';$('missionContent').textContent='';$('lockedGift').replaceChildren();}
   $('adminTab').hidden=!state.isAdmin;
   window.Prologue?.update(user,state,()=>render(false));
   if(!state.isAdmin){$('adminView').hidden=true;return;}
@@ -84,7 +87,7 @@ async function refresh(fill=false){state=await api('state');render(fill);}
 async function confirmGift(giftId){
   if(busy||state.choice)return;
   const dialog=$('confirmLock');dialog.returnValue='';dialog.showModal();
-  dialog.addEventListener('close',()=>{if(dialog.returnValue==='lock')action(async()=>{await api('lock',{giftId});await refresh();notice('目標已鎖定。密令已交付，請詳閱行動內容。');$('locked').scrollIntoView({behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});window.AgentFX?.reveal('MISSION UNSEALED','接收確認 · 密令交付完成');});},{once:true});
+  dialog.addEventListener('close',()=>{if(dialog.returnValue==='lock')action(async()=>{await api('lock',{giftId});await refresh();notice('交接目標已確認。你的機密來信，已送達。');});},{once:true});
 }
 $('memberTab').addEventListener('click',()=>view(false));$('adminTab').addEventListener('click',()=>view(true));
 $('refresh').addEventListener('click',()=>action(async()=>{clearImages();if(!state)await enterActivity();else await refresh();notice('情報同步完成。');}));
