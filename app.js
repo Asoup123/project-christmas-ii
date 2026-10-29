@@ -46,10 +46,12 @@ function render(fillForms=false){
   const phase=state.phase,prepare=phase==='prepare',published=phase==='published';
   // Reveal each dossier only after this member finishes its prerequisite.
   const stage=state.choice||state.draw?2:state.ownGift?1:0;
-  $('drawTaskPanel').hidden=stage<1;
+  const secondAccepted=stage>=2||(window.Prologue?.hasSecondInstruction(user.$id)??true);
+  $('drawTaskPanel').hidden=stage<1||!secondAccepted;
+  $('replayChapterTwo').hidden=!state.ownGift;
   $('giftGallery').hidden=stage<2;
   $('phaseText').textContent=stage===0?'第一項指令｜準備包裝完成的禮物，上傳照片並留下三個提示詞。':stage===1?(prepare?'情報已提交｜下一項指令已送達，等待指揮官開放密令抽取。':'第二項指令｜抽取禮物專屬密令，將編號放在自己的禮物上。'):published?'匿名情報已解封｜選定禮物並確認接收，揭曉你的秘密任務。':'密令已配發｜保持身分隱密，等待指揮官公開匿名情報。';
-  ['step1','step2','step3'].forEach((id,i)=>{$(id).hidden=i>stage;$(id).classList.toggle('active',i===stage);});
+  ['step1','step2','step3'].forEach((id,i)=>{const visibleStage=stage===1&&!secondAccepted?0:stage;$(id).hidden=i>visibleStage;$(id).classList.toggle('active',i===visibleStage);});
   $('ownPreview').replaceChildren();if(state.ownGift)$('ownPreview').append(image(state.ownGift,'ownImage'));
   for(const input of $('giftForm').elements)input.disabled=!prepare;
   $('giftNote').textContent=prepare?'抽取開放前可修訂情報。按下提交才會儲存，目前僅本人與指揮官可查閱。':'密令抽取已開放，禮物情報已封存，不能再修改。';
@@ -64,7 +66,7 @@ function render(fillForms=false){
   $('locked').hidden=!state.choice;
   if(state.choice){$('missionNumber').textContent=`密令 ${state.choice.number} / 行動內容`;$('missionContent').textContent=state.choice.content;$('lockedGift').replaceChildren(card(state.gifts.find(g=>g.id===state.choice.giftId)));}
   $('adminTab').hidden=!state.isAdmin;
-  window.Prologue?.update(user,state);
+  window.Prologue?.update(user,state,()=>render(false));
   if(!state.isAdmin){$('adminView').hidden=true;return;}
   const a=state.admin,submitted=a.members.filter(m=>m.giftId).length,drawn=a.members.filter(m=>m.draw).length,locked=a.members.filter(m=>m.choice).length;
   $('counts').replaceChildren(...[`成員 ${a.members.length}/12`,`禮物 ${submitted}/12`,`任務 ${drawn}/12`,`鎖定 ${locked}/12`].map(t=>node('span',t)));

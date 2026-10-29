@@ -1,12 +1,56 @@
 'use strict';
 (()=>{
   const el=id=>document.getElementById(id);
-  const scenes=[
+  const prologueScenes=[
     {chapter:'PROLOGUE 01 / ANONYMOUS INVITATION',title:'一封沒有寄件人的邀請',image:'invitation',alt:'深色桌面上，一封帶著雪花封蠟的聖誕邀請函',text:['一封沒有寄件人的聖誕邀請函，悄悄出現在你的收件匣。','裡面只有集合資訊，以及一句話：','「請帶上一份禮物。別讓任何人知道，那是你準備的。」']},
     {chapter:'PROLOGUE 02 / IDENTITY VERIFIED',title:'北極情報局',image:'verification',alt:'神祕辦公室的終端機亮起雪花徽記',text:['當你輸入通行密碼，邀請函上的雪花忽然停住。畫面逐漸暗下，一段加密訊息緩緩浮現。','「身分確認。歡迎加入本次行動，特務。」','訊息末端，一枚雪花徽記亮起。','北極情報局。']},
     {chapter:'PROLOGUE 03 / NEW RENDEZVOUS',title:'新的據點，重新集結',image:'rendezvous',alt:'聖誕夜裡亮著暖光的秘密集合據點',text:['去年，情報局曾以聖誕聚會為掩護，完成一次秘密交接。','今年，新的據點已就緒，召集名單也已重新編組。熟悉的面孔與新加入的特務，將共同參與代號「CHRISTMAS II」的秘密行動。']},
     {chapter:'PROLOGUE 04 / EYES ONLY',title:'第一項指令，現在送達',image:'dossier',alt:'繫著紅緞帶的機密文件與包裝好的聖誕禮物',text:['十二名特務，十二份禮物。','你們將以朋友的身分見面、聊天、交換祝福。沒有人會知道，一份看似普通的聖誕禮物，會把誰帶進什麼樣的任務。','畫面上的雪花再次飄落。','一份標示「僅限本人閱覽」的檔案，出現在你面前。','你的第一項指令，現在送達。']}
   ];
+  const secondScenes=[
+  {
+    "chapter": "CHAPTER II / INCOMING TRANSMISSION",
+    "title": "別離開，特務",
+    "image": "chapter2-transmission",
+    "alt": "終端機在照片傳送完成後，亮起新的機密通訊",
+    "text": [
+      "照片傳送完成，畫面上的進度停在了百分之百。",
+      "你正準備關閉頁面，終端機卻傳來一聲輕響。",
+      "「情報已接收。請稍候，別離開。」",
+      "螢幕上的禮物照片被收進一只資料夾。三個提示詞依序歸檔，你的名字則從檔案上消失了。"
+    ]
+  },
+  {
+    "chapter": "CHAPTER II / A CHRISTMAS SECRET",
+    "title": "一份尚未署名的秘密",
+    "image": "chapter2-letter",
+    "alt": "帶著北極情報局雪花封蠟的聖誕來信",
+    "text": [
+      "幾秒後，一封帶著紅色封蠟的信件出現在畫面中央。封面上，只有北極情報局的雪花徽記。",
+      "你拆開信封，裡面是一張尚未填上編號的標籤，以及一段留言：",
+      "「聖誕老人習慣在禮物上寫下收件人的名字。」",
+      "「但我們的禮物，還不知道自己會遇見誰。所以今年，我們先替它準備了一個秘密。」"
+    ]
+  },
+  {
+    "chapter": "CHAPTER II / SEALED DIRECTIVE",
+    "title": "交給選中它的人",
+    "image": "chapter2-directives",
+    "alt": "一疊內容封存的機密文件，等待為禮物配發編號",
+    "text": [
+      "信紙下方，露出一疊封好的密令。內容看不見，每封信上只印著一個編號。",
+      "你將從中抽取一封。它會跟著你的禮物，交到另一名特務手裡。在那之前，連你也不能知道裡面寫了什麼。",
+      "終端機再次亮起。",
+      "「抽取你的密令，把編號留在禮物上。」",
+      "「剩下的，交給那個選中它的人。」"
+    ]
+  }
+];
+  const books={
+    prologue:{scenes:prologueScenes,label:'序章',title:'重新集結',tagline:'一封邀請，讓沉寂的行動再次啟動。',ordinal:'第一',number:'01',missionTitle:'準備你的交接物資',description:'準備一份包裝完成的禮物，\n上傳照片，並留下三個提示詞。',note:'別留下你的身分線索。\n完成提交後，等待下一項指令。',target:'giftForm'},
+    chapter2:{scenes:secondScenes,label:'第二章',title:'封存密令',tagline:'情報已入庫。最後一道封印，等待你親手完成。',ordinal:'第二',number:'02',missionTitle:'替禮物封存密令',description:'抽取一個密令編號，\n將編號寫在或貼在自己的禮物包裝上。',note:'你只會看到編號，不會看到密令內容。\n別拆封，也別留下自己的名字。',target:'drawTaskPanel'}
+  };
+  let bookId='prologue',scenes=books.prologue.scenes,latestState=null,onAccepted=null;
   const INTRO_DURATION=6500, TRANSITION=1400, CHARACTER_MS=125, ACCEPT_MS=1800;
   const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const seen=new Set();
@@ -15,9 +59,9 @@
   let sound=true,audioContext=null,keyBuffer=null,resumeFocus=null,preloaded=false;
   let music=null,musicRequest=0,soundBlocked=false,musicBlocked=false,musicFailed=false;
   let accepting=false,sealOpened=false,accepted=false,acceptHeld=null,acceptElapsed=0,acceptedElapsed=0;
-  const key=()=>`christmas-prologue-v1:${currentUser}`;
-  function hasRead(){if(seen.has(currentUser))return true;try{return localStorage.getItem(key())==='read';}catch{return false;}}
-  function preload(){if(preloaded||!window.Image)return;preloaded=true;scenes.forEach(data=>{const image=new window.Image();image.src=`assets/prologue-${data.image}.png`;});}
+  const key=(book=bookId,id=currentUser)=>book==='prologue'?`christmas-prologue-v1:${id}`:`christmas-chapter2-v1:${id}`;
+  function hasRead(book=bookId,id=currentUser){if(seen.has(`${book}:${id}`))return true;try{return localStorage.getItem(key(book,id))==='read';}catch{return false;}}
+  function preload(){if(preloaded||!window.Image)return;preloaded=true;[...prologueScenes,...secondScenes].forEach(data=>{const image=new window.Image();image.src=`assets/prologue-${data.image}.png`;});}
   function ensureMusic(){
     if(music||!window.Audio)return;
     music=new window.Audio('assets/prologue-christmas.wav');music.loop=true;music.preload='auto';music.volume=.28;
@@ -92,8 +136,8 @@
     const shell=el('prologue');shell.dataset.mode=index<0?'intro':'story';
     el('prologueAccept').hidden=true;el('prologueIntro').hidden=index>=0;el('prologueStory').hidden=index<0;
     el('prologuePrev').disabled=index<=0;el('prologueNext').hidden=false;el('prologueNext').disabled=false;
-    el('prologueNext').textContent=index<0?'開始閱覽':index===3?'拆閱第一項指令':'下一幕';
-    el('prologuePage').textContent=index<0?'PROLOGUE / 序章':`${String(index+1).padStart(2,'0')} / 04`;el('prologueProgress').style.width='0%';
+    el('prologueNext').textContent=index<0?'開始閱覽':index===scenes.length-1?`拆閱${books[bookId].ordinal}項指令`:'下一幕';
+    el('prologuePage').textContent=index<0?`${bookId==='prologue'?'PROLOGUE':'CHAPTER II'} / ${books[bookId].label}`:`${String(index+1).padStart(2,'0')} / ${String(scenes.length).padStart(2,'0')}`;el('prologueProgress').style.width='0%';
     if(index>=0){
       flip();const data=scenes[index],previous=el('prologueImagePrevious'),image=el('prologueImage');previous.src=image.getAttribute('src')||`assets/prologue-${data.image}.png`;image.src=`assets/prologue-${data.image}.png`;image.alt=data.alt;
       el('prologueChapter').textContent=data.chapter;el('prologueTitle').textContent=data.title;prepareText(data);el('prologueAccessibleText').textContent=data.text.join('\n');el('prologueStory').scrollTop=0;
@@ -107,7 +151,7 @@
     for(const id of ['prologueIntro','prologueStory'])el(id).hidden=true;
     el('prologueAccept').hidden=false;el('acceptDetails').hidden=true;el('acceptSeal').hidden=false;el('acceptHold').disabled=false;
     el('acceptLabel').textContent='長按指紋 · 接受任務';el('acceptStatus').textContent='僅限本人閱覽 · 點擊封蠟拆封';el('acceptHold').style.setProperty('--accept-progress','0deg');
-    el('prologuePrev').disabled=true;el('prologueNext').hidden=true;el('prologuePage').textContent='MISSION 01 / 待接收';el('prologueProgress').style.width='100%';
+    el('prologuePrev').disabled=true;el('prologueNext').hidden=true;el('prologuePage').textContent=`MISSION ${books[bookId].number} / 待接收`;el('prologueProgress').style.width='100%';
     el('prologueSkip').textContent='重看故事';syncPause();el('acceptSeal').focus({preventScroll:true});
   }
   function openSeal(){
@@ -132,28 +176,36 @@
           if(!reduced&&next!==typed){
             paintText(next);if(characters.slice(typed,next).some(char=>/[\p{L}\p{N}]/u.test(char)))typeKey();typed=next;
           }
-          const total=typingDuration+(page===3?7500:6500);
+          const total=typingDuration+(page===scenes.length-1?7500:6500);
           el('prologueProgress').style.width=`${Math.min(100,textElapsed/total*100)}%`;
-          if(textElapsed>=total){if(page<3)scene(page+1);else showAcceptance();}
+          if(textElapsed>=total){if(page<scenes.length-1)scene(page+1);else showAcceptance();}
         }
       }
     }
     if(showing)frame=requestAnimationFrame(tick);
   }
-  function open(){
+  function open(id='prologue'){
+    bookId=typeof id==='string'&&books[id]?id:'prologue';scenes=books[bookId].scenes;const book=books[bookId];
+    el('storyIntroLabel').textContent=book.label;el('storyIntroTitle').textContent=book.title;el('storyIntroTagline').textContent=book.tagline;
+    el('prologue').setAttribute('aria-label',`${book.label}：${book.title}`);
+    el('assignmentEyebrow').textContent=`MISSION ASSIGNMENT / ${book.ordinal}項指令`;el('assignmentNumber').textContent=book.number;el('assignmentTitle').textContent=book.missionTitle;el('assignmentDescription').textContent=book.description;el('assignmentNote').textContent=book.note;
     preload();cancelAnimationFrame(frame);pauseMusic(true);resumeFocus=document.activeElement;showing=true;started=true;manualPause=false;paused=false;accepting=false;last=0;acceptHeld=null;
     el('prologue').hidden=false;el('operationContent').hidden=true;document.body.classList.add('prologue-playing');
     el('prologueSkip').textContent='跳過故事';syncPause();scene(-1);unlockAudio();el('prologuePause').focus({preventScroll:true});frame=requestAnimationFrame(tick);
   }
   function close(){showing=false;started=false;acceptHeld=null;cancelAnimationFrame(frame);pauseMusic(true);try{audioContext?.suspend()?.catch(()=>{});}catch{}document.body.classList.remove('prologue-playing');el('prologue').hidden=true;el('operationContent').hidden=false;}
   function finish(){
-    seen.add(currentUser);try{localStorage.setItem(key(),'read');}catch{}close();
-    // Accepting the story never draws a secret mission or changes game data.
-    const input=document.querySelector('#giftForm input:not(:disabled)');if(input){el('memberTab').click();el('giftForm').scrollIntoView({behavior:'auto',block:'start'});input.focus({preventScroll:true});}else if(resumeFocus?.isConnected)resumeFocus.focus({preventScroll:true});
+    const completedBook=bookId;seen.add(`${completedBook}:${currentUser}`);try{localStorage.setItem(key(completedBook),'read');}catch{}close();
+    // Accepting a story unlocks its presentation only. No gift draw or selection is made.
+    onAccepted?.();if(showing)return;
+    el('memberTab').click();const target=el(books[completedBook].target);target?.scrollIntoView({behavior:'auto',block:'start'});
+    if(completedBook==='chapter2'){
+      const button=el('drawButton');if(!button.disabled)button.focus({preventScroll:true});else el('drawTaskHeading').focus({preventScroll:true});
+    }else document.querySelector('#giftForm input:not(:disabled)')?.focus({preventScroll:true});
   }
   el('prologuePause').addEventListener('click',()=>{if(!started||accepting)return;manualPause=!manualPause;syncPause();});
   el('prologuePrev').addEventListener('click',()=>{if(page>0&&!accepting)scene(page-1,true);});
-  el('prologueNext').addEventListener('click',()=>{if(started&&!accepting){if(page<3)scene(page+1,true);else showAcceptance();}});
+  el('prologueNext').addEventListener('click',()=>{if(started&&!accepting){if(page<scenes.length-1)scene(page+1,true);else showAcceptance();}});
   el('prologueSound').addEventListener('click',()=>{
     if(sound&&soundBlocked&&!paused){unlockAudio();return;}
     sound=!sound;if(sound)unlockAudio();else{pauseMusic();audioContext?.suspend()?.catch(()=>{});}status();
@@ -161,8 +213,9 @@
   // Autoplay policies can block sound, but never block the opening animation.
   // Retry only after an actual gesture; background clicks no longer pause playback.
   el('prologue').addEventListener('pointerdown',event=>{if(sound&&soundBlocked&&!event.target.closest('#prologueSound'))unlockAudio();});
-  el('prologueSkip').addEventListener('click',()=>{if(accepting){open();return;}unlockAudio();showAcceptance();});
-  el('replayPrologue').addEventListener('click',open);
+  el('prologueSkip').addEventListener('click',()=>{if(accepting){open(bookId);return;}unlockAudio();showAcceptance();});
+  el('replayPrologue').addEventListener('click',()=>open('prologue'));
+  el('replayChapterTwo').addEventListener('click',()=>{if(latestState?.ownGift)open('chapter2');});
   el('acceptSeal').addEventListener('click',openSeal);
   el('acceptHold').addEventListener('pointerdown',event=>{
     if(!accepting||!sealOpened||accepted||event.isPrimary===false||(event.pointerType==='mouse'&&event.button!==0))return;
@@ -183,5 +236,14 @@
       if(event.shiftKey&&document.activeElement===first){event.preventDefault();lastButton.focus();}else if(!event.shiftKey&&document.activeElement===lastButton){event.preventDefault();first.focus();}
     }
   });
-  window.Prologue={update(user,state){const id=user.$id;if(currentUser!==id){close();currentUser=id;if(!hasRead()&&!state.ownGift)open();}else if(showing){el('prologue').hidden=false;el('operationContent').hidden=true;}}};
+  window.Prologue={
+    hasSecondInstruction:id=>hasRead('chapter2',id),
+    update(user,state,acceptedCallback){
+      const changed=currentUser!==user.$id;if(changed){close();currentUser=user.$id;}
+      latestState=state;onAccepted=acceptedCallback;
+      if(showing){el('prologue').hidden=false;el('operationContent').hidden=true;return;}
+      if(state.ownGift&&!state.draw&&!state.choice&&!hasRead('chapter2'))open('chapter2');
+      else if(changed&&!state.ownGift&&!hasRead('prologue'))open('prologue');
+    }
+  };
 })();

@@ -135,3 +135,5 @@ body.prologue-playing{overflow:hidden}
 @media(max-width:760px){.cinema #prologueText .subtitleFull{font-size:16px;line-height:1.85;letter-spacing:.025em}.cinema .cinemaStory{max-height:calc(100% - 215px)}.cinema #prologueText{min-height:100px}.cinema .cinemaStory h2{margin-bottom:18px}}
 @media(max-height:500px){.cinema .cinemaStory{max-height:calc(100% - 155px)}}
 @media(prefers-reduced-motion:reduce){.cinema #prologueText p.subtitleFull.typing::after{animation:none!important}}
+
+#assignmentDescription,#assignmentNote{white-space:pre-line}#replayChapterTwo{font-size:12px}
