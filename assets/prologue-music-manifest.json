@@ -1,0 +1,149 @@
+{
+  "origin": "Original synthesized instrumental compositions; no vocals or external samples.",
+  "tracks": [
+    {
+      "id": "intro-1",
+      "title": "重新集結・開場",
+      "file": "prologue-music-intro-1.mp3",
+      "bpm": 72,
+      "mood": "mystery",
+      "seconds": 26.667,
+      "sha256": "828b1607aebe5f45a0b5d4dbfc3cc356026d38a4ff93846c943089871a4e3c0c"
+    },
+    {
+      "id": "p01",
+      "title": "無名邀請・雪夜音樂盒",
+      "file": "prologue-music-p01.mp3",
+      "bpm": 68,
+      "mood": "musicbox",
+      "seconds": 28.235,
+      "sha256": "19aa98f1b66aa3ccfca65c57607532807a2b84fa607fc530f763de4c36e3c2b0"
+    },
+    {
+      "id": "p02",
+      "title": "身分確認・雪花訊號",
+      "file": "prologue-music-p02.mp3",
+      "bpm": 80,
+      "mood": "signal",
+      "seconds": 24.0,
+      "sha256": "6b729242f07f56d1ed492421f4fd03136e98f5cb06809a22b262da3c9b844d42"
+    },
+    {
+      "id": "p03",
+      "title": "新的據點・聖誕暖光",
+      "file": "prologue-music-p03.mp3",
+      "bpm": 74,
+      "mood": "warm",
+      "seconds": 25.946,
+      "sha256": "eb3c4aac71fb240c8490aa926a5b5a83df1de10367b94f607e38e80f873a1205"
+    },
+    {
+      "id": "p04",
+      "title": "第一項指令・封蠟微光",
+      "file": "prologue-music-p04.mp3",
+      "bpm": 76,
+      "mood": "sealed",
+      "seconds": 25.263,
+      "sha256": "ef9cc6622fc703e8c8a28fa4149fdd9ea7544972f4b99b0e78bcf4d6a44b58b8"
+    },
+    {
+      "id": "accept-1",
+      "title": "接取第一項指令",
+      "file": "prologue-music-accept-1.mp3",
+      "bpm": 76,
+      "mood": "ceremony",
+      "seconds": 25.263,
+      "sha256": "349f4726ba56a528e4be73753a161133544ebff88b8dee7add0dda4d39b67d84"
+    },
+    {
+      "id": "intro-2",
+      "title": "封存密令・開場",
+      "file": "prologue-music-intro-2.mp3",
+      "bpm": 74,
+      "mood": "mystery",
+      "seconds": 25.946,
+      "sha256": "39ae1669750c57ab293acd1bd82f82be54d113ef32134c1a5fea3639dd3879cb"
+    },
+    {
+      "id": "c201",
+      "title": "情報傳送・冬夜脈動",
+      "file": "prologue-music-c201.mp3",
+      "bpm": 88,
+      "mood": "signal",
+      "seconds": 21.818,
+      "sha256": "d1114c2bd2828dadcb8ff8d120464ff3cdbcc4aa11391a6cc1de51962a75537c"
+    },
+    {
+      "id": "c202",
+      "title": "聖誕來信・無名收件人",
+      "file": "prologue-music-c202.mp3",
+      "bpm": 64,
+      "mood": "musicbox",
+      "seconds": 30.0,
+      "sha256": "fdad622eefe29496ed36ef71ba6600fdce7169b932000f3deef07c336a4272cb"
+    },
+    {
+      "id": "c203",
+      "title": "密令信封・未揭曉的秘密",
+      "file": "prologue-music-c203.mp3",
+      "bpm": 78,
+      "mood": "sealed",
+      "seconds": 24.615,
+      "sha256": "6a6a6db3ba80c02163fb7343609a5451a891d3b8d4f51b4818bcd5a97d38d9b7"
+    },
+    {
+      "id": "accept-2",
+      "title": "接取第二項指令",
+      "file": "prologue-music-accept-2.mp3",
+      "bpm": 72,
+      "mood": "ceremony",
+      "seconds": 26.667,
+      "sha256": "c2e510bedba3612c3bf634faa5ca941aec9582602b8ce067426ced3b9edb1fba"
+    },
+    {
+      "id": "intro-3",
+      "title": "交接前夜・開場",
+      "file": "prologue-music-intro-3.mp3",
+      "bpm": 72,
+      "mood": "mystery",
+      "seconds": 26.667,
+      "sha256": "49044b9f93a6e3322fddee461d197271285c5fd1688fc51dc2b4b1d01d317d0e"
+    },
+    {
+      "id": "c301",
+      "title": "編號落定・輕響的鈴聲",
+      "file": "prologue-music-c301.mp3",
+      "bpm": 82,
+      "mood": "ceremony",
+      "seconds": 23.415,
+      "sha256": "212c3bf5338eb2ad3dfd78d5bbf36732681d4752ff53b05f85636cdafdd498c1"
+    },
+    {
+      "id": "c302",
+      "title": "聖誕據點・等待入席",
+      "file": "prologue-music-c302.mp3",
+      "bpm": 66,
+      "mood": "warm",
+      "seconds": 29.091,
+      "sha256": "fe0b361174139a37dc82ac439caa8e068608be5dc7cc6982b29c954e8630ec91"
+    },
+    {
+      "id": "c303",
+      "title": "線索交會・停下的目光",
+      "file": "prologue-music-c303.mp3",
+      "bpm": 72,
+      "mood": "musicbox",
+      "seconds": 26.667,
+      "sha256": "d489cb50c20fe2c05330c87ac24bacfb4f37267b001cf98678cb93fab487f0d1"
+    },
+    {
+      "id": "accept-3",
+      "title": "接取第三項指令",
+      "file": "prologue-music-accept-3.mp3",
+      "bpm": 70,
+      "mood": "ceremony",
+      "seconds": 27.429,
+      "sha256": "a8e1451df25b11d90d37cbc332e8f66d853283ea8fb1b53b6723bf55638b4688"
+    }
+  ]
+}
