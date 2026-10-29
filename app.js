@@ -53,11 +53,14 @@ function render(fillForms=false){
   $('drawStatus').textContent=state.draw?`任務 ${state.draw} · 密令封存中`:'密令尚未配發';
   $('drawButton').disabled=phase!=='drawing'||!!state.draw||!state.ownGift;
   $('drawButton').textContent=state.draw?'密令已配發 · 內容封存':'抽取密令 · 保持封存';
-  $('galleryNote').textContent=published?'此情報庫僅公開禮物照片與三個提示詞。不能選自己提交的禮物；同份可被多人選擇。確認鎖定後無法更換。':'情報庫仍在封鎖中。等待指揮官解除封鎖後，才可查閱匿名照片與三個提示詞。';
+  $('galleryTitle').textContent=published?(state.choice?'匿名禮物情報庫':'選一份禮物，接下秘密任務。'):'匿名禮物，等待公開。';
+  $('heroMissionTitle').textContent=state.choice?'你的秘密任務，已送達。':'你的秘密任務，等待揭曉。';
+  $('galleryNote').textContent=published?(state.choice?'你已鎖定禮物。仍可瀏覽照片與提示詞，但無法更換選擇。':'根據照片與三個提示詞，挑選你喜歡的禮物。不能選自己的禮物，同一份可被多人選擇；確認鎖定後，才會揭曉任務，且不能更換。'):'禮物情報尚未公開。等指揮官開放後，就能查看大家的照片與三個提示詞，挑選你喜歡的禮物。';
   $('gifts').replaceChildren(...state.gifts.map(g=>card(g)));
   $('locked').hidden=!state.choice;
   if(state.choice){$('missionNumber').textContent=`密令 ${state.choice.number} / 行動內容`;$('missionContent').textContent=state.choice.content;$('lockedGift').replaceChildren(card(state.gifts.find(g=>g.id===state.choice.giftId)));}
   $('adminTab').hidden=!state.isAdmin;
+  window.Prologue?.update(user,state);
   if(!state.isAdmin){$('adminView').hidden=true;return;}
   const a=state.admin,submitted=a.members.filter(m=>m.giftId).length,drawn=a.members.filter(m=>m.draw).length,locked=a.members.filter(m=>m.choice).length;
   $('counts').replaceChildren(...[`成員 ${a.members.length}/12`,`禮物 ${submitted}/12`,`任務 ${drawn}/12`,`鎖定 ${locked}/12`].map(t=>node('span',t)));
